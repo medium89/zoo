@@ -48,6 +48,9 @@ class ServiceController extends Controller
             'text' => 'required|string',
         ]);
         if ($request->hasFile('image')) {
+            if ($service->image && Storage::disk('public')->exists($service->image)) {
+                Storage::disk('public')->delete($service->image);
+            }
             $path = $request->file('image')->store('services', 'public');
             $service->image = $path;
         }

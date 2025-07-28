@@ -40,6 +40,9 @@ class SliderController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
         if ($request->hasFile('image')) {
+            if ($slider->image && Storage::disk('public')->exists($slider->image)) {
+                Storage::disk('public')->delete($slider->image);
+            }
             $path = $request->file('image')->store('sliders', 'public');
             $slider->image = $path;
         }

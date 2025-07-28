@@ -48,6 +48,9 @@ class AdvantageController extends Controller
             'text' => 'required|string',
         ]);
         if ($request->hasFile('image')) {
+            if ($advantage->image && Storage::disk('public')->exists($advantage->image)) {
+                Storage::disk('public')->delete($advantage->image);
+            }
             $path = $request->file('image')->store('advantages', 'public');
             $advantage->image = $path;
         }
