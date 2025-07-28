@@ -1,8 +1,8 @@
 @extends('admin.index')
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Слайдер</h3>
-    <a href="{{ route('sliders.create') }}" class="btn btn-primary">Добавить слайд</a>
+    <h1>Слайдеры</h1>
+    <a href="{{ route('admin.sliders.create') }}" class="btn btn-primary">Добавить слайд</a>
 </div>
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>

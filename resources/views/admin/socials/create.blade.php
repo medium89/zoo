@@ -10,7 +10,7 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('socials.store') }}" method="POST">
+<form action="{{ route('admin.socials.store') }}" method="POST">
     @csrf
     <div class="mb-3">
         <label for="icon" class="form-label">Иконка (Font Awesome)</label>
@@ -34,6 +34,6 @@
         <input type="number" class="form-control" id="order" name="order" value="0">
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
-    <a href="{{ route('socials.index') }}" class="btn btn-secondary">Назад</a>
+    <a href="{{ route('admin.socials.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @endsection 

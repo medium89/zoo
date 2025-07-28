@@ -32,7 +32,7 @@ class AdvantageController extends Controller
             'title' => $request->title,
             'text' => $request->text,
         ]);
-        return redirect()->route('advantages.index')->with('success', 'Преимущество добавлено');
+        return redirect()->route('admin.advantages.index')->with('success', 'Преимущество добавлено');
     }
 
     public function edit(Advantage $advantage)
@@ -54,7 +54,7 @@ class AdvantageController extends Controller
         $advantage->title = $request->title;
         $advantage->text = $request->text;
         $advantage->save();
-        return redirect()->route('advantages.index')->with('success', 'Преимущество обновлено');
+        return redirect()->route('admin.advantages.index')->with('success', 'Преимущество обновлено');
     }
 
     public function destroy(Advantage $advantage)
@@ -63,6 +63,6 @@ class AdvantageController extends Controller
             Storage::disk('public')->delete($advantage->image);
         }
         $advantage->delete();
-        return redirect()->route('advantages.index')->with('success', 'Преимущество удалено');
+        return redirect()->route('admin.advantages.index')->with('success', 'Преимущество удалено');
     }
 }

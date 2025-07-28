@@ -6,9 +6,8 @@
             align-items: center;
             justify-content: center;
             max-width: 500px;
+            margin: 5% auto 0 auto;
             width: 100%;
-            min-width: 100%;
-            margin: 100px auto 0 auto;
             border: none;">
                 <div class="card-body" style="
                     width: 100%;

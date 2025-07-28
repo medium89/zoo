@@ -10,7 +10,7 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('sliders.update', $slider) }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route('admin.sliders.update', $slider->id) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     <div class="mb-3">
@@ -20,6 +20,6 @@
         <small class="text-muted">Оставьте пустым, если не хотите менять изображение</small>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
-    <a href="{{ route('sliders.index') }}" class="btn btn-secondary">Назад</a>
+    <a href="{{ route('admin.sliders.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @endsection 

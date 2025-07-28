@@ -5,7 +5,7 @@
     <h1 class="h3 mb-2 text-gray-800">Управление пользователями</h1>
     <p class="mb-4">Здесь вы можете управлять пользователями вашего сайта.</p>
 
-    <a href="{{ route('users.create') }}" class="btn btn-success mb-3">Добавить нового пользователя</a>
+    <a href="{{ route('admin.users.create') }}" class="btn btn-success mb-3">Добавить нового пользователя</a>
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
@@ -34,8 +34,8 @@
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
                                 <td>
-                                    <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-sm">Редактировать</a>
-                                    <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline-block;">
+                                    <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-primary btn-sm">Редактировать</a>
+                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Вы уверены?')">Удалить</button>

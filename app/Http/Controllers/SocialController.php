@@ -28,7 +28,7 @@ class SocialController extends Controller
             'order' => 'nullable|integer',
         ]);
         Social::create($request->only(['icon', 'title', 'link', 'text', 'order']));
-        return redirect()->route('socials.index')->with('success', 'Контакт добавлен');
+        return redirect()->route('admin.socials.index')->with('success', 'Контакт добавлен');
     }
 
     public function edit(Social $social)
@@ -46,12 +46,12 @@ class SocialController extends Controller
             'order' => 'nullable|integer',
         ]);
         $social->update($request->all());
-        return redirect()->route('socials.index')->with('success', 'Контакт обновлён');
+        return redirect()->route('admin.socials.index')->with('success', 'Контакт обновлён');
     }
 
     public function destroy(Social $social)
     {
         $social->delete();
-        return redirect()->route('socials.index')->with('success', 'Контакт удалён');
+        return redirect()->route('admin.socials.index')->with('success', 'Контакт удалён');
     }
 } 

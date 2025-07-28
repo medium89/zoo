@@ -1,8 +1,8 @@
 @extends('admin.index')
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Услуги</h3>
-    <a href="{{ route('services.create') }}" class="btn btn-primary">Добавить</a>
+    <h1>Услуги</h1>
+    <a href="{{ route('admin.services.create') }}" class="btn btn-primary">Добавить</a>
 </div>
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -23,10 +23,10 @@
             <td>{{ $service->id }}</td>
             <td><img src="{{ asset('storage/'.$service->image) }}" alt="" width="80"></td>
             <td>{{ $service->title }}</td>
-            <td>{{ $service->text }}</td>
+            <td>{{ Str::limit($service->text, 50) }}</td>
             <td>
-                <a href="{{ route('services.edit', $service) }}" class="btn btn-sm btn-warning">Редактировать</a>
-                <form action="{{ route('services.destroy', $service) }}" method="POST" style="display:inline-block">
+                <a href="{{ route('admin.services.edit', $service->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                <form action="{{ route('admin.services.destroy', $service->id) }}" method="POST" style="display:inline-block">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить?')">Удалить</button>

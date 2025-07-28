@@ -13,8 +13,9 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('about.update') }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route('admin.about.update') }}" method="POST" enctype="multipart/form-data">
     @csrf
+    @method('POST')
     <div class="mb-3">
         <label for="image" class="form-label">Фото</label><br>
         @if($about && $about->image)

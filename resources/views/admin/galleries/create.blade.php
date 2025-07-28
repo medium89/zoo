@@ -10,7 +10,7 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('galleries.store') }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route('admin.galleries.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="mb-3">
         <label for="images" class="form-label">Фотографии</label>
@@ -18,6 +18,6 @@
         <small class="text-muted">Можно выбрать несколько файлов</small>
     </div>
     <button type="submit" class="btn btn-success">Загрузить</button>
-    <a href="{{ route('galleries.index') }}" class="btn btn-secondary">Назад</a>
+    <a href="{{ route('admin.galleries.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @endsection 

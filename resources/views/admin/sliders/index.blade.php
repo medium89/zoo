@@ -1,8 +1,8 @@
 @extends('admin.index')
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Слайдер</h3>
-    <a href="{{ route('sliders.create') }}" class="btn btn-primary">Добавить слайд</a>
+    <h1>Слайдеры</h1>
+    <a href="{{ route('admin.sliders.create') }}" class="btn btn-primary">Добавить слайд</a>
 </div>
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -21,8 +21,8 @@
             <td>{{ $slider->id }}</td>
             <td><img src="{{ asset('storage/'.$slider->image) }}" alt="" width="120"></td>
             <td>
-                <a href="{{ route('sliders.edit', $slider) }}" class="btn btn-sm btn-warning">Редактировать</a>
-                <form action="{{ route('sliders.destroy', $slider) }}" method="POST" style="display:inline-block">
+                <a href="{{ route('admin.sliders.edit', $slider) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                <form action="{{ route('admin.sliders.destroy', $slider) }}" method="POST" style="display:inline-block">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить слайд?')">Удалить</button>

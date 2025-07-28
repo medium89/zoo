@@ -26,7 +26,7 @@ class SliderController extends Controller
         ]);
         $path = $request->file('image')->store('sliders', 'public');
         Slider::create(['image' => $path]);
-        return redirect()->route('sliders.index')->with('success', 'Слайд добавлен');
+        return redirect()->route('admin.sliders.index')->with('success', 'Слайд добавлен');
     }
 
     public function edit(Slider $slider)
@@ -44,7 +44,7 @@ class SliderController extends Controller
             $slider->image = $path;
         }
         $slider->save();
-        return redirect()->route('sliders.index')->with('success', 'Слайд обновлён');
+        return redirect()->route('admin.sliders.index')->with('success', 'Слайд обновлён');
     }
 
     public function destroy(Slider $slider)
@@ -53,6 +53,6 @@ class SliderController extends Controller
             Storage::disk('public')->delete($slider->image);
         }
         $slider->delete();
-        return redirect()->route('sliders.index')->with('success', 'Слайд удалён');
+        return redirect()->route('admin.sliders.index')->with('success', 'Слайд удалён');
     }
 }

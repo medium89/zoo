@@ -1,8 +1,8 @@
 @extends('admin.index')
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Социальные контакты</h3>
-    <a href="{{ route('socials.create') }}" class="btn btn-primary">Добавить контакт</a>
+    <h1>Социальные контакты</h1>
+    <a href="{{ route('admin.socials.create') }}" class="btn btn-primary">Добавить контакт</a>
 </div>
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -29,8 +29,8 @@
             <td>{{ $social->text }}</td>
             <td>{{ $social->order }}</td>
             <td>
-                <a href="{{ route('socials.edit', $social) }}" class="btn btn-sm btn-warning">Редактировать</a>
-                <form action="{{ route('socials.destroy', $social) }}" method="POST" style="display:inline-block">
+                <a href="{{ route('admin.socials.edit', $social->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                <form action="{{ route('admin.socials.destroy', $social->id) }}" method="POST" style="display:inline-block">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить контакт?')">Удалить</button>

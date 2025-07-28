@@ -10,7 +10,7 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('advantages.update', $advantage) }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route('admin.advantages.update', $advantage->id) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     <div class="mb-3">
@@ -28,6 +28,6 @@
         <textarea class="form-control" id="text" name="text" rows="4" required>{{ $advantage->text }}</textarea>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
-    <a href="{{ route('advantages.index') }}" class="btn btn-secondary">Назад</a>
+    <a href="{{ route('admin.advantages.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @endsection 

@@ -10,13 +10,13 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('sliders.store') }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route('admin.sliders.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="mb-3">
         <label for="image" class="form-label">Изображение</label>
         <input type="file" class="form-control" id="image" name="image" required>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
-    <a href="{{ route('sliders.index') }}" class="btn btn-secondary">Назад</a>
+    <a href="{{ route('admin.sliders.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @endsection 

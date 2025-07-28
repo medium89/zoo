@@ -27,17 +27,44 @@
             padding: 32px;
         }
 
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            height: 92vh;
+        }
+
+
+
         .sidebar-content__item {
             display: flex;
             flex-direction: column;
             border-bottom: 2px solid #495057;
+            border-top: 2px solid #495057;
+            width: 100%;
         }
+
+        .sidebar-content__item:nth-child(1) {
+            justify-content: flex-start;
+            align-self: flex-start;
+        }
+
+        .sidebar-content__item:nth-child(2) {
+            justify-content: center;
+            align-self: center;
+        }
+
+        .sidebar-content__item:nth-child(3) {
+            justify-content: flex-end;
+            align-self: flex-end;
+        }
+
     </style>
 </head>
 <body>
 <div class="d-flex">
     <nav class="sidebar d-flex flex-column p-0">
-        <h4 class="text-center py-3 border-bottom mb-0">Админпанель</h4>
+        <h4 class="text-center py-3 border-bottom mb-0">
+            <a href="/zooadmin/">Админпанель</a></h4>
         <div class="sidebar-content">
             <div class="sidebar-content__item">
                 <a href="/zooadmin/sliders" class="{{ request()->is('zooadmin/sliders*') ? 'active' : '' }}">Слайдер</a>
@@ -46,9 +73,10 @@
                 <a href="/zooadmin/services" class="{{ request()->is('zooadmin/services*') ? 'active' : '' }}">Услуги</a>
                 <a href="/zooadmin/galleries" class="{{ request()->is('zooadmin/galleries*') ? 'active' : '' }}">Фотоальбом</a>
                 <a href="/zooadmin/socials" class="{{ request()->is('zooadmin/socials*') ? 'active' : '' }}">Социальные контакты</a> 
+                <a href="{{ route('admin.feedbacks.index') }}" class="{{ request()->is('zooadmin/feedbacks*') ? 'active' : '' }}">Обратная связь</a>
             </div>
             <div class="sidebar-content__item">
-                <a href="{{ route('users.index') }}" class="{{ request()->is('zooadmin/users*') ? 'active' : '' }}">Пользователи</a>
+                <a href="{{ route('admin.users.index') }}" class="{{ request()->is('zooadmin/users*') ? 'active' : '' }}">Пользователи</a>
             </div>
             <div class="sidebar-content__item">
                 <a href="{{ route('logout') }}"

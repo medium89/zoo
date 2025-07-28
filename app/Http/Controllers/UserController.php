@@ -42,7 +42,12 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return redirect()->route('users.index')->with('success', 'Пользователь успешно добавлен!');
+        return redirect()->route('admin.users.index')->with('success', 'Пользователь успешно добавлен!');
+    }
+
+    public function show(User $user)
+    {
+        //
     }
 
     /**
@@ -73,7 +78,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect()->route('users.index')->with('success', 'Пользователь успешно обновлен!');
+        return redirect()->route('admin.users.index')->with('success', 'Пользователь успешно обновлен!');
     }
 
     /**
@@ -82,6 +87,6 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('users.index')->with('success', 'Пользователь успешно удален!');
+        return redirect()->route('admin.users.index')->with('success', 'Пользователь успешно удален!');
     }
 }

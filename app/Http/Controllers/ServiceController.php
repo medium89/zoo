@@ -32,7 +32,7 @@ class ServiceController extends Controller
             'title' => $request->title,
             'text' => $request->text,
         ]);
-        return redirect()->route('services.index')->with('success', 'Услуга добавлена');
+        return redirect()->route('admin.services.index')->with('success', 'Услуга добавлена');
     }
 
     public function edit(Service $service)
@@ -54,7 +54,7 @@ class ServiceController extends Controller
         $service->title = $request->title;
         $service->text = $request->text;
         $service->save();
-        return redirect()->route('services.index')->with('success', 'Услуга обновлена');
+        return redirect()->route('admin.services.index')->with('success', 'Услуга обновлена');
     }
 
     public function destroy(Service $service)
@@ -63,6 +63,6 @@ class ServiceController extends Controller
             Storage::disk('public')->delete($service->image);
         }
         $service->delete();
-        return redirect()->route('services.index')->with('success', 'Услуга удалена');
+        return redirect()->route('admin.services.index')->with('success', 'Услуга удалена');
     }
 }

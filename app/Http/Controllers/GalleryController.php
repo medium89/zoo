@@ -30,7 +30,7 @@ class GalleryController extends Controller
                 Gallery::create(['image' => $path]);
             }
         }
-        return redirect()->route('galleries.index')->with('success', 'Фото добавлены');
+        return redirect()->route('admin.galleries.index')->with('success', 'Фото добавлены');
     }
 
     public function destroy(Gallery $gallery)
@@ -39,6 +39,6 @@ class GalleryController extends Controller
             Storage::disk('public')->delete($gallery->image);
         }
         $gallery->delete();
-        return redirect()->route('galleries.index')->with('success', 'Фото удалено');
+        return redirect()->route('admin.galleries.index')->with('success', 'Фото удалено');
     }
 }

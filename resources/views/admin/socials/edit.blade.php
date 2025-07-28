@@ -10,7 +10,7 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('socials.update', $social) }}" method="POST">
+<form action="{{ route('admin.socials.update', $social->id) }}" method="POST">
     @csrf
     @method('PUT')
     <div class="mb-3">
@@ -35,6 +35,6 @@
         <input type="number" class="form-control" id="order" name="order" value="{{ $social->order }}">
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
-    <a href="{{ route('socials.index') }}" class="btn btn-secondary">Назад</a>
+    <a href="{{ route('admin.socials.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @endsection 

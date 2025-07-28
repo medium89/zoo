@@ -1,6 +1,6 @@
 <section id="about">
     <div class="about-container container">
-        @if($about->count() < 2)    
+        @if($about)    
             <div class="about-header">
                 <h2>Обо мне</h2>
                 <div class="foot"></div>

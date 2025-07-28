@@ -30,15 +30,16 @@
                         <h3>Оставить заявку</h3>
                     </div>
                     <div class="contacts-content__item-description">
-                        <form class="contact-form" action="">
+                        <form class="contact-form" action="{{ route('feedback.store') }}" method="POST">
+                            @csrf
                             <div class="form-group">
-                                <input type="text" placeholder="Ваше имя" required>
+                                <input type="text" name="name" placeholder="Ваше имя" required>
                             </div>
                             <div class="form-group">
-                                <input type="tel" placeholder="Ваш телефон" required>
+                                <input type="tel" name="phone" placeholder="Ваш телефон (необязательно)">
                             </div>
                             <div class="form-group">
-                                <textarea placeholder="Опишите вашу задачу" rows="3"></textarea>
+                                <textarea name="message" placeholder="Опишите вашу задачу" rows="3" required></textarea>
                             </div>
                             <div class="form-group">
                                 <button type="submit" class="submit-btn">
@@ -57,5 +58,4 @@
         </div>
         @endif
     </div>
-</section>
 </section>

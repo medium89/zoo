@@ -10,7 +10,7 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('services.update', $service) }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route('admin.services.update', $service->id) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     <div class="mb-3">
@@ -28,6 +28,6 @@
         <textarea class="form-control" id="text" name="text" rows="4" required>{{ $service->text }}</textarea>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
-    <a href="{{ route('services.index') }}" class="btn btn-secondary">Назад</a>
+    <a href="{{ route('admin.services.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @endsection 
