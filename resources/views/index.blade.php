@@ -1,0 +1,11 @@
+@extends('layouts.app')
+@section('content')
+    @include('sections.header')
+    @include('sections.slider')
+    @include('sections.about')
+    @include('sections.advantages')
+    @include('sections.services')
+    @include('sections.gallery')
+    @include('sections.contacts')
+    @include('sections.footer')
+@endsection 
