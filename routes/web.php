@@ -17,8 +17,8 @@ use App\Http\Controllers\FeedbackController;
 |
 */
 
-// Standard authentication routes
-Auth::routes();
+// Standard authentication routes without registration
+Auth::routes(['register' => false]);
 
 // Public Routes
 Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
