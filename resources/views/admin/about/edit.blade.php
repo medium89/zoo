@@ -1,5 +1,4 @@
-@extends('admin.index')
-@section('content')
+@extends('admin.index')@section('content')
 <h1>Редактировать информацию о нас</h1>
 @if (session('success'))
     <div class="alert alert-success">
@@ -17,7 +16,6 @@
 @endif
 <form action="{{ route('admin.about.update') }}" method="POST" enctype="multipart/form-data">
     @csrf
-    @method('POST')
     <div class="form-group mb-3">
         <label for="image" class="form-label">Фото</label><br>
         @if($about && $about->image)
