@@ -275,42 +275,60 @@ document.addEventListener('DOMContentLoaded', function() {
     const contactForm = document.querySelector('.contact-form');
     if (!contactForm) return;
 
-    contactForm.addEventListener('submit', function(e) {
+    contactForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
-        // Получаем данные формы
+
         const formData = new FormData(this);
-        const name = this.querySelector('input[type="text"]').value;
-        const phone = this.querySelector('input[type="tel"]').value;
-        const message = this.querySelector('textarea').value;
-        
-        // Простая валидация
-        if (!name || !phone) {
-            showNotification('Пожалуйста, заполните все обязательные поля', 'error');
+        const name = formData.get('name').trim();
+        const phone = formData.get('phone').trim();
+        const message = formData.get('message').trim();
+
+        if (!name || !message) {
+            showNotification('Пожалуйста, заполните обязательные поля', 'error');
             return;
         }
-        
-        // Валидация телефона (простая)
-        const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
-        if (!phoneRegex.test(phone)) {
-            showNotification('Пожалуйста, введите корректный номер телефона', 'error');
-            return;
+
+        if (phone) {
+            const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
+            if (!phoneRegex.test(phone)) {
+                showNotification('Пожалуйста, введите корректный номер телефона', 'error');
+                return;
+            }
         }
-        
-        // Имитация отправки формы
+
         const submitBtn = this.querySelector('.submit-btn');
         const originalText = submitBtn.innerHTML;
-        
+
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
         submitBtn.disabled = true;
-        
-        // Имитация задержки отправки
-        setTimeout(() => {
-            showNotification('Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.', 'success');
-            this.reset();
+
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': formData.get('_token'),
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                showNotification('Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.', 'success');
+                this.reset();
+            } else if (response.status === 422) {
+                const data = await response.json();
+                const errors = Object.values(data.errors).flat().join(' ');
+                showNotification(errors, 'error');
+            } else {
+                showNotification('Произошла ошибка отправки. Попробуйте позже.', 'error');
+            }
+        } catch (error) {
+            showNotification('Произошла ошибка отправки. Попробуйте позже.', 'error');
+        } finally {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
-        }, 2000);
+        }
     });
     
     // Функция для показа уведомлений
