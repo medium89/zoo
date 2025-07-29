@@ -56,8 +56,4 @@ class SliderController extends Controller
         return redirect()->route('admin.sliders.index')->with('success', 'Слайд удалён');
     }
 
-    public function ass()
-    {
-        // Ваш код здесь
-    }
 }
