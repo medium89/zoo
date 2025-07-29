@@ -22,10 +22,6 @@ class FeedbackController extends Controller
             'status' => 'new',
         ]);
 
-        if ($request->ajax()) {
-            return response()->json(['message' => 'Ваше сообщение успешно отправлено!']);
-        }
-
         return back()->with('success', 'Ваше сообщение успешно отправлено!');
     }
 
