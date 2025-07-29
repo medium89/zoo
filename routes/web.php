@@ -26,6 +26,7 @@ Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.s
 // Admin Routes
 Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('index');
+    Route::post('settings/site', [App\Http\Controllers\AdminController::class, 'saveSiteStatus'])->name('settings.site');
     Route::resource('sliders', App\Http\Controllers\SliderController::class);
     Route::get('about', [App\Http\Controllers\AboutController::class, 'edit'])->name('about.edit');
     Route::post('about', [App\Http\Controllers\AboutController::class, 'update'])->name('about.update');
