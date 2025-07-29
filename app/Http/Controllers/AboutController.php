@@ -33,6 +33,6 @@ class AboutController extends Controller
         }
         $about->text = $request->text;
         $about->save();
-        return redirect()->route('about.edit')->with('success', 'Информация обновлена');
+        return redirect()->route('admin.about.edit')->with('success', 'Информация обновлена');
     }
 }
