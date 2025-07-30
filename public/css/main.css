@@ -904,6 +904,7 @@ footer a, footer p {
     /* ÐœÐ¾Ð±Ð¸Ð»ÑŒÐ½Ð¾Ðµ Ð¼ÐµÐ½ÑŽ */
     .nav-toggle {
         display: flex;
+        margin: 0 auto;
     }
     
     .nav-menu {
