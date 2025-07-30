@@ -38,13 +38,14 @@
         language: 'ru',
         height: 300,
         entity_encoding: 'raw',
+        emoticons_database: 'emoji',
         emoticons_append: {
             custom_emoji: [
-                { title: 'Улыбка', char: '&#128512;' },  // 😀
-                { title: 'Подмигивание', char: '&#128521;' },  // 😉
-                { title: 'Сердце', char: '&#10084;&#65039;' },  // ❤️
-                { title: 'Огонь', char: '&#128293;' },  // 🔥
-                { title: 'Ракета', char: '&#128640;' }  // 🚀
+                { title: 'Улыбка', char: '&#128512;' },
+                { title: 'Подмигивание', char: '&#128521;' },
+                { title: 'Сердце', char: '&#10084;&#65039;' },
+                { title: 'Огонь', char: '&#128293;' },
+                { title: 'Ракета', char: '&#128640;' }
             ]
         }
     });
