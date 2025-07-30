@@ -187,9 +187,14 @@ nav {
     width: 100%;
 }
 
+.nav-toggle {
+    margin-left: auto;
+}
+
 .nav-menu {
     display: flex;
     align-items: center;
+    margin-left: auto;
 }
 
 .nav-menu a span{
