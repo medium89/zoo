@@ -275,6 +275,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const contactForm = document.querySelector('.contact-form');
     if (!contactForm) return;
 
+    const phoneInput = contactForm.querySelector('input[name="phone"]');
+    if (phoneInput) {
+        const maskPhone = () => {
+            let digits = phoneInput.value.replace(/\D/g, '').substring(0, 10);
+            let result = '+7(';
+            if (digits.length > 0) result += digits.substring(0, 3);
+            if (digits.length >= 3) result += ')' + digits.substring(3, 6);
+            if (digits.length >= 6) result += '-' + digits.substring(6, 8);
+            if (digits.length >= 8) result += '-' + digits.substring(8, 10);
+            phoneInput.value = result;
+        };
+        phoneInput.addEventListener('input', maskPhone);
+        phoneInput.addEventListener('focus', maskPhone);
+    }
+
     contactForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -283,17 +298,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const phone = formData.get('phone').trim();
         const message = formData.get('message').trim();
 
-        if (!name || !message) {
+        if (!name || !phone || !message) {
             showNotification('Пожалуйста, заполните обязательные поля', 'error');
             return;
         }
 
-        if (phone) {
-            const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
-            if (!phoneRegex.test(phone)) {
-                showNotification('Пожалуйста, введите корректный номер телефона', 'error');
-                return;
-            }
+        const phoneRegex = /^\+7\(\d{3}\)\d{3}-\d{2}-\d{2}$/;
+        if (!phoneRegex.test(phone)) {
+            showNotification('Пожалуйста, введите корректный номер телефона', 'error');
+            return;
         }
 
         const submitBtn = this.querySelector('.submit-btn');

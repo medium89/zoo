@@ -37,10 +37,10 @@
                                 <input type="text" name="name" placeholder="Ваше имя" required>
                             </div>
                             <div class="form-group">
-                                <input type="tel" name="phone" placeholder="Ваш телефон (необязательно)">
+                                <input type="tel" name="phone" placeholder="+7(999)999-99-99" required>
                             </div>
                             <div class="form-group">
-                                <textarea name="message" placeholder="Опишите вашу задачу" rows="3" required></textarea>
+                                <textarea name="message" placeholder="Опишите необходимую услугу, животное, даты и адрес" rows="3" required></textarea>
                             </div>
                             <div class="form-group">
                                 <button type="submit" class="submit-btn">
