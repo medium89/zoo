@@ -110,24 +110,15 @@
 <!-- Подключение TinyMCE WYSIWYG редактора -->
 <script src="https://cdn.tiny.cloud/1/ilf8e4vsikngopxe08xuqeely1o5rigddts9einhhrfen31e/tinymce/6/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 <script>
-    tinymce.init({
-        selector: 'textarea.wysiwyg',
-        menubar: false,
-        plugins: 'link lists code emoticons',
-        toolbar: 'undo redo | bold italic underline | bullist numlist | link | emoticons | code',
-        language: 'ru',
-        height: 300,
-        entity_encoding: 'raw',
-        emoticons_database: 'emoji',
-        emoticons_append: {
-            custom_emoji: [
-                { title: 'Улыбка', char: '&#128512;' },
-                { title: 'Подмигивание', char: '&#128521;' },
-                { title: 'Сердце', char: '&#10084;&#65039;' },
-                { title: 'Огонь', char: '&#128293;' },
-                { title: 'Ракета', char: '&#128640;' }
-            ]
-        }
-    });
+  tinymce.init({
+    selector: 'textarea.wysiwyg',
+    menubar: false,
+    plugins: 'link lists code emoticons',
+    toolbar: 'undo redo | bold italic underline | bullist numlist | link | emoticons | code',
+    language: 'ru',
+    height: 300,
+    entity_encoding: 'raw',
+    emoticons_database: 'emoji'  // 🔧 обязателен!
+  });
 </script>
 @endsection
