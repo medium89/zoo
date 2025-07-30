@@ -710,7 +710,7 @@ nav {
 }
 
 .submit-btn:hover {
-    background: var(--color-primary);
+    background: var(--color-secondary-hover);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(140, 77, 199, 0.3);
 }
