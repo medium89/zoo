@@ -204,11 +204,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Функция для открытия/закрытия меню
     function toggleMenu() {
+        navMenu.classList.add('transition');
         navToggle.classList.toggle('active');
         navMenu.classList.toggle('active');
         overlay.classList.toggle('active');
         body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
     }
+
+    navMenu.addEventListener('transitionend', function() {
+        navMenu.classList.remove('transition');
+    });
     
     // Обработчик клика по кнопке-гамбургеру
     navToggle.addEventListener('click', function(e) {
