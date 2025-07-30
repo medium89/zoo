@@ -25,7 +25,7 @@
     </div>
     <div class="mb-3">
         <label for="text" class="form-label">Текст</label>
-        <textarea class="form-control wysiwyg" id="text" name="text" rows="4" required>{{ $service->text }}</textarea>
+        <textarea class="form-control wysiwyg" id="text" name="text" rows="4">{{ $service->text }}</textarea>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
     <a href="{{ route('admin.services.index') }}" class="btn btn-secondary">Назад</a>

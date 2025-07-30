@@ -53,7 +53,7 @@
     </div>
     <div class="mb-3">
         <label for="text" class="form-label">Текст</label>
-        <textarea class="form-control wysiwyg" id="text" name="text" rows="4" required>{{ $social->text }}</textarea>
+        <textarea class="form-control wysiwyg" id="text" name="text" rows="4">{{ $social->text }}</textarea>
     </div>
     <div class="mb-3">
         <label for="order" class="form-label">Порядок</label>
