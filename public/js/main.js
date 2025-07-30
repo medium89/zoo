@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const navLinks = navMenu.querySelectorAll('a[href^="#"]');
     navLinks.forEach(link => {
         link.addEventListener('click', function() {
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 992) {
                 toggleMenu();
             }
         });
