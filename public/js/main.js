@@ -347,15 +347,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // Добавляем стили
         notification.style.cssText = `
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 50%;
+            left: 50%;
             background: ${type === 'success' ? '#4CAF50' : '#f44336'};
             color: white;
             padding: 15px 20px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 1000;
-            transform: translateX(100%);
+            transform: translate(-50%, -50%) scale(0);
             transition: transform 0.3s ease;
             max-width: 400px;
         `;
@@ -365,13 +365,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Показываем уведомление
         setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
+            notification.style.transform = 'translate(-50%, -50%) scale(1)';
         }, 100);
         
         // Обработчик закрытия
         const closeBtn = notification.querySelector('.notification-close');
         closeBtn.addEventListener('click', () => {
-            notification.style.transform = 'translateX(100%)';
+            notification.style.transform = 'translate(-50%, -50%) scale(0)';
             setTimeout(() => {
                 document.body.removeChild(notification);
             }, 300);
@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Автоматическое закрытие через 5 секунд
         setTimeout(() => {
             if (document.body.contains(notification)) {
-                notification.style.transform = 'translateX(100%)';
+                notification.style.transform = 'translate(-50%, -50%) scale(0)';
                 setTimeout(() => {
                     if (document.body.contains(notification)) {
                         document.body.removeChild(notification);
