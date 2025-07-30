@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('content')
     @include('sections.header')
+    @include('sections.social-bar')
     @include('sections.slider')
     @include('sections.about')
     @include('sections.advantages')
