@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
+    @php($settings = \App\Models\SiteSetting::first())
+    <meta charset="{{ $settings->charset ?? 'UTF-8' }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ $settings->description ?? '' }}">
+    <meta name="robots" content="{{ $settings->robots ?? '' }}">
+    <meta property="og:title" content="{{ $settings->og_title ?? 'Заголовок страницы' }}">
+    <meta property="og:description" content="{{ $settings->og_description ?? 'Описание' }}">
+    <meta property="og:image" content="{{ $settings->og_image ?? 'https://example.com/image.jpg' }}">
+    <meta property="og:url" content="{{ $settings->og_url ?? 'https://example.com/page' }}">
     <title>Зооняня</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

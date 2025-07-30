@@ -8,7 +8,7 @@ use App\Models\Advantage;
 use App\Models\Service;
 use App\Models\Gallery;
 use App\Models\Social;
-use App\Models\Setting;
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -16,7 +16,8 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $closed = Setting::where('key', 'site_closed')->value('value');
+        $setting = SiteSetting::first();
+        $closed = $setting?->site_closed;
         if ($closed && !Auth::check()) {
             return view('closed');
         }
