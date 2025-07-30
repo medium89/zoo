@@ -459,3 +459,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 // ===== /Social bar toggle =====
+
+// ===== Активные ссылки навигации при прокрутке =====
+document.addEventListener('DOMContentLoaded', function() {
+    const header = document.querySelector('header');
+    const headerHeight = header ? header.offsetHeight : 0;
+    const navLinks = document.querySelectorAll('.nav-menu a[href^="#"]');
+    const sections = Array.from(navLinks)
+        .map(link => document.querySelector(link.getAttribute('href')))
+        .filter(Boolean);
+
+    if (!sections.length) return;
+
+    function activateLink(id) {
+        navLinks.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+    }
+
+    function onScroll() {
+        const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+        let currentId = sections[0].id;
+
+        for (const section of sections) {
+            if (scrollPos + headerHeight >= section.offsetTop) {
+                currentId = section.id;
+            }
+        }
+        activateLink(currentId);
+    }
+
+    window.addEventListener('scroll', onScroll);
+    onScroll();
+});
+// ===== /Активные ссылки навигации при прокрутке =====
