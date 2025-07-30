@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Feedback;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class FeedbackController extends Controller
 {
@@ -21,6 +22,21 @@ class FeedbackController extends Controller
             'message' => $request->message,
             'status' => 'new',
         ]);
+
+        $text = "Новая заявка с сайта:\n";
+        $text .= "Имя: {$request->name}\n";
+        $text .= "Телефон: {$request->phone}\n";
+        $text .= "Сообщение: {$request->message}";
+
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $chatId = env('TELEGRAM_CHAT_ID');
+
+        if ($token && $chatId) {
+            Http::get("https://api.telegram.org/bot{$token}/sendMessage", [
+                'chat_id' => $chatId,
+                'text'    => $text,
+            ]);
+        }
 
         return back()->with('success', 'Ваше сообщение успешно отправлено!');
     }
