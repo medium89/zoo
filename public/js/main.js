@@ -445,9 +445,17 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     const bar = document.getElementById('socialBar');
     const toggle = document.getElementById('socialBarToggle');
-    if (!bar || !toggle) return;
+    const openBtn = document.getElementById('socialBarOpen');
+    if (!bar || !toggle || !openBtn) return;
+
     toggle.addEventListener('click', function() {
-        bar.classList.toggle('collapsed');
+        bar.classList.add('collapsed');
+        openBtn.classList.add('visible');
+    });
+
+    openBtn.addEventListener('click', function() {
+        bar.classList.remove('collapsed');
+        openBtn.classList.remove('visible');
     });
 });
 // ===== /Social bar toggle =====
