@@ -203,6 +203,10 @@ nav {
     border: 2px solid var(--color-secondary);
 }
 
+.nav-menu a.active span{
+    border: 2px solid var(--color-secondary);
+}
+
 /* ÐœÐ¾Ð±Ð¸Ð»ÑŒÐ½Ð°Ñ ÐºÐ½Ð¾Ð¿ÐºÐ°-Ð³Ð°Ð¼Ð±ÑƒÑ€Ð³ÐµÑ€ */
 .nav-toggle {
     display: none;
@@ -859,6 +863,10 @@ footer a, footer p {
     }
     
     .nav-menu a:hover {
+        color: var(--color-secondary);
+    }
+
+    .nav-menu a.active {
         color: var(--color-secondary);
     }
     
