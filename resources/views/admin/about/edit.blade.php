@@ -26,7 +26,7 @@
     </div>
     <div class="form-group mb-3">
         <label for="text" class="form-label">Текст</label>
-        <textarea class="form-control wysiwyg" id="text" name="text" rows="6" required>{{ $about ? $about->text : '' }}</textarea>
+        <textarea class="form-control wysiwyg" id="text" name="text" rows="6">{{ $about ? $about->text : '' }}</textarea>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
 </form>
