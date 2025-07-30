@@ -10,11 +10,21 @@
     <style>
         body { min-height: 100vh; }
         .sidebar {
-            min-width: 220px;
-            max-width: 220px;
+            width: 220px;
             background: #343a40;
             color: #fff;
             min-height: 100vh;
+            transition: width 0.3s;
+            overflow-x: hidden;
+        }
+        .sidebar.collapsed {
+            width: 0;
+        }
+        #sidebarToggle {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1050;
         }
         .sidebar a {
             color: #fff;
@@ -63,8 +73,9 @@
     </style>
 </head>
 <body>
+<button id="sidebarToggle" class="btn btn-dark"><i class="fa fa-bars"></i></button>
 <div class="d-flex">
-    <nav class="sidebar d-flex flex-column p-0">
+    <nav id="sidebar" class="sidebar d-flex flex-column p-0">
         <h4 class="text-center py-3 border-bottom mb-0">
             <a href="/zooadmin/">Админпанель</a></h4>
         <div class="sidebar-content">
@@ -95,6 +106,11 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('sidebarToggle').addEventListener('click', function () {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+    });
+</script>
 @yield('scripts')
 </body>
-</html> 
+</html>
