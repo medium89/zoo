@@ -42,7 +42,7 @@
     </div>
     <div class="mb-3">
         <label for="text" class="form-label">Текст</label>
-        <input type="text" class="form-control" id="text" name="text" required>
+        <textarea class="form-control wysiwyg" id="text" name="text" rows="4" required></textarea>
     </div>
     <div class="mb-3">
         <label for="order" class="form-label">Порядок</label>
@@ -102,9 +102,21 @@
             iconPickerModal.style.display = 'none';
         });
 
-        iconSearchInput.addEventListener('keyup', (e) => {
-            renderIcons(e.target.value);
-        });
+    iconSearchInput.addEventListener('keyup', (e) => {
+        renderIcons(e.target.value);
+    });
+});
+</script>
+<!-- Подключение TinyMCE WYSIWYG редактора -->
+<script src="https://cdn.tiny.cloud/1/ilf8e4vsikngopxe08xuqeely1o5rigddts9einhhrfen31e/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+<script>
+    tinymce.init({
+        selector: 'textarea.wysiwyg',
+        menubar: false,
+        plugins: 'link lists code',
+        toolbar: 'undo redo | bold italic underline | bullist numlist | link | code',
+        language: 'ru',
+        height: 300
     });
 </script>
 @endsection
