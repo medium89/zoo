@@ -1299,6 +1299,7 @@ footer a, footer p {
     background: var(--color-secondary);
     padding: 10px;
     border-radius: 10px 0 0 10px;
+    border: 2px solid #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1318,6 +1319,28 @@ footer a, footer p {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+}
+
+.social-bar-open {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-secondary);
+    border: 2px solid #fff;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.social-bar-open.visible {
+    display: flex;
 }
 
 .social-bar-icons {
