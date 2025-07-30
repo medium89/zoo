@@ -11,7 +11,7 @@ class FeedbackController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:255',
+            'phone' => 'required|string|max:255',
             'message' => 'required|string',
         ]);
 
@@ -40,7 +40,7 @@ class FeedbackController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:255',
+            'phone' => 'required|string|max:255',
             'message' => 'required|string',
             'status' => 'required|string|in:new,in_progress,completed,cancelled',
         ]);

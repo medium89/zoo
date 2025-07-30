@@ -12,7 +12,7 @@
         </div>
         <div class="form-group">
             <label for="phone">Телефон:</label>
-            <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone', $feedback->phone) }}">
+            <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone', $feedback->phone) }}" required>
         </div>
         <div class="form-group">
             <label for="message">Сообщение:</label>
