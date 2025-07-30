@@ -5,6 +5,14 @@
                 @foreach($sliders as $slider)
                     <div class="slider-content__item">
                         <img src="{{ asset('storage/' . $slider->image) }}" alt="Слайд">
+                        @if($slider->text)
+                            <div class="slider-overlay pos-{{ $slider->position }}">
+                                @if($slider->text_bg)
+                                    <img src="{{ asset('storage/' . $slider->text_bg) }}" class="overlay-bg" alt="">
+                                @endif
+                                <div class="overlay-text">{!! $slider->text !!}</div>
+                            </div>
+                        @endif
                     </div>
                 @endforeach
             </div>

@@ -288,6 +288,46 @@ nav {
     display: block;
 }
 
+.slider-overlay {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    z-index: 3;
+}
+
+.slider-overlay .overlay-bg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.slider-overlay .overlay-text {
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    text-align: center;
+    color: #fff;
+}
+
+.slider-overlay.pos-left {
+    left: 20px;
+    justify-content: flex-start;
+}
+
+.slider-overlay.pos-center {
+    left: 50%;
+    transform: translate(-50%, -50%);
+    justify-content: center;
+}
+
+.slider-overlay.pos-right {
+    right: 20px;
+    justify-content: flex-end;
+}
+
 .slider-arrow {
     position: absolute;
     top: 50%;

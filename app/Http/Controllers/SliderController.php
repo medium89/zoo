@@ -23,9 +23,22 @@ class SliderController extends Controller
     {
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'text' => 'nullable|string',
+            'text_bg' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'position' => 'required|in:left,center,right',
         ]);
-        $path = $request->file('image')->store('sliders', 'public');
-        Slider::create(['image' => $path]);
+
+        $data = [
+            'image' => $request->file('image')->store('sliders', 'public'),
+            'text' => $request->input('text'),
+            'position' => $request->input('position'),
+        ];
+
+        if ($request->hasFile('text_bg')) {
+            $data['text_bg'] = $request->file('text_bg')->store('sliders', 'public');
+        }
+
+        Slider::create($data);
         return redirect()->route('admin.sliders.index')->with('success', 'Слайд добавлен');
     }
 
@@ -38,6 +51,9 @@ class SliderController extends Controller
     {
         $request->validate([
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'text' => 'nullable|string',
+            'text_bg' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'position' => 'required|in:left,center,right',
         ]);
         if ($request->hasFile('image')) {
             if ($slider->image && Storage::disk('public')->exists($slider->image)) {
@@ -46,6 +62,16 @@ class SliderController extends Controller
             $path = $request->file('image')->store('sliders', 'public');
             $slider->image = $path;
         }
+
+        if ($request->hasFile('text_bg')) {
+            if ($slider->text_bg && Storage::disk('public')->exists($slider->text_bg)) {
+                Storage::disk('public')->delete($slider->text_bg);
+            }
+            $slider->text_bg = $request->file('text_bg')->store('sliders', 'public');
+        }
+
+        $slider->text = $request->input('text');
+        $slider->position = $request->input('position');
         $slider->save();
         return redirect()->route('admin.sliders.index')->with('success', 'Слайд обновлён');
     }
