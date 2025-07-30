@@ -417,3 +417,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 // ===== /Анимация появления блоков при прокрутке =====
+
+// ===== Social bar toggle =====
+document.addEventListener('DOMContentLoaded', function() {
+    const bar = document.getElementById('socialBar');
+    const toggle = document.getElementById('socialBarToggle');
+    if (!bar || !toggle) return;
+    toggle.addEventListener('click', function() {
+        bar.classList.toggle('collapsed');
+    });
+});
+// ===== /Social bar toggle =====

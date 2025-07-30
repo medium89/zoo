@@ -1329,3 +1329,60 @@ footer a, footer p {
 
 /* ===== /АНИМАЦИИ ПОЯВЛЕНИЯ БЛОКОВ ===== */
 
+
+/* ===== FIXED SOCIAL BAR ===== */
+.social-bar {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-secondary);
+    padding: 10px;
+    border-radius: 10px 0 0 10px;
+    border: 2px solid #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    transition: width 0.3s;
+}
+
+.social-bar-toggle {
+    background: var(--color-secondary);
+    border: none;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.social-bar-icons {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.social-bar-icons li a {
+    color: #fff;
+    font-size: 1.4rem;
+}
+
+.social-bar.collapsed {
+    width: 40px;
+    padding: 10px 5px;
+}
+
+.social-bar.collapsed .social-bar-icons {
+    display: none;
+}
+
+.social-bar.collapsed .social-bar-toggle i {
+    transform: rotate(180deg);
+}
+
+/* ===== /FIXED SOCIAL BAR ===== */
