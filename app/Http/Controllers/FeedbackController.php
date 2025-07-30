@@ -29,13 +29,18 @@ class FeedbackController extends Controller
         $text .= "Сообщение: {$request->message}";
 
         $token = env('TELEGRAM_BOT_TOKEN');
-        $chatId = env('TELEGRAM_CHAT_ID');
+        $chatIds = [
+            env('TELEGRAM_CHAT_ID'),
+            env('TELEGRAM_CHAT_ID_2')
+        ];
 
-        if ($token && $chatId) {
-            Http::get("https://api.telegram.org/bot{$token}/sendMessage", [
-                'chat_id' => $chatId,
-                'text'    => $text,
-            ]);
+        foreach ($chatIds as $id) {
+            if ($token && $id) {
+                Http::get("https://api.telegram.org/bot{$token}/sendMessage", [
+                    'chat_id' => $id,
+                    'text'    => $text,
+                ]);
+            }
         }
 
         return back()->with('success', 'Ваше сообщение успешно отправлено!');
