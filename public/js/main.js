@@ -458,6 +458,28 @@ document.addEventListener('DOMContentLoaded', function() {
         openBtn.classList.remove('visible');
     });
 });
+
+// ===== Show social bar after slider =====
+document.addEventListener('DOMContentLoaded', function() {
+    const slider = document.getElementById('slider');
+    const bar = document.getElementById('socialBar');
+    const openBtn = document.getElementById('socialBarOpen');
+    if (!slider || !bar || !openBtn) return;
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                bar.classList.add('hidden');
+                openBtn.classList.add('hidden');
+            } else {
+                bar.classList.remove('hidden');
+                openBtn.classList.remove('hidden');
+            }
+        });
+    }, { threshold: 0 });
+
+    observer.observe(slider);
+});
 // ===== /Social bar toggle =====
 
 // ===== Активные ссылки навигации при прокрутке =====

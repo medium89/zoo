@@ -1387,4 +1387,10 @@ footer a, footer p {
     transform: rotate(180deg);
 }
 
+/* Hide bar when slider is visible */
+.social-bar.hidden,
+.social-bar-open.hidden {
+    display: none;
+}
+
 /* ===== /FIXED SOCIAL BAR ===== */
