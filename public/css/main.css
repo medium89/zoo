@@ -1323,7 +1323,7 @@ footer a, footer p {
 
 .social-bar-open {
     position: fixed;
-    right: 0;
+    right: -6px;
     top: 50%;
     transform: translateY(-50%);
     background: var(--color-secondary);
@@ -1331,7 +1331,7 @@ footer a, footer p {
     color: #fff;
     width: 30px;
     height: 30px;
-    border-radius: 50%;
+    border-radius: 30%;
     display: none;
     align-items: center;
     justify-content: center;
