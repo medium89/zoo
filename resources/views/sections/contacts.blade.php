@@ -17,7 +17,7 @@
                         </div>
                         <div class="contacts-content__item-description">
                             <p><a href="{{ $social->link }}" target="_blank">{{ $social->link }}</a></p>
-                            <p>{{ $social->text }}</p>
+                            {{ $social->text }}
                         </div>
                     </div>
                 </div>
