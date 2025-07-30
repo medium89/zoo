@@ -1,4 +1,4 @@
-/* ===== ПЕРЕМЕННЫЕ ===== */
+/* ===== ÐŸÐ•Ð Ð•ÐœÐ•ÐÐÐ«Ð• ===== */
 :root {
     --color-primary: #383838;
     --color-secondary: #8c4dc7;
@@ -65,7 +65,7 @@ table {
     border-spacing: 0;
 }
 
-/* ===== ОСНОВНЫЕ СТИЛИ ===== */
+/* ===== ÐžÐ¡ÐÐžÐ’ÐÐ«Ð• Ð¡Ð¢Ð˜Ð›Ð˜ ===== */
 h2 {
     font-size: 2rem;
 }
@@ -89,7 +89,7 @@ section:not(#slider, #contacts) {
     color: var(--color-quaternary) !important;
 }
 
-/* ===== КОНТЕЙНЕР ===== */
+/* ===== ÐšÐžÐÐ¢Ð•Ð™ÐÐ•Ð  ===== */
 .container {
     width: 100%;
     max-width: 1200px;
@@ -203,7 +203,7 @@ nav {
     border: 2px solid var(--color-secondary);
 }
 
-/* Мобильная кнопка-гамбургер */
+/* ÐœÐ¾Ð±Ð¸Ð»ÑŒÐ½Ð°Ñ ÐºÐ½Ð¾Ð¿ÐºÐ°-Ð³Ð°Ð¼Ð±ÑƒÑ€Ð³ÐµÑ€ */
 .nav-toggle {
     display: none;
     flex-direction: column;
@@ -221,7 +221,7 @@ nav {
     border-radius: 2px;
 }
 
-/* Анимация кнопки-гамбургера */
+/* ÐÐ½Ð¸Ð¼Ð°Ñ†Ð¸Ñ ÐºÐ½Ð¾Ð¿ÐºÐ¸-Ð³Ð°Ð¼Ð±ÑƒÑ€Ð³ÐµÑ€Ð° */
 .nav-toggle.active span:nth-child(1) {
     transform: rotate(-45deg) translate(-5px, 6px);
 }
@@ -234,7 +234,7 @@ nav {
     transform: rotate(45deg) translate(-5px, -6px);
 }
 
-/* ===== СЛАЙДЕР ===== */
+/* ===== Ð¡Ð›ÐÐ™Ð”Ð•Ð  ===== */
 .slider-content {
     position: relative;
     width: 100%;
@@ -335,7 +335,7 @@ nav {
     background: var(--color-secondary);
 }
 
-/* ===== СЕКЦИЯ "ОБО МНЕ" ===== */
+/* ===== Ð¡Ð•ÐšÐ¦Ð˜Ð¯ "ÐžÐ‘Ðž ÐœÐÐ•" ===== */
 .about-content {
     display: grid;
     grid-template-columns: 1fr 2fr;
@@ -375,7 +375,7 @@ nav {
     background: var(--color-option-hover);
 }
 
-/* ===== СЕКЦИЯ "ПРЕИМУЩЕСТВА" ===== */
+/* ===== Ð¡Ð•ÐšÐ¦Ð˜Ð¯ "ÐŸÐ Ð•Ð˜ÐœÐ£Ð©Ð•Ð¡Ð¢Ð’Ð" ===== */
 #advantages {
     background: var(--color-secondary) url(../assets/img/bg.png) repeat center center;
     background-size: 5%;
@@ -430,7 +430,7 @@ nav {
     margin-bottom: 10px;
 }
 
-/* ===== СЕКЦИЯ "УСЛУГИ" ===== */
+/* ===== Ð¡Ð•ÐšÐ¦Ð˜Ð¯ "Ð£Ð¡Ð›Ð£Ð“Ð˜" ===== */
 .services-content {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -467,10 +467,11 @@ nav {
     margin-bottom: 15px;
     width: 100%;
     overflow: hidden;
+    height: 130px;
 }
 
 .services-content__item-img img {
-    width: 100%;
+    width: 50%;
     object-fit: cover;
 }
 
@@ -479,19 +480,19 @@ nav {
     font-weight: 400;
     color: var(--color-tertiary);
     text-align: justify;
-    padding: 20px 25px;
+    padding: 0px 25px;
 }
 
 .services-content__item-description p {
-    text-indent: 20px;
-    padding: 15px 20px 0 30px;
+    padding: 0px 20px 0 20px;
+    margin-bottom: 0.6rem;
 }
 
 .services-content__item-description p:last-child {
     padding-bottom: 15px;
 }
 
-/* ===== ГАЛЕРЕЯ ===== */
+/* ===== Ð“ÐÐ›Ð•Ð Ð•Ð¯ ===== */
 .gallery-content {
     columns: 300px;
     row-gap: 20px;
@@ -531,7 +532,7 @@ nav {
     border: 3px solid var(--color-quaternary);
 }
 
-/* ===== СЕКЦИЯ "КОНТАКТЫ" ===== */
+/* ===== Ð¡Ð•ÐšÐ¦Ð˜Ð¯ "ÐšÐžÐÐ¢ÐÐšÐ¢Ð«" ===== */
 #contacts {
     background: var(--color-secondary) url(../assets/img/bg.png) repeat center center;
     background-size: 5%;
@@ -630,7 +631,7 @@ nav {
     text-decoration: underline;
 }
 
-/* Мессенджеры */
+/* ÐœÐµÑÑÐµÐ½Ð´Ð¶ÐµÑ€Ñ‹ */
 .messenger-item {
     background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
 }
@@ -659,7 +660,7 @@ nav {
     color: var(--color-quaternary);
 }
 
-/* ===== ФОРМА КОНТАКТОВ ===== */
+/* ===== Ð¤ÐžÐ ÐœÐ ÐšÐžÐÐ¢ÐÐšÐ¢ÐžÐ’ ===== */
 .contact-form {
     display: flex;
     flex-direction: column;
@@ -733,7 +734,7 @@ footer a, footer p {
     padding: 25px 0;
 }
 
-/* ===== КНОПКА НАВЕРХ ===== */
+/* ===== ÐšÐÐžÐŸÐšÐ ÐÐÐ’Ð•Ð Ð¥ ===== */
 .to-top {
     position: fixed;
     background: var(--color-option-hover);
@@ -762,9 +763,9 @@ footer a, footer p {
     box-shadow: 0 4px 12px rgba(140, 77, 199, 0.3);
 }
 
-/* ===== АДАПТИВНОСТЬ ===== */
+/* ===== ÐÐ”ÐÐŸÐ¢Ð˜Ð’ÐÐžÐ¡Ð¢Ð¬ ===== */
 
-/* Планшеты (768px - 1024px) */
+/* ÐŸÐ»Ð°Ð½ÑˆÐµÑ‚Ñ‹ (768px - 1024px) */
 @media (max-width: 1024px) {
     .container {
         padding: 10px 15px;
@@ -795,7 +796,7 @@ footer a, footer p {
     }
 }
 
-/* Мобильные устройства (до 768px) */
+/* ÐœÐ¾Ð±Ð¸Ð»ÑŒÐ½Ñ‹Ðµ ÑƒÑÑ‚Ñ€Ð¾Ð¹ÑÑ‚Ð²Ð° (Ð´Ð¾ 768px) */
 @media (max-width: 768px) {
     .container {
         padding: 10px;
@@ -820,7 +821,7 @@ footer a, footer p {
         gap: 15px;
     }
     
-    /* Мобильное меню */
+    /* ÐœÐ¾Ð±Ð¸Ð»ÑŒÐ½Ð¾Ðµ Ð¼ÐµÐ½ÑŽ */
     .nav-toggle {
         display: flex;
     }
@@ -861,7 +862,7 @@ footer a, footer p {
         color: var(--color-secondary);
     }
     
-    /* Затемнение фона при открытом меню */
+    /* Ð—Ð°Ñ‚ÐµÐ¼Ð½ÐµÐ½Ð¸Ðµ Ñ„Ð¾Ð½Ð° Ð¿Ñ€Ð¸ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ð¾Ð¼ Ð¼ÐµÐ½ÑŽ */
     .nav-overlay {
         position: fixed;
         top: 0;
@@ -880,7 +881,7 @@ footer a, footer p {
         visibility: visible;
     }
     
-    /* Слайдер */
+    /* Ð¡Ð»Ð°Ð¹Ð´ÐµÑ€ */
     .slider-content {
         height: 300px;
         min-height: 250px;
@@ -898,7 +899,7 @@ footer a, footer p {
         margin-top: -3px;
     }
     
-    /* Обо мне */
+    /* ÐžÐ±Ð¾ Ð¼Ð½Ðµ */
     .about-content {
         grid-template-columns: 1fr;
         gap: 20px;
@@ -915,7 +916,7 @@ footer a, footer p {
         padding: 0;
     }
     
-    /* Преимущества */
+    /* ÐŸÑ€ÐµÐ¸Ð¼ÑƒÑ‰ÐµÑÑ‚Ð²Ð° */
     .advantages-content__item {
         grid-template-columns: 1fr;
         gap: 15px;
@@ -946,7 +947,7 @@ footer a, footer p {
         text-align: justify;
     }
     
-    /* Услуги */
+    /* Ð£ÑÐ»ÑƒÐ³Ð¸ */
     .services-content {
         grid-template-columns: 1fr;
         gap: 20px;
@@ -964,7 +965,7 @@ footer a, footer p {
         padding: 0;
     }
     
-    /* Галерея */
+    /* Ð“Ð°Ð»ÐµÑ€ÐµÑ */
     .gallery-content {
         columns: 200px;
         column-gap: 0.5rem;
@@ -979,7 +980,7 @@ footer a, footer p {
         transform: scale(1.1) translate(0, -10px);
     }
     
-    /* Контакты */
+    /* ÐšÐ¾Ð½Ñ‚Ð°ÐºÑ‚Ñ‹ */
     .contacts-content {
         grid-template-columns: 1fr;
         gap: 20px;
@@ -1009,7 +1010,7 @@ footer a, footer p {
         min-width: auto;
     }
     
-    /* Кнопка наверх */
+    /* ÐšÐ½Ð¾Ð¿ÐºÐ° Ð½Ð°Ð²ÐµÑ€Ñ… */
     .to-top {
         top: 5%;
         right: 5%;
@@ -1022,7 +1023,7 @@ footer a, footer p {
     }
 }
 
-/* Маленькие мобильные устройства (до 480px) */
+/* ÐœÐ°Ð»ÐµÐ½ÑŒÐºÐ¸Ðµ Ð¼Ð¾Ð±Ð¸Ð»ÑŒÐ½Ñ‹Ðµ ÑƒÑÑ‚Ñ€Ð¾Ð¹ÑÑ‚Ð²Ð° (Ð´Ð¾ 480px) */
 @media (max-width: 480px) {
     /* Header */
     .nav-menu {
@@ -1036,7 +1037,7 @@ footer a, footer p {
         margin-bottom: 10px;
     }
     
-    /* Слайдер */
+    /* Ð¡Ð»Ð°Ð¹Ð´ÐµÑ€ */
     .slider-content {
         height: 250px;
         min-height: 200px;
@@ -1054,7 +1055,7 @@ footer a, footer p {
         margin-top: -2px;
     }
     
-    /* Обо мне */
+    /* ÐžÐ±Ð¾ Ð¼Ð½Ðµ */
     .about-content__item-img img {
         max-width: 200px;
         max-height: 200px;
@@ -1064,7 +1065,7 @@ footer a, footer p {
         font-size: 0.9rem;
     }
     
-    /* Преимущества */
+    /* ÐŸÑ€ÐµÐ¸Ð¼ÑƒÑ‰ÐµÑÑ‚Ð²Ð° */
     .advantages-content__item-img img {
         width: 60px;
         height: 60px;
@@ -1078,7 +1079,7 @@ footer a, footer p {
         font-size: 0.9rem;
     }
     
-    /* Услуги */
+    /* Ð£ÑÐ»ÑƒÐ³Ð¸ */
     .services-content__item-title h3 {
         font-size: 1.1rem;
     }
@@ -1087,14 +1088,14 @@ footer a, footer p {
         font-size: 0.9rem;
     }
     
-    /* Галерея */
+    /* Ð“Ð°Ð»ÐµÑ€ÐµÑ */
     .gallery-content {
         columns: 150px;
         column-gap: 0.3rem;
         row-gap: 0.3rem;
     }
     
-    /* Контакты */
+    /* ÐšÐ¾Ð½Ñ‚Ð°ÐºÑ‚Ñ‹ */
     .contacts-content {
         gap: 15px;
         padding: 10px;
@@ -1118,7 +1119,7 @@ footer a, footer p {
         font-size: 0.9rem;
     }
     
-    /* Форма */
+    /* Ð¤Ð¾Ñ€Ð¼Ð° */
     .form-group input,
     .form-group textarea {
         padding: 12px;
@@ -1130,7 +1131,7 @@ footer a, footer p {
         font-size: 1rem;
     }
     
-    /* Кнопка наверх */
+    /* ÐšÐ½Ð¾Ð¿ÐºÐ° Ð½Ð°Ð²ÐµÑ€Ñ… */
     .to-top {
         top: 3%;
         right: 3%;
@@ -1143,7 +1144,7 @@ footer a, footer p {
     }
 }
 
-/* Очень маленькие экраны (до 320px) */
+/* ÐžÑ‡ÐµÐ½ÑŒ Ð¼Ð°Ð»ÐµÐ½ÑŒÐºÐ¸Ðµ ÑÐºÑ€Ð°Ð½Ñ‹ (Ð´Ð¾ 320px) */
 @media (max-width: 320px) {
     .container {
         padding: 5px;
@@ -1165,18 +1166,18 @@ footer a, footer p {
         margin-bottom: 8px;
     }
     
-    /* Слайдер */
+    /* Ð¡Ð»Ð°Ð¹Ð´ÐµÑ€ */
     .slider-content {
         height: 200px;
         min-height: 150px;
     }
     
-    /* Галерея */
+    /* Ð“Ð°Ð»ÐµÑ€ÐµÑ */
     .gallery-content {
         columns: 120px;
     }
     
-    /* Контакты */
+    /* ÐšÐ¾Ð½Ñ‚Ð°ÐºÑ‚Ñ‹ */
     .contacts-content__item {
         padding: 10px;
     }
@@ -1196,7 +1197,7 @@ footer a, footer p {
     }
 }
 
-/* Ландшафтная ориентация на мобильных */
+/* Ð›Ð°Ð½Ð´ÑˆÐ°Ñ„Ñ‚Ð½Ð°Ñ Ð¾Ñ€Ð¸ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ñ Ð½Ð° Ð¼Ð¾Ð±Ð¸Ð»ÑŒÐ½Ñ‹Ñ… */
 @media (max-width: 768px) and (orientation: landscape) {
     .slider-content {
         height: 200px;
@@ -1218,7 +1219,7 @@ footer a, footer p {
     }
 }
 
-/* Высокие экраны (более 1200px) */
+/* Ð’Ñ‹ÑÐ¾ÐºÐ¸Ðµ ÑÐºÑ€Ð°Ð½Ñ‹ (Ð±Ð¾Ð»ÐµÐµ 1200px) */
 @media (min-width: 1200px) {
     .container {
         max-width: 1400px;
@@ -1233,7 +1234,7 @@ footer a, footer p {
     }
 }
 
-/* ===== АНИМАЦИИ ПОЯВЛЕНИЯ БЛОКОВ ===== */
+/* ===== ÐÐÐ˜ÐœÐÐ¦Ð˜Ð˜ ÐŸÐžÐ¯Ð’Ð›Ð•ÐÐ˜Ð¯ Ð‘Ð›ÐžÐšÐžÐ’ ===== */
 .about-content,
 .advantages-content__item,
 .services-content__item,
@@ -1253,7 +1254,7 @@ footer a, footer p {
     transform: translateY(0);
 }
 
-/* Задержка для элементов в сетке */
+/* Ð—Ð°Ð´ÐµÑ€Ð¶ÐºÐ° Ð´Ð»Ñ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² Ð² ÑÐµÑ‚ÐºÐµ */
 .advantages-content__item:nth-child(1) { transition-delay: 0.1s; }
 .advantages-content__item:nth-child(2) { transition-delay: 0.2s; }
 .advantages-content__item:nth-child(3) { transition-delay: 0.3s; }
@@ -1270,12 +1271,12 @@ footer a, footer p {
 .gallery-content__item:nth-child(5) { transition-delay: 0.5s; }
 .gallery-content__item:nth-child(6) { transition-delay: 0.6s; }
 
-/* Задержки для элементов контактов */
+/* Ð—Ð°Ð´ÐµÑ€Ð¶ÐºÐ¸ Ð´Ð»Ñ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² ÐºÐ¾Ð½Ñ‚Ð°ÐºÑ‚Ð¾Ð² */
 .contacts-content__item:nth-child(1) { transition-delay: 0.1s; }
 .contacts-content__item:nth-child(2) { transition-delay: 0.2s; }
 .contacts-content__item:nth-child(3) { transition-delay: 0.3s; }
 
-/* Анимация для заголовков секций */
+/* ÐÐ½Ð¸Ð¼Ð°Ñ†Ð¸Ñ Ð´Ð»Ñ Ð·Ð°Ð³Ð¾Ð»Ð¾Ð²ÐºÐ¾Ð² ÑÐµÐºÑ†Ð¸Ð¹ */
 .container h2 {
     opacity: 0;
     transform: translateY(-20px);
@@ -1287,7 +1288,7 @@ footer a, footer p {
     transform: translateY(0);
 }
 
-/* ===== /АНИМАЦИИ ПОЯВЛЕНИЯ БЛОКОВ ===== */
+/* ===== /ÐÐÐ˜ÐœÐÐ¦Ð˜Ð˜ ÐŸÐžÐ¯Ð’Ð›Ð•ÐÐ˜Ð¯ Ð‘Ð›ÐžÐšÐžÐ’ ===== */
 
 
 /* ===== FIXED SOCIAL BAR ===== */
