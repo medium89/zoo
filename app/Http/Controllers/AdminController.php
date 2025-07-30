@@ -2,25 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     public function index()
     {
-        $siteClosed = Setting::where('key', 'site_closed')->value('value');
+        $settings = SiteSetting::first();
+
         return view('admin.dashboard', [
-            'siteClosed' => (bool) $siteClosed,
+            'settings' => $settings,
         ]);
     }
 
     public function saveSiteStatus(Request $request)
     {
-        Setting::updateOrCreate(
-            ['key' => 'site_closed'],
-            ['value' => $request->has('site_closed') ? '1' : '0']
-        );
+        $settings = SiteSetting::first();
+        if (!$settings) {
+            $settings = new SiteSetting();
+        }
+
+        $settings->site_closed = $request->has('site_closed');
+        $settings->description = $request->input('description');
+        $settings->robots = $request->input('robots');
+        $settings->charset = $request->input('charset', 'UTF-8');
+        $settings->og_title = $request->input('og_title');
+        $settings->og_description = $request->input('og_description');
+        $settings->og_image = $request->input('og_image');
+        $settings->og_url = $request->input('og_url');
+        $settings->save();
 
         return redirect()->route('admin.index')->with('success', 'Настройки сохранены');
     }
