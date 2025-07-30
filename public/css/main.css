@@ -1349,6 +1349,14 @@ footer a, footer p {
     margin: 0;
 }
 
+.social-bar-icons li {
+    margin-bottom: 15px
+}
+
+.social-bar-icons li:last-child {
+    margin-bottom: 0;
+}
+
 .social-bar-icons li a {
     color: #fff;
     font-size: 1.4rem;
