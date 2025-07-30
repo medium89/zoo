@@ -278,7 +278,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const phoneInput = contactForm.querySelector('input[name="phone"]');
     if (phoneInput) {
         const maskPhone = () => {
-            let digits = phoneInput.value.replace(/\D/g, '').substring(0, 10);
+            let digits = phoneInput.value.replace(/\D/g, '');
+            if (digits.startsWith('7')) {
+                digits = digits.substring(1);
+            }
+            digits = digits.substring(0, 10);
+
+            if (digits.length === 0) {
+                phoneInput.value = '';
+                return;
+            }
+
             let result = '+7(';
             if (digits.length > 0) result += digits.substring(0, 3);
             if (digits.length >= 3) result += ')' + digits.substring(3, 6);
