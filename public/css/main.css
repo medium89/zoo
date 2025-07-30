@@ -203,6 +203,10 @@ nav {
     border: 2px solid var(--color-secondary);
 }
 
+.nav-menu a.active {
+    color: var(--color-secondary);
+}
+
 .nav-menu a.active span{
     border: 2px solid var(--color-secondary);
 }
