@@ -39,7 +39,8 @@
         plugins: 'link lists code',
         toolbar: 'undo redo | bold italic underline | bullist numlist | link | code',
         language: 'ru',
-        height: 300
+        height: 300,
+        entity_encoding: 'raw'
     });
 </script>
 @endsection
