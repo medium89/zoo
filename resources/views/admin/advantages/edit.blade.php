@@ -36,10 +36,20 @@
     tinymce.init({
         selector: 'textarea.wysiwyg',
         menubar: false,
-        plugins: 'link lists code',
-        toolbar: 'undo redo | bold italic underline | bullist numlist | link | code',
+        plugins: 'link lists code emoticons',
+        toolbar: 'undo redo | bold italic underline | bullist numlist | link | emoticons | code',
         language: 'ru',
-        height: 300
+        height: 300,
+        entity_encoding: 'raw',
+        emoticons_append: {
+            custom_emoji: [
+                { title: 'Улыбка', char: '&#128512;' },  // 😀
+                { title: 'Подмигивание', char: '&#128521;' },  // 😉
+                { title: 'Сердце', char: '&#10084;&#65039;' },  // ❤️
+                { title: 'Огонь', char: '&#128293;' },  // 🔥
+                { title: 'Ракета', char: '&#128640;' }  // 🚀
+            ]
+        }
     });
 </script>
 @endsection
