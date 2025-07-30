@@ -1318,7 +1318,8 @@ footer a, footer p {
     align-items: center;
     gap: 10px;
     z-index: 1000;
-    transition: right 0.3s;
+    transition: right 0.3s, opacity 0.3s;
+    opacity: 1;
 }
 
 .social-bar-toggle {
@@ -1350,6 +1351,8 @@ footer a, footer p {
     justify-content: center;
     cursor: pointer;
     z-index: 1001;
+    opacity: 1;
+    transition: opacity 0.3s;
 }
 
 .social-bar-open.visible {
@@ -1390,7 +1393,8 @@ footer a, footer p {
 /* Hide bar when slider is visible */
 .social-bar.hidden,
 .social-bar-open.hidden {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* ===== /FIXED SOCIAL BAR ===== */
