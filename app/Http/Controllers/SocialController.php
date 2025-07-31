@@ -26,8 +26,9 @@ class SocialController extends Controller
             'link' => 'required|string',
             'text' => 'required|string',
             'order' => 'nullable|integer',
+            'active' => 'required|boolean',
         ]);
-        Social::create($request->only(['icon', 'title', 'link', 'text', 'order']));
+        Social::create($request->only(['icon', 'title', 'link', 'text', 'order', 'active']));
         return redirect()->route('admin.socials.index')->with('success', 'Контакт добавлен');
     }
 
@@ -44,6 +45,7 @@ class SocialController extends Controller
             'link' => 'required|string',
             'text' => 'required|string',
             'order' => 'nullable|integer',
+            'active' => 'required|boolean',
         ]);
         $social->update($request->all());
         return redirect()->route('admin.socials.index')->with('success', 'Контакт обновлён');
@@ -54,4 +56,15 @@ class SocialController extends Controller
         $social->delete();
         return redirect()->route('admin.socials.index')->with('success', 'Контакт удалён');
     }
-} 
+
+    public function updateStatus(Request $request)
+    {
+        foreach ($request->input('statuses', []) as $id => $status) {
+            if ($social = Social::find($id)) {
+                $social->active = (bool)$status;
+                $social->save();
+            }
+        }
+        return back()->with('success', 'Статусы обновлены');
+    }
+}

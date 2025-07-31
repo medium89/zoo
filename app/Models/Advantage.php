@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Advantage extends Model
 {
-    protected $fillable = ['image', 'title', 'text'];
+    protected $fillable = ['image', 'title', 'text', 'active'];
     use HasFactory;
+
+    protected $casts = [
+        'active' => 'boolean',
+    ];
 }

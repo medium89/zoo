@@ -14,5 +14,10 @@ class Slider extends Model
         'text',
         'text_bg',
         'position',
+        'active',
+    ];
+
+    protected $casts = [
+        'active' => 'boolean',
     ];
 }

@@ -7,12 +7,15 @@
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
+<form action="{{ route('admin.sliders.status') }}" method="POST">
+@csrf
 <table class="table table-bordered">
     <thead>
         <tr>
             <th>#</th>
             <th>Изображение</th>
             <th>Действия</th>
+            <th>Статус</th>
         </tr>
     </thead>
     <tbody>
@@ -28,8 +31,16 @@
                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить слайд?')">Удалить</button>
                 </form>
             </td>
+            <td>
+                <select name="statuses[{{ $slider->id }}]" class="form-select form-select-sm">
+                    <option value="1" {{ $slider->active ? 'selected' : '' }}>Вкл</option>
+                    <option value="0" {{ !$slider->active ? 'selected' : '' }}>Выкл</option>
+                </select>
+            </td>
         </tr>
     @endforeach
     </tbody>
 </table>
+<button type="submit" class="btn btn-primary mt-2">Сохранить статусы</button>
+</form>
 @endsection 
