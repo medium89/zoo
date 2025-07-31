@@ -25,12 +25,14 @@ class ServiceController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'title' => 'required|string|max:255',
             'text' => 'required|string',
+            'active' => 'required|boolean',
         ]);
         $path = $request->file('image')->store('services', 'public');
         Service::create([
             'image' => $path,
             'title' => $request->title,
             'text' => $request->text,
+            'active' => $request->boolean('active'),
         ]);
         return redirect()->route('admin.services.index')->with('success', 'Услуга добавлена');
     }
@@ -46,6 +48,7 @@ class ServiceController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'title' => 'required|string|max:255',
             'text' => 'required|string',
+            'active' => 'required|boolean',
         ]);
         if ($request->hasFile('image')) {
             if ($service->image && Storage::disk('public')->exists($service->image)) {
@@ -56,6 +59,7 @@ class ServiceController extends Controller
         }
         $service->title = $request->title;
         $service->text = $request->text;
+        $service->active = $request->boolean('active');
         $service->save();
         return redirect()->route('admin.services.index')->with('success', 'Услуга обновлена');
     }
@@ -67,5 +71,16 @@ class ServiceController extends Controller
         }
         $service->delete();
         return redirect()->route('admin.services.index')->with('success', 'Услуга удалена');
+    }
+
+    public function updateStatus(Request $request)
+    {
+        foreach ($request->input('statuses', []) as $id => $status) {
+            if ($service = Service::find($id)) {
+                $service->active = (bool)$status;
+                $service->save();
+            }
+        }
+        return back()->with('success', 'Статусы обновлены');
     }
 }

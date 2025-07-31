@@ -39,6 +39,13 @@
             <option value="right" {{ $slider->position === 'right' ? 'selected' : '' }}>Справа</option>
         </select>
     </div>
+    <div class="mb-3">
+        <label for="active" class="form-label">Статус</label>
+        <select id="active" name="active" class="form-select">
+            <option value="1" {{ $slider->active ? 'selected' : '' }}>Вкл</option>
+            <option value="0" {{ !$slider->active ? 'selected' : '' }}>Выкл</option>
+        </select>
+    </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
     <a href="{{ route('admin.sliders.index') }}" class="btn btn-secondary">Назад</a>
 </form>

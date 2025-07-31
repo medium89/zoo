@@ -7,6 +7,8 @@
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
+<form action="{{ route('admin.socials.status') }}" method="POST">
+@csrf
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -17,6 +19,7 @@
             <th>Текст</th>
             <th>Порядок</th>
             <th>Действия</th>
+            <th>Статус</th>
         </tr>
     </thead>
     <tbody>
@@ -36,8 +39,16 @@
                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить контакт?')">Удалить</button>
                 </form>
             </td>
+            <td>
+                <select name="statuses[{{ $social->id }}]" class="form-select form-select-sm">
+                    <option value="1" {{ $social->active ? 'selected' : '' }}>Вкл</option>
+                    <option value="0" {{ !$social->active ? 'selected' : '' }}>Выкл</option>
+                </select>
+            </td>
         </tr>
     @endforeach
     </tbody>
 </table>
+<button type="submit" class="btn btn-primary mt-2">Сохранить статусы</button>
+</form>
 @endsection 

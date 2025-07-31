@@ -25,12 +25,14 @@ class AdvantageController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'title' => 'required|string|max:255',
             'text' => 'required|string',
+            'active' => 'required|boolean',
         ]);
         $path = $request->file('image')->store('advantages', 'public');
         Advantage::create([
             'image' => $path,
             'title' => $request->title,
             'text' => $request->text,
+            'active' => $request->boolean('active'),
         ]);
         return redirect()->route('admin.advantages.index')->with('success', 'Преимущество добавлено');
     }
@@ -46,6 +48,7 @@ class AdvantageController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'title' => 'required|string|max:255',
             'text' => 'required|string',
+            'active' => 'required|boolean',
         ]);
         if ($request->hasFile('image')) {
             if ($advantage->image && Storage::disk('public')->exists($advantage->image)) {
@@ -56,6 +59,7 @@ class AdvantageController extends Controller
         }
         $advantage->title = $request->title;
         $advantage->text = $request->text;
+        $advantage->active = $request->boolean('active');
         $advantage->save();
         return redirect()->route('admin.advantages.index')->with('success', 'Преимущество обновлено');
     }
@@ -67,5 +71,16 @@ class AdvantageController extends Controller
         }
         $advantage->delete();
         return redirect()->route('admin.advantages.index')->with('success', 'Преимущество удалено');
+    }
+
+    public function updateStatus(Request $request)
+    {
+        foreach ($request->input('statuses', []) as $id => $status) {
+            if ($adv = Advantage::find($id)) {
+                $adv->active = (bool)$status;
+                $adv->save();
+            }
+        }
+        return back()->with('success', 'Статусы обновлены');
     }
 }

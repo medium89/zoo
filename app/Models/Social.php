@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Social extends Model
 {
-    protected $fillable = ['icon', 'title', 'link', 'text', 'order'];
+    protected $fillable = ['icon', 'title', 'link', 'text', 'order', 'active'];
     use HasFactory;
+
+    protected $casts = [
+        'active' => 'boolean',
+    ];
 }

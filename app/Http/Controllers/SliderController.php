@@ -26,12 +26,14 @@ class SliderController extends Controller
             'text' => 'nullable|string',
             'text_bg' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'position' => 'required|in:left,center,right',
+            'active' => 'required|boolean',
         ]);
 
         $data = [
             'image' => $request->file('image')->store('sliders', 'public'),
             'text' => $request->input('text'),
             'position' => $request->input('position'),
+            'active' => $request->boolean('active'),
         ];
 
         if ($request->hasFile('text_bg')) {
@@ -54,6 +56,7 @@ class SliderController extends Controller
             'text' => 'nullable|string',
             'text_bg' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'position' => 'required|in:left,center,right',
+            'active' => 'required|boolean',
         ]);
         if ($request->hasFile('image')) {
             if ($slider->image && Storage::disk('public')->exists($slider->image)) {
@@ -72,6 +75,7 @@ class SliderController extends Controller
 
         $slider->text = $request->input('text');
         $slider->position = $request->input('position');
+        $slider->active = $request->boolean('active');
         $slider->save();
         return redirect()->route('admin.sliders.index')->with('success', 'Слайд обновлён');
     }
@@ -83,6 +87,17 @@ class SliderController extends Controller
         }
         $slider->delete();
         return redirect()->route('admin.sliders.index')->with('success', 'Слайд удалён');
+    }
+
+    public function updateStatus(Request $request)
+    {
+        foreach ($request->input('statuses', []) as $id => $status) {
+            if ($slider = Slider::find($id)) {
+                $slider->active = (bool)$status;
+                $slider->save();
+            }
+        }
+        return back()->with('success', 'Статусы обновлены');
     }
 
     public function ass()

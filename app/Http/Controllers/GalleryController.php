@@ -27,7 +27,10 @@ class GalleryController extends Controller
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $path = $image->store('galleries', 'public');
-                Gallery::create(['image' => $path]);
+                Gallery::create([
+                    'image' => $path,
+                    'active' => true,
+                ]);
             }
         }
         return redirect()->route('admin.galleries.index')->with('success', 'Фото добавлены');
@@ -40,5 +43,16 @@ class GalleryController extends Controller
         }
         $gallery->delete();
         return redirect()->route('admin.galleries.index')->with('success', 'Фото удалено');
+    }
+
+    public function updateStatus(Request $request)
+    {
+        foreach ($request->input('statuses', []) as $id => $status) {
+            if ($gallery = Gallery::find($id)) {
+                $gallery->active = (bool)$status;
+                $gallery->save();
+            }
+        }
+        return back()->with('success', 'Статусы обновлены');
     }
 }

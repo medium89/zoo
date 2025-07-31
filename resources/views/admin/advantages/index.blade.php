@@ -7,6 +7,8 @@
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
+<form action="{{ route('admin.advantages.status') }}" method="POST">
+@csrf
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -15,6 +17,7 @@
             <th>Заголовок</th>
             <th>Текст</th>
             <th>Действия</th>
+            <th>Статус</th>
         </tr>
     </thead>
     <tbody>
@@ -32,8 +35,16 @@
                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить?')">Удалить</button>
                 </form>
             </td>
+            <td>
+                <select name="statuses[{{ $advantage->id }}]" class="form-select form-select-sm">
+                    <option value="1" {{ $advantage->active ? 'selected' : '' }}>Вкл</option>
+                    <option value="0" {{ !$advantage->active ? 'selected' : '' }}>Выкл</option>
+                </select>
+            </td>
         </tr>
     @endforeach
     </tbody>
 </table>
+<button type="submit" class="btn btn-primary mt-2">Сохранить статусы</button>
+</form>
 @endsection 
