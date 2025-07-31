@@ -28,3 +28,7 @@
     <a href="{{ route('admin.services.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @endsection
+
+@section('scripts')
+    @include('admin.partials.wysiwyg-scripts')
+@endsection
