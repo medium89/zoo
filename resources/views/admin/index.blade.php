@@ -71,7 +71,8 @@
         }
 
     </style>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="/build/assets/app-CMF_8PtE.css">
+    <script type="module" src="/build/assets/app-CTskaXw4.js"></script>
 </head>
 <body>
 <button id="sidebarToggle" class="btn btn-dark"><i class="fa fa-bars"></i></button>
