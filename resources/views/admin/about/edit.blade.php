@@ -1,5 +1,5 @@
 @extends('admin.index')@section('content')
-<h1>Редактировать информацию о нас</h1>
+<h1>Обо мне</h1>
 @if (session('success'))
     <div class="alert alert-success">
         {{ session('success') }}
