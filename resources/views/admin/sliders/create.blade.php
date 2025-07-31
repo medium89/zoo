@@ -35,3 +35,8 @@
     <button type="submit" class="btn btn-success">Сохранить</button>
     <a href="{{ route('admin.sliders.index') }}" class="btn btn-secondary">Назад</a>
 </form>
+@endsection
+
+@section('scripts')
+    @include('admin.partials.wysiwyg-scripts')
+@endsection

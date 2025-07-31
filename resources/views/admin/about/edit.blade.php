@@ -30,16 +30,8 @@
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
 </form>
-<!-- Подключение TinyMCE WYSIWYG редактора -->
-<script src="https://cdn.tiny.cloud/1/ilf8e4vsikngopxe08xuqeely1o5rigddts9einhhrfen31e/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
-<script>
-    tinymce.init({
-        selector: 'textarea.wysiwyg',
-        menubar: false,
-        plugins: 'link lists code',
-        toolbar: 'undo redo | bold italic underline | bullist numlist | link | code',
-        language: 'ru',
-        height: 300
-    });
-</script>
-@endsection 
+@endsection
+
+@section('scripts')
+    @include('admin.partials.wysiwyg-scripts')
+@endsection

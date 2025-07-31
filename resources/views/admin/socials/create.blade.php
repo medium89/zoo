@@ -107,4 +107,5 @@
     });
 });
 </script>
+@include('admin.partials.wysiwyg-scripts')
 @endsection

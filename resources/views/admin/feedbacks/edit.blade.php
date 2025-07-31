@@ -31,4 +31,8 @@
         <a href="{{ route('admin.feedbacks.index') }}" class="btn btn-secondary">Отмена</a>
     </form>
 </div>
-@endsection 
+@endsection
+
+@section('scripts')
+    @include('admin.partials.wysiwyg-scripts')
+@endsection
