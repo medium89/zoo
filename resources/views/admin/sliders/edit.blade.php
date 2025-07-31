@@ -43,7 +43,7 @@
     <a href="{{ route('admin.sliders.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 <!-- Подключение TinyMCE WYSIWYG редактора -->
-<script src="{{ asset('assets/addons/tinymce.min.js') }}" referrerpolicy="origin" crossorigin="anonymous"></script>
+<script src="{{ asset('assets/addons/tinymce.min.js') }}"></script>
 <script src="{{ asset('assets/addons/emojis.js') }}"></script>
 <script>
   tinymce.init({
