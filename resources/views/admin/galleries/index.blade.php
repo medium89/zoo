@@ -7,8 +7,9 @@
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
-<form action="{{ route('admin.galleries.status') }}" method="POST">
-@csrf
+<form id="status-form" action="{{ route('admin.galleries.status') }}" method="POST">
+    @csrf
+</form>
 <div class="row">
     @foreach($galleries as $gallery)
         <div class="col-md-3 mb-4">
@@ -20,7 +21,7 @@
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить фото?')">Удалить</button>
                     </form>
-                    <select name="statuses[{{ $gallery->id }}]" class="form-select form-select-sm">
+                    <select name="statuses[{{ $gallery->id }}]" class="form-select form-select-sm" form="status-form">
                         <option value="1" {{ $gallery->active ? 'selected' : '' }}>Вкл</option>
                         <option value="0" {{ !$gallery->active ? 'selected' : '' }}>Выкл</option>
                     </select>
@@ -29,6 +30,5 @@
         </div>
     @endforeach
 </div>
-<button type="submit" class="btn btn-primary mt-2">Сохранить статусы</button>
-</form>
+<button type="submit" form="status-form" class="btn btn-primary mt-2">Сохранить статусы</button>
 @endsection 
