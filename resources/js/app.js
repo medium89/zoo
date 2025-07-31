@@ -22,6 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     height: 300,
     entity_encoding: 'raw',
     emoticons_database: 'emoji',
-    license_key: 'gpl', // для использования Open Source
+    license_key: 'gpl', 
   });
 });
