@@ -15,7 +15,6 @@
             color: #fff;
             min-height: 100vh;
             transition: width 0.3s;
-            overflow-x: hidden;
         }
         .sidebar.collapsed {
             width: 0;
