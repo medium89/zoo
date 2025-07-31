@@ -1,12 +1,12 @@
 <section id="contacts">
     <div class="contacts-container container">
-        @if($socials->count() > 0)
+        @if($socials->where('active', true)->count() > 0)
         <div class="contacts-header">
             <h2 class="white">Контакты</h2>
             <div class="foot foot-white"></div>
         </div>
         <div class="contacts-content">
-            @foreach($socials as $social)
+            @foreach($socials->where('active', true) as $social)
                 <div class="contacts-content__item messenger-item">
                     <div class="contacts-content__item-wrapper">
                         <div class="contacts-content__item-icon">

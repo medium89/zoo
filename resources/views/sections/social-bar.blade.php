@@ -1,4 +1,4 @@
-@if(isset($socials) && $socials->count() > 0)
+@if(isset($socials) && $socials->where('active', true)->count() > 0)
 <button class="social-bar-open" id="socialBarOpen" aria-label="open socials">
     <i class="fas fa-chevron-left"></i>
 </button>
@@ -7,7 +7,7 @@
         <i class="fas fa-chevron-right"></i>
     </button>
     <ul class="social-bar-icons">
-        @foreach($socials as $social)
+        @foreach($socials->where('active', true) as $social)
             <li>
                 <a href="{{ $social->link }}" target="_blank" rel="noopener">
                     <i class="{{ $social->icon }}"></i>

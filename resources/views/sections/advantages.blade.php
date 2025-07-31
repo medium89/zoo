@@ -1,12 +1,12 @@
 <section id="advantages">
     <div class="advantages-container container">
-        @if($advantages->count() > 0)
+        @if($advantages->where('active', true)->count() > 0)
             <div class="advantages-header">
                 <h2 class="white">Преимущества</h2>
                 <div class="foot foot-white"></div>
             </div>
             <div class="advantages-content">
-                @foreach($advantages as $advantage)
+                @foreach($advantages->where('active', true) as $advantage)
                     <div class="advantages-content__item">
                         <div class="advantages-content__item-img">
                             <img src="{{ asset('storage/' . $advantage->image) }}" alt="{{ $advantage->title }}">
