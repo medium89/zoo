@@ -1,12 +1,12 @@
 <section id="services">
     <div class="services-container container">
-        @if($services->count() > 0)
+        @if($services->where('active', true)->count() > 0)
             <div class="services-header">
                 <h2>Услуги</h2>
                 <div class="foot"></div>
             </div>
             <div class="services-content">
-                @foreach($services as $service)
+                @foreach($services->where('active', true) as $service)
                     <div class="services-content__item">
                     <div class="services-content__item-title">
                         <h3>{{ $service->title }}</h3>

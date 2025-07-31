@@ -1,8 +1,8 @@
 <section id="slider">
     <div class="slider-container">
-        @if($sliders->count() > 0)
+        @if($sliders->where('active', true)->count() > 0)
             <div class="slider-content">
-                @foreach($sliders as $slider)
+                @foreach($sliders->where('active', true) as $slider)
                     <div class="slider-content__item">
                         <img src="{{ asset('storage/' . $slider->image) }}" alt="Слайд">
                         @if($slider->text)
