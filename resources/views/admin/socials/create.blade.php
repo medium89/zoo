@@ -108,8 +108,8 @@
 });
 </script>
 <!-- Подключение TinyMCE WYSIWYG редактора -->
-<script src="{{ asset('assets/addons/tinymce.min.js') }}"></script>
-<script src="{{ asset('assets/addons/emojis.js') }}"></script>
+<script src="{{ asset('public/assets/addons/tinymce.min.js') }}"></script>
+<script src="{{ asset('public/assets/addons/emojis.js') }}"></script>
 <script>
   tinymce.init({
     selector: 'textarea.wysiwyg',
@@ -119,7 +119,8 @@
     language: 'ru',
     height: 300,
     entity_encoding: 'raw',
-    emoticons_database: 'emoji'  // 🔧 обязателен!
+    emoticons_database: 'emoji',
+    license_key: 'gpl'
   });
 </script>
 @endsection
