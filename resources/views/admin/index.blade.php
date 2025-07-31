@@ -71,6 +71,7 @@
         }
 
     </style>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
 <button id="sidebarToggle" class="btn btn-dark"><i class="fa fa-bars"></i></button>
