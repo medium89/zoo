@@ -22,12 +22,12 @@ class HomeController extends Controller
             return view('closed');
         }
 
-        $sliders = Slider::all();
+        $sliders = Slider::where('active', true)->get();
         $about = About::first();
-        $advantages = Advantage::all();
-        $services = Service::all();
-        $galleries = Gallery::all();
-        $socials = Social::orderBy('order')->get();
+        $advantages = Advantage::where('active', true)->get();
+        $services = Service::where('active', true)->get();
+        $galleries = Gallery::where('active', true)->get();
+        $socials = Social::where('active', true)->orderBy('order')->get();
 
         return view('index', compact('sliders', 'about', 'advantages', 'services', 'galleries', 'socials'));
     }
