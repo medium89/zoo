@@ -37,6 +37,10 @@ menu, nav, output, ruby, section, summary, time, mark, audio, video {
     font-variation-settings: "wdth" 100;
 }
 
+strong {
+    font-weight: 700;
+}
+
 article, aside, details, figcaption, figure, 
 footer, header, hgroup, menu, nav, section {
     display: block;
