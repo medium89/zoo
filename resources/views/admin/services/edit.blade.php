@@ -31,8 +31,6 @@
     <a href="{{ route('admin.services.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 <!-- Подключение TinyMCE WYSIWYG редактора -->
-<script src="{{ asset('public/assets/addons/tinymce.min.js') }}"></script>
-<script src="{{ asset('public/assets/addons/emojis.js') }}"></script>
 <script>
   tinymce.init({
     selector: 'textarea.wysiwyg',
