@@ -1,12 +1,24 @@
 {
+  "public/assets/img/before_h2.png": {
+    "file": "assets/before_h2-CLEip6_8.png",
+    "src": "public/assets/img/before_h2.png"
+  },
+  "public/assets/img/before_h2_white.png": {
+    "file": "assets/before_h2_white-Bkf3WzEg.png",
+    "src": "public/assets/img/before_h2_white.png"
+  },
+  "public/assets/img/bg.png": {
+    "file": "assets/bg-BuHXgsGG.png",
+    "src": "public/assets/img/bg.png"
+  },
   "resources/js/app.js": {
-    "file": "assets/app-CTskaXw4.js",
+    "file": "assets/app-CLbUL5qS.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
   },
   "resources/sass/app.scss": {
-    "file": "assets/app-CMF_8PtE.css",
+    "file": "assets/app-Dynws_pB.css",
     "src": "resources/sass/app.scss",
     "isEntry": true
   }
