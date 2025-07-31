@@ -10,5 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
     entity_encoding: 'raw',
     emoticons_database: 'emoji',
     license_key: 'gpl',
+    content_style: `
+      body { font-family:Helvetica,Arial,sans-serif; font-size:14px }
+      .mce-content-body { font-size: inherit; }
+      span[style*="font-size: 8pt"] { font-size: 8pt !important; }
+      span[style*="font-size: 10pt"] { font-size: 10pt !important; }
+      span[style*="font-size: 12pt"] { font-size: 12pt !important; }
+      span[style*="font-size: 14pt"] { font-size: 14pt !important; }
+      span[style*="font-size: 18pt"] { font-size: 18pt !important; }
+      span[style*="font-size: 24pt"] { font-size: 24pt !important; }
+      span[style*="font-size: 36pt"] { font-size: 36pt !important; }
+    `
   });
 });
