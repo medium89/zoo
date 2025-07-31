@@ -42,17 +42,4 @@
     <button type="submit" class="btn btn-success">Сохранить</button>
     <a href="{{ route('admin.sliders.index') }}" class="btn btn-secondary">Назад</a>
 </form>
-<!-- Подключение TinyMCE WYSIWYG редактора -->
-<script>
-  tinymce.init({
-    selector: 'textarea.wysiwyg',
-    menubar: false,
-    plugins: 'link lists code emoticons',
-    toolbar: 'undo redo | bold italic underline | bullist numlist | link | emoticons | code',
-    language: 'ru',
-    height: 300,
-    entity_encoding: 'raw',
-    emoticons_database: 'emoji'  // 🔧 обязателен!
-  });
-</script>
 @endsection

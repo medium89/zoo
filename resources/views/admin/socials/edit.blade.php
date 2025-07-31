@@ -122,26 +122,6 @@
         renderIcons(e.target.value);
     });
 
-    // Закрытие модального окна при клике вне его (если нужно, можно добавить)
-        // iconPickerModal.addEventListener('click', (e) => {
-        //     if (e.target === iconPickerModal) {
-    //         iconPickerModal.style.display = 'none';
-    //     }
-    // });
 });
-</script>
-<!-- Подключение TinyMCE WYSIWYG редактора -->
-<script>
-  tinymce.init({
-    selector: 'textarea.wysiwyg',
-    menubar: false,
-    plugins: 'link lists code emoticons',
-    toolbar: 'undo redo | bold italic underline | bullist numlist | link | emoticons | code',
-    language: 'ru',
-    height: 300,
-    entity_encoding: 'raw',
-    emoticons_database: 'emoji',
-    license_key: 'gpl'
-  });
 </script>
 @endsection
