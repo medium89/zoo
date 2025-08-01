@@ -14,6 +14,7 @@
             <th>Иконка</th>
             <th>Заголовок</th>
             <th>Ссылка</th>
+            <th>Текст ссылки</th>
             <th>Текст</th>
             <th>Порядок</th>
             <th>Действия</th>
@@ -26,6 +27,7 @@
             <td><i class="{{ $social->icon }}"></i> <span class="text-muted">{{ $social->icon }}</span></td>
             <td>{{ $social->title }}</td>
             <td><a href="{{ $social->link }}" target="_blank">{{ $social->link }}</a></td>
+            <td>{{ $social->link_text }}</td>
             <td>{{ $social->text }}</td>
             <td>{{ $social->order }}</td>
             <td>

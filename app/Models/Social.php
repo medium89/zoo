@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Social extends Model
 {
-    protected $fillable = ['icon', 'title', 'link', 'text', 'order', 'active'];
+    protected $fillable = ['icon', 'title', 'link', 'link_text', 'text', 'order', 'active'];
     use HasFactory;
 
     protected $casts = [

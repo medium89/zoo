@@ -52,6 +52,10 @@
         <input type="text" class="form-control" id="link" name="link" value="{{ $social->link }}" required>
     </div>
     <div class="mb-3">
+        <label for="link_text" class="form-label">Текст ссылки</label>
+        <input type="text" class="form-control" id="link_text" name="link_text" value="{{ $social->link_text }}" required>
+    </div>
+    <div class="mb-3">
         <label for="text" class="form-label">Текст</label>
         <textarea class="form-control wysiwyg" id="text" name="text" rows="4">{{ $social->text }}</textarea>
     </div>

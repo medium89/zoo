@@ -24,11 +24,12 @@ class SocialController extends Controller
             'icon' => 'required|string',
             'title' => 'required|string',
             'link' => 'required|string',
+            'link_text' => 'required|string',
             'text' => 'required|string',
             'order' => 'nullable|integer',
             'active' => 'required|boolean',
         ]);
-        Social::create($request->only(['icon', 'title', 'link', 'text', 'order', 'active']));
+        Social::create($request->only(['icon', 'title', 'link', 'link_text', 'text', 'order', 'active']));
         return redirect()->route('admin.socials.index')->with('success', 'Контакт добавлен');
     }
 
@@ -43,6 +44,7 @@ class SocialController extends Controller
             'icon' => 'required|string',
             'title' => 'required|string',
             'link' => 'required|string',
+            'link_text' => 'required|string',
             'text' => 'required|string',
             'order' => 'nullable|integer',
             'active' => 'required|boolean',
