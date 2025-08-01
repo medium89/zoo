@@ -1509,6 +1509,26 @@ footer a, footer p {
 .social-bar-icons li a {
     color: #fff;
     font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--color-secondary);
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.social-bar-icons li a:hover {
+    background: var(--color-secondary-hover);
+}
+
+.social-bar-icons li a i {
+    transition: transform 0.3s ease;
+}
+
+.social-bar-icons li a:hover i {
+    transform: scale(1.2);
 }
 
 .social-bar.collapsed {
