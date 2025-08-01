@@ -16,7 +16,7 @@
                             <h3>{{ $social->title }}</h3>
                         </div>
                         <div class="contacts-content__item-description">
-                            <p><a href="{{ $social->link }}" target="_blank">{{ $social->link }}</a></p>
+                            <p><a href="{{ $social->link }}" target="_blank">{{ $social->link_text }}</a></p>
                             {!! $social->text !!}
                         </div>
                     </div>
