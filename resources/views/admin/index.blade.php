@@ -77,15 +77,16 @@
 <div class="d-flex">
     <nav id="sidebar" class="sidebar d-flex flex-column p-0">
         <h4 class="text-center py-3 border-bottom mb-0">
-            <a href="/zooadmin/">Админпанель</a></h4>
+            <a href="{{ route('admin.settings') }}">Админпанель</a></h4>
         <div class="sidebar-content">
             <div class="sidebar-content__item">
+                <a href="{{ route('admin.settings') }}" class="{{ request()->is('zooadmin/settings*') ? 'active' : '' }}">Настройки</a>
                 <a href="/zooadmin/sliders" class="{{ request()->is('zooadmin/sliders*') ? 'active' : '' }}">Слайдер</a>
                 <a href="/zooadmin/about" class="{{ request()->is('zooadmin/about*') ? 'active' : '' }}">Обо мне</a>
                 <a href="/zooadmin/advantages" class="{{ request()->is('zooadmin/advantages*') ? 'active' : '' }}">Преимущества</a>
                 <a href="/zooadmin/services" class="{{ request()->is('zooadmin/services*') ? 'active' : '' }}">Услуги</a>
                 <a href="/zooadmin/galleries" class="{{ request()->is('zooadmin/galleries*') ? 'active' : '' }}">Фотоальбом</a>
-                <a href="/zooadmin/socials" class="{{ request()->is('zooadmin/socials*') ? 'active' : '' }}">Социальные контакты</a> 
+                <a href="/zooadmin/socials" class="{{ request()->is('zooadmin/socials*') ? 'active' : '' }}">Социальные контакты</a>
                 <a href="{{ route('admin.feedbacks.index') }}" class="{{ request()->is('zooadmin/feedbacks*') ? 'active' : '' }}">Обратная связь</a>
             </div>
             <div class="sidebar-content__item">

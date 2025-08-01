@@ -28,7 +28,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/zooadmin';
+    protected $redirectTo = '/zooadmin/settings';
 
     /**
      * Create a new controller instance.

@@ -9,9 +9,14 @@ class AdminController extends Controller
 {
     public function index()
     {
+        return redirect()->route('admin.settings');
+    }
+
+    public function settings()
+    {
         $settings = SiteSetting::first();
 
-        return view('admin.dashboard', [
+        return view('admin.settings', [
             'settings' => $settings,
         ]);
     }
@@ -33,6 +38,6 @@ class AdminController extends Controller
         $settings->og_url = $request->input('og_url');
         $settings->save();
 
-        return redirect()->route('admin.index')->with('success', 'Настройки сохранены');
+        return redirect()->route('admin.settings')->with('success', 'Настройки сохранены');
     }
 }
