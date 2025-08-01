@@ -14,6 +14,7 @@ class Slider extends Model
         'text',
         'text_bg',
         'position',
+        'order',
         'active',
     ];
 

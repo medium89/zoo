@@ -22,7 +22,7 @@ class HomeController extends Controller
             return view('closed');
         }
 
-        $sliders = Slider::where('active', true)->get();
+        $sliders = Slider::where('active', true)->orderBy('order')->get();
         $about = About::first();
         $advantages = Advantage::where('active', true)->get();
         $services = Service::where('active', true)->get();

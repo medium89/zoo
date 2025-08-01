@@ -10,7 +10,7 @@ class SliderController extends Controller
 {
     public function index()
     {
-        $sliders = Slider::all();
+        $sliders = Slider::orderBy('order')->get();
         return view('admin.sliders.index', compact('sliders'));
     }
 
@@ -26,6 +26,7 @@ class SliderController extends Controller
             'text' => 'nullable|string',
             'text_bg' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'position' => 'required|in:left,center,right',
+            'order' => 'nullable|integer',
             'active' => 'required|boolean',
         ]);
 
@@ -33,6 +34,7 @@ class SliderController extends Controller
             'image' => $request->file('image')->store('sliders', 'public'),
             'text' => $request->input('text'),
             'position' => $request->input('position'),
+            'order' => $request->input('order'),
             'active' => $request->boolean('active'),
         ];
 
@@ -56,6 +58,7 @@ class SliderController extends Controller
             'text' => 'nullable|string',
             'text_bg' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'position' => 'required|in:left,center,right',
+            'order' => 'nullable|integer',
             'active' => 'required|boolean',
         ]);
         if ($request->hasFile('image')) {
@@ -75,6 +78,7 @@ class SliderController extends Controller
 
         $slider->text = $request->input('text');
         $slider->position = $request->input('position');
+        $slider->order = $request->input('order');
         $slider->active = $request->boolean('active');
         $slider->save();
         return redirect()->route('admin.sliders.index')->with('success', 'Слайд обновлён');

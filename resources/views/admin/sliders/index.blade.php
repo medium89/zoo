@@ -15,6 +15,7 @@
         <tr>
             <th>#</th>
             <th>Изображение</th>
+            <th>Порядок</th>
             <th>Действия</th>
             <th>Статус</th>
         </tr>
@@ -24,6 +25,7 @@
         <tr>
             <td>{{ $slider->id }}</td>
             <td><img src="{{ asset('storage/'.$slider->image) }}" alt="" width="120"></td>
+            <td>{{ $slider->order }}</td>
             <td>
                 <a href="{{ route('admin.sliders.edit', $slider) }}" class="btn btn-sm btn-warning">Редактировать</a>
                 <form action="{{ route('admin.sliders.destroy', $slider) }}" method="POST" style="display:inline-block">
