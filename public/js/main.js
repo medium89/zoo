@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
         isSwiping = false;
+        slider.classList.add('slider-touch');
     }
 
     // Обработчик движения пальца
@@ -93,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обработчик окончания касания
     function handleTouchEnd(e) {
+        slider.classList.remove('slider-touch');
         if (!isSwiping || !startX || !endX) {
             startX = startY = endX = endY = 0;
             return;
@@ -120,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     slider.addEventListener('touchstart', handleTouchStart, { passive: false });
     slider.addEventListener('touchmove', handleTouchMove, { passive: false });
     slider.addEventListener('touchend', handleTouchEnd, { passive: false });
+    slider.addEventListener('touchcancel', handleTouchEnd, { passive: false });
     // ===== /Свайп функциональность =====
 
     // Инициализация

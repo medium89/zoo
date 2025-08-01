@@ -345,7 +345,9 @@ nav {
     font-size: 1.5rem;
     cursor: pointer;
     z-index: 2;
-    transition: background 0.2s;
+    opacity: 0;
+    pointer-events: none;
+    transition: background 0.2s, opacity 0.2s;
 }
 
 .slider-arrow span {
@@ -368,6 +370,12 @@ nav {
 
 .slider-arrow--next {
     right: 10px;
+}
+
+.slider-content:hover .slider-arrow,
+.slider-content.slider-touch .slider-arrow {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .slider-dots {
