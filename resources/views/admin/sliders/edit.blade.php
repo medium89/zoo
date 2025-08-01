@@ -40,6 +40,10 @@
         </select>
     </div>
     <div class="mb-3">
+        <label for="order" class="form-label">Порядок</label>
+        <input type="number" class="form-control" id="order" name="order" value="{{ $slider->order }}">
+    </div>
+    <div class="mb-3">
         <label for="active" class="form-label">Статус</label>
         <select id="active" name="active" class="form-select">
             <option value="1" {{ $slider->active ? 'selected' : '' }}>Вкл</option>
