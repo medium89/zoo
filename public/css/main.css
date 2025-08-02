@@ -37,6 +37,11 @@ menu, nav, output, ruby, section, summary, time, mark, audio, video {
     font-variation-settings: "wdth" 100;
 }
 
+section {
+    max-width: 1920px;
+    margin: 0 auto;
+}
+
 strong {
     font-weight: 700;
 }
