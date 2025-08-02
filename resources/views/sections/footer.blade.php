@@ -1,7 +1,7 @@
 <footer>
     <div class="footer-container container">
         <div class="footer-content">
-            <p>© 2025 Зооняня. Все права защищены.</p>
+            <p>© 2025 Зооняня. Уход за вашими питомцами. г. Барнаул</p>
         </div>
     </div>
 </footer>
