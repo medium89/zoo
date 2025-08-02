@@ -13,6 +13,10 @@
             <label class="form-check-label" for="site_closed">Закрыть сайт</label>
         </div>
         <div class="mb-3">
+            <label for="title" class="form-label">Meta Title</label>
+            <input type="text" class="form-control" id="title" name="title" value="{{ $settings->title ?? '' }}">
+        </div>
+        <div class="mb-3">
             <label for="description" class="form-label">Meta Description</label>
             <input type="text" class="form-control" id="description" name="description" value="{{ $settings->description ?? '' }}">
         </div>

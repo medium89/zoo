@@ -11,6 +11,7 @@ class SiteSetting extends Model
 
     protected $fillable = [
         'site_closed',
+        'title',
         'description',
         'robots',
         'charset',
