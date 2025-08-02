@@ -1,2 +1,14 @@
-User-agent: *
-Disallow:
+User-agent: Yandex
+Disallow: /zooadmin/
+Disallow: /login/
+Allow: /
+
+Host: https://zooland22.ru
+Sitemap: https://zooland22.ru/sitemap.xml
+
+User-agent: Googlebot
+Disallow: /zooadmin/
+Disallow: /login/
+Allow: /
+
+Sitemap: https://zooland22.ru/sitemap.xml
