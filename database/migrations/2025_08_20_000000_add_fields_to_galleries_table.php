@@ -9,7 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('galleries', function (Blueprint $table) {
-            $table->boolean('active')->default(true)->after('image');
             $table->integer('number')->default(0)->after('active');
         });
     }
