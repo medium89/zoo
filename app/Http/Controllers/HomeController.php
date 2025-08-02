@@ -26,7 +26,7 @@ class HomeController extends Controller
         $about = About::first();
         $advantages = Advantage::where('active', true)->get();
         $services = Service::where('active', true)->get();
-        $galleries = Gallery::where('active', true)->get();
+        $galleries = Gallery::where('active', true)->orderBy('number')->get();
         $socials = Social::where('active', true)->orderBy('order')->get();
 
         return view('index', compact('sliders', 'about', 'advantages', 'services', 'galleries', 'socials'));

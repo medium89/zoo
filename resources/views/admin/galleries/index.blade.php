@@ -16,6 +16,13 @@
             <div class="card">
                 <img src="{{ asset('storage/'.$gallery->image) }}" class="card-img-top" alt="" style="height:180px;object-fit:cover;">
                 <div class="card-body text-center">
+                    <div class="mb-2">
+                        <select name="numbers[{{ $gallery->id }}]" class="form-select form-select-sm" form="status-form">
+                            @for($i = 1; $i <= $galleries->count(); $i++)
+                                <option value="{{ $i }}" {{ $gallery->number == $i ? 'selected' : '' }}>{{ $i }}</option>
+                            @endfor
+                        </select>
+                    </div>
                     <form action="{{ route('admin.galleries.destroy', $gallery->id) }}" method="POST" class="mb-2">
                         @csrf
                         @method('DELETE')
@@ -30,5 +37,5 @@
         </div>
     @endforeach
 </div>
-<button type="submit" form="status-form" class="btn btn-primary mt-2">Сохранить статусы</button>
-@endsection 
+<button type="submit" form="status-form" class="btn btn-primary mt-2">Сохранить</button>
+@endsection

@@ -10,7 +10,7 @@ class GalleryController extends Controller
 {
     public function index()
     {
-        $galleries = Gallery::all();
+        $galleries = Gallery::orderBy('number')->get();
         return view('admin.galleries.index', compact('galleries'));
     }
 
@@ -25,11 +25,13 @@ class GalleryController extends Controller
             'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:4096',
         ]);
         if ($request->hasFile('images')) {
+            $nextNumber = (int)Gallery::max('number') + 1;
             foreach ($request->file('images') as $image) {
                 $path = $image->store('galleries', 'public');
                 Gallery::create([
-                    'image' => $path,
-                    'active' => true,
+                    'image'   => $path,
+                    'active'  => true,
+                    'number'  => $nextNumber++,
                 ]);
             }
         }
@@ -53,6 +55,12 @@ class GalleryController extends Controller
                 $gallery->save();
             }
         }
-        return back()->with('success', 'Статусы обновлены');
+        foreach ($request->input('numbers', []) as $id => $number) {
+            if ($gallery = Gallery::find($id)) {
+                $gallery->number = (int)$number;
+                $gallery->save();
+            }
+        }
+        return back()->with('success', 'Данные обновлены');
     }
 }
