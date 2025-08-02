@@ -29,6 +29,7 @@ class AdminController extends Controller
         }
 
         $settings->site_closed = $request->has('site_closed');
+        $settings->title = $request->input('title');
         $settings->description = $request->input('description');
         $settings->robots = $request->input('robots');
         $settings->charset = $request->input('charset', 'UTF-8');
