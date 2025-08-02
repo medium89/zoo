@@ -719,10 +719,13 @@ nav {
 
 .contacts-form {
     grid-column: 1 / -1;
-    width: 50%;
-    min-width: 300px;
+    width: 80%;
+    min-width: 320px;
     margin: 0 auto;
-    background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+    padding: 40px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #fff 0%, #eef2ff 100%);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 
@@ -745,10 +748,10 @@ nav {
 
 .form-group input,
 .form-group textarea {
-    padding: 15px;
+    padding: 20px;
     border: 2px solid var(--color-secondary-hover);
-    border-radius: 8px;
-    font-size: 1rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
     font-family: 'Inter', sans-serif;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     background: #fff;
@@ -763,16 +766,16 @@ nav {
 
 .form-group textarea {
     resize: vertical;
-    min-height: 100px;
+    min-height: 150px;
 }
 
 .submit-btn {
     background: var(--color-secondary);
     color: #fff;
     border: 2px solid var(--color-quaternary);
-    padding: 15px 30px;
-    border-radius: 8px;
-    font-size: 1.1rem;
+    padding: 20px 40px;
+    border-radius: 12px;
+    font-size: 1.2rem;
     font-family: 'Inter', sans-serif;
     cursor: pointer;
     transition: all 0.3s ease;
