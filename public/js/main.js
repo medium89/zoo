@@ -369,28 +369,11 @@ document.addEventListener('DOMContentLoaded', function() {
         notification.className = `notification notification-${type}`;
         notification.innerHTML = `
             <div class="notification-content">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
                 <span>${message}</span>
-                <button class="notification-close">&times;</button>
+                <button class="notification-close"><span>&times;</span></button>
             </div>
         `;
-        
-        // Добавляем стили
-        notification.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            background: ${type === 'success' ? '#4CAF50' : '#f44336'};
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            transform: translate(-50%, -50%) scale(0);
-            transition: transform 0.3s ease;
-            max-width: 400px;
-        `;
-        
+               
         // Добавляем в DOM
         document.body.appendChild(notification);
         
