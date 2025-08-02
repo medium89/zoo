@@ -265,8 +265,9 @@ nav {
     overflow: hidden;
     background: #fff;
     box-shadow: 0 2px 16px rgba(0,0,0,0.08);
-    min-height: 300px;
-    height: 500px;
+    height: calc(100vw * 0.4);
+    min-height: 150px;
+    max-height: 600px;
 }
 
 .slider-content > *:not(.slider-arrow):not(.slider-dots) {
@@ -865,9 +866,6 @@ footer a, footer p {
         column-gap: 0.8rem;
     }
     
-    .slider-content {
-        height: 400px;
-    }
 }
 /* Бургер-меню для экранов до 992px */
 @media (max-width: 992px) {
@@ -1034,11 +1032,6 @@ footer a, footer p {
     }
     
     /* Ð¡Ð»Ð°Ð¹Ð´ÐµÑ€ */
-    .slider-content {
-        height: 300px;
-        min-height: 250px;
-    }
-    
     .slider-arrow {
         width: 35px;
         height: 35px;
@@ -1190,11 +1183,6 @@ footer a, footer p {
     }
     
     /* Ð¡Ð»Ð°Ð¹Ð´ÐµÑ€ */
-    .slider-content {
-        height: 250px;
-        min-height: 200px;
-    }
-    
     .slider-arrow {
         width: 30px;
         height: 30px;
@@ -1318,12 +1306,6 @@ footer a, footer p {
         margin-bottom: 8px;
     }
     
-    /* Ð¡Ð»Ð°Ð¹Ð´ÐµÑ€ */
-    .slider-content {
-        height: 200px;
-        min-height: 150px;
-    }
-    
     /* Ð“Ð°Ð»ÐµÑ€ÐµÑ */
     .gallery-content {
         columns: 120px;
@@ -1351,10 +1333,6 @@ footer a, footer p {
 
 /* Ð›Ð°Ð½Ð´ÑˆÐ°Ñ„Ñ‚Ð½Ð°Ñ Ð¾Ñ€Ð¸ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ñ Ð½Ð° Ð¼Ð¾Ð±Ð¸Ð»ÑŒÐ½Ñ‹Ñ… */
 @media (max-width: 992px) and (orientation: landscape) {
-    .slider-content {
-        height: 200px;
-    }
-    
     .about-content {
         grid-template-columns: 1fr 1fr;
         gap: 15px;
@@ -1375,10 +1353,6 @@ footer a, footer p {
 @media (min-width: 1200px) {
     .container {
         max-width: 1400px;
-    }
-    
-    .slider-content {
-        height: 600px;
     }
     
     .gallery-content {
