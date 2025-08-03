@@ -36,7 +36,6 @@
                     </div>
                 </div>
             </div>
-            
             @foreach($socials->where('active', true) as $social)
                 <div class="contacts-content__item messenger-item">
                     <div class="contacts-content__item-wrapper">
