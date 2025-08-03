@@ -6,10 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{{ $settings->description ?? '' }}">
     <meta name="robots" content="{{ $settings->robots ?? '' }}">
+    <link rel="icon" href="https://zooland22.ru/favicon.ico" type="image/x-icon">
+
     <meta property="og:title" content="{{ $settings->og_title ?? 'Заголовок страницы' }}">
     <meta property="og:description" content="{{ $settings->og_description ?? 'Описание' }}">
     <meta property="og:image" content="{{ $settings->og_image ?? 'https://example.com/image.jpg' }}">
     <meta property="og:url" content="{{ $settings->og_url ?? 'https://example.com/page' }}">
+
     <title>{{ $settings->title ?? 'Зооняня' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
