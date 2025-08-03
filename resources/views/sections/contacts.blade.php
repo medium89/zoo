@@ -6,22 +6,6 @@
             <div class="foot foot-white"></div>
         </div>
         <div class="contacts-content">
-            @foreach($socials->where('active', true) as $social)
-                <div class="contacts-content__item messenger-item">
-                    <div class="contacts-content__item-wrapper">
-                        <div class="contacts-content__item-icon">
-                            <i class="{{ $social->icon }}"></i>
-                        </div>
-                        <div class="contacts-content__item-title">
-                            <h3>{{ $social->title }}</h3>
-                        </div>
-                        <div class="contacts-content__item-description">
-                            <p><a href="{{ $social->link }}" target="_blank">{{ $social->link_text }}</a></p>
-                            {!! $social->text !!}
-                        </div>
-                    </div>
-                </div>
-            @endforeach
             <div class="contacts-content__item contacts-form">
                 <div class="contacts-content__item-wrapper">
                     <div class="contacts-content__item-icon">
@@ -52,6 +36,22 @@
                     </div>
                 </div>
             </div>
+            @foreach($socials->where('active', true) as $social)
+                <div class="contacts-content__item messenger-item">
+                    <div class="contacts-content__item-wrapper">
+                        <div class="contacts-content__item-icon">
+                            <i class="{{ $social->icon }}"></i>
+                        </div>
+                        <div class="contacts-content__item-title">
+                            <h3>{{ $social->title }}</h3>
+                        </div>
+                        <div class="contacts-content__item-description">
+                            <p><a href="{{ $social->link }}" target="_blank">{{ $social->link_text }}</a></p>
+                            {!! $social->text !!}
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
         @else
         <div class="contacts-content__empty-message">
