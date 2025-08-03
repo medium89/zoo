@@ -80,7 +80,7 @@
             'fab fa-facebook-f', 'fab fa-twitter', 'fab fa-youtube', 'fab fa-linkedin-in',
             'fab fa-pinterest', 'fab fa-github', 'fab fa-discord', 'fab fa-viber',
             'fas fa-phone', 'fas fa-envelope', 'fas fa-map-marker-alt', 'fas fa-globe',
-            'fas fa-link', 'fas fa-share-alt', 'fas fa-comments', 'fas fa-heart'
+            'fas fa-link', 'fas fa-share-alt', 'fas fa-comments', 'fas fa-heart', 'fas fa-odnoklassniki'
         ];
 
         function renderIcons(filter = '') {
