@@ -25,8 +25,6 @@
 </head>
 <body>
     @yield('content')
-
     <script src="js/main.js"></script>
-    @include('layouts.yandex')
 </body>
 </html> 

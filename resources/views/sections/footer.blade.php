@@ -14,3 +14,5 @@
 <a href="#" class="to-top">
     <i class="fas fa-arrow-up"></i>
 </a> 
+
+@include('sections.yandex')
