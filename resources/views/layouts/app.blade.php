@@ -27,6 +27,7 @@
     @yield('content')
     <script src="js/main.js"></script>
     
+    @verbatim
     <!-- Yandex.Metrika counter -->
     <script type="text/javascript">
         (function(m,e,t,r,i,k,a){
@@ -40,6 +41,6 @@
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/103576623" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
-     
+    @endverbatim
 </body>
 </html> 
