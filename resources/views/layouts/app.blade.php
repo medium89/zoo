@@ -27,6 +27,6 @@
     @yield('content')
 
     <script src="js/main.js"></script>
-    @include('partials.yandex-metrika')
+    @include('layouts.yandex')
 </body>
 </html> 
