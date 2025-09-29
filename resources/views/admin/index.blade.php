@@ -86,6 +86,8 @@
                 <a href="/zooadmin/advantages" class="{{ request()->is('zooadmin/advantages*') ? 'active' : '' }}">Преимущества</a>
                 <a href="/zooadmin/services" class="{{ request()->is('zooadmin/services*') ? 'active' : '' }}">Услуги</a>
                 <a href="/zooadmin/galleries" class="{{ request()->is('zooadmin/galleries*') ? 'active' : '' }}">Фотоальбом</a>
+                <a href="/zooadmin/pets" class="{{ request()->is('zooadmin/pets') || request()->is('zooadmin/pets/*') && !request()->is('zooadmin/pets/calendar*') ? 'active' : '' }}">Питомцы</a>
+                <a href="/zooadmin/pets/calendar" class="{{ request()->is('zooadmin/pets/calendar*') ? 'active' : '' }}">Календарь</a>
                 <a href="/zooadmin/socials" class="{{ request()->is('zooadmin/socials*') ? 'active' : '' }}">Социальные контакты</a>
                 <a href="{{ route('admin.feedbacks.index') }}" class="{{ request()->is('zooadmin/feedbacks*') ? 'active' : '' }}">Обратная связь</a>
             </div>
