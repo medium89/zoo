@@ -26,9 +26,27 @@ class HomeController extends Controller
         $about = About::first();
         $advantages = Advantage::where('active', true)->get();
         $services = Service::where('active', true)->get();
-        $galleries = Gallery::where('active', true)->orderBy('number')->get();
+        $galleries = Gallery::where('active', true)->orderBy('number')->take(9)->get();
+        $totalGalleries = Gallery::where('active', true)->count();
+        $hasMoreGalleries = $totalGalleries > $galleries->count();
         $socials = Social::where('active', true)->orderBy('order')->get();
 
-        return view('index', compact('sliders', 'about', 'advantages', 'services', 'galleries', 'socials'));
+        return view('index', compact('sliders', 'about', 'advantages', 'services', 'galleries', 'socials', 'hasMoreGalleries'));
     }
-} 
+
+    public function galleryMore(Request $request)
+    {
+        $limit = max(1, min(24, (int)$request->query('limit', 6)));
+        $offset = max(0, (int)$request->query('offset', 0));
+        $items = Gallery::where('active', true)
+            ->orderBy('number')
+            ->skip($offset)
+            ->take($limit)
+            ->get();
+        $total = Gallery::where('active', true)->count();
+        $hasMore = ($offset + $items->count()) < $total;
+
+        $html = view('partials.gallery_items', ['items' => $items])->render();
+        return response()->json(['html' => $html, 'count' => $items->count(), 'hasMore' => $hasMore]);
+    }
+}

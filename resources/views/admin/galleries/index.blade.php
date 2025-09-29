@@ -14,7 +14,12 @@
     @foreach($galleries as $gallery)
         <div class="col-md-3 mb-4">
             <div class="card">
-                <img src="{{ asset('storage/'.$gallery->image) }}" class="card-img-top" alt="" style="height:180px;object-fit:cover;">
+                @php
+                    $thumb = preg_replace('/^galleries\//', 'galleries/thumbs/', $gallery->image);
+                    $thumbExists = \Illuminate\Support\Facades\Storage::disk('public')->exists($thumb);
+                    $thumbUrl = $thumbExists ? asset('storage/' . $thumb) : asset('storage/' . $gallery->image);
+                @endphp
+                <img src="{{ $thumbUrl }}" class="card-img-top" alt="" style="height:180px;object-fit:cover;">
                 <div class="card-body text-center">
                     <div class="mb-2">
                         <select name="numbers[{{ $gallery->id }}]" class="form-select form-select-sm" form="status-form">

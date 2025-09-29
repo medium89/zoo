@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Support\ImageProcessor;
 
 class ServiceController extends Controller
 {
@@ -22,12 +23,14 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'title' => 'required|string|max:255',
             'text' => 'required|string',
             'active' => 'required|boolean',
+            'image_scale' => 'nullable|integer|min:10|max:100',
+            'image_quality' => 'nullable|integer|min:40|max:100',
         ]);
-        $path = $request->file('image')->store('services', 'public');
+        $path = ImageProcessor::processAndStore($request->file('image'), 'services', (int)$request->input('image_scale',100), (int)$request->input('image_quality',85));
         Service::create([
             'image' => $path,
             'title' => $request->title,
@@ -45,16 +48,18 @@ class ServiceController extends Controller
     public function update(Request $request, Service $service)
     {
         $request->validate([
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'title' => 'required|string|max:255',
             'text' => 'required|string',
             'active' => 'required|boolean',
+            'image_scale' => 'nullable|integer|min:10|max:100',
+            'image_quality' => 'nullable|integer|min:40|max:100',
         ]);
         if ($request->hasFile('image')) {
             if ($service->image && Storage::disk('public')->exists($service->image)) {
                 Storage::disk('public')->delete($service->image);
             }
-            $path = $request->file('image')->store('services', 'public');
+            $path = ImageProcessor::processAndStore($request->file('image'), 'services', (int)$request->input('image_scale',100), (int)$request->input('image_quality',85));
             $service->image = $path;
         }
         $service->title = $request->title;

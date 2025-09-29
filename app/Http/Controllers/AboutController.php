@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\About;
 use Illuminate\Support\Facades\Storage;
+use App\Support\ImageProcessor;
 
 class AboutController extends Controller
 {
@@ -21,14 +22,16 @@ class AboutController extends Controller
             $about = new About();
         }
         $request->validate([
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'text' => 'required|string',
+            'image_scale' => 'nullable|integer|min:10|max:100',
+            'image_quality' => 'nullable|integer|min:40|max:100',
         ]);
         if ($request->hasFile('image')) {
             if ($about->image && Storage::disk('public')->exists($about->image)) {
                 Storage::disk('public')->delete($about->image);
             }
-            $path = $request->file('image')->store('about', 'public');
+            $path = ImageProcessor::processAndStore($request->file('image'), 'about', (int)$request->input('image_scale',100), (int)$request->input('image_quality',85));
             $about->image = $path;
         }
         $about->text = $request->text;
