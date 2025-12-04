@@ -38,6 +38,7 @@
                                 @if($errors->has('g-recaptcha-response'))
                                     <div class="text-danger small mt-1">{{ $errors->first('g-recaptcha-response') }}</div>
                                 @endif
+                                <div class="text-muted small mt-2">Сайт защищён reCAPTCHA v3 (Google Privacy Policy & Terms apply).</div>
                             @else
                                 <div class="alert alert-warning">reCAPTCHA не настроена. Добавьте ключи в .env</div>
                             @endif
@@ -81,17 +82,27 @@
         document.addEventListener('DOMContentLoaded', function(){
             const form = document.querySelector('.contact-form');
             if(!form) return;
-            form.addEventListener('submit', function(e){
-                const tokenInput = form.querySelector('input[name="g-recaptcha-response"]');
-                if(!tokenInput) return;
-                e.preventDefault();
+            const tokenInput = form.querySelector('input[name="g-recaptcha-response"]');
+            if(!tokenInput) return;
+
+            const executeRecaptcha = function(cb){
                 grecaptcha.ready(function(){
                     grecaptcha.execute('{{ $recaptchaKey }}', {action: 'feedback'}).then(function(token){
                         tokenInput.value = token;
-                        form.submit();
+                        if(typeof cb === 'function') cb();
                     }).catch(function(){
                         alert('Не удалось подтвердить reCAPTCHA. Попробуйте ещё раз.');
                     });
+                });
+            };
+
+            // Run once on load to show badge and prefill token
+            executeRecaptcha();
+
+            form.addEventListener('submit', function(e){
+                e.preventDefault();
+                executeRecaptcha(function(){
+                    form.submit();
                 });
             });
         });
