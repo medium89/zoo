@@ -81,4 +81,13 @@ class ArticleAdminController extends Controller
             ]);
         }
     }
+
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
+        ]);
+        $path = $request->file('file')->store('articles', 'public');
+        return response()->json(['location' => asset('storage/'.$path)]);
+    }
 }

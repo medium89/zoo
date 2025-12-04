@@ -21,8 +21,8 @@
             <textarea name="excerpt" class="form-control" rows="2">{{ $article->excerpt }}</textarea>
         </div>
         <div class="mb-3">
-            <label class="form-label">Текст статьи</label>
-            <textarea name="content" class="form-control" rows="10" required>{{ $article->content }}</textarea>
+            <label class="form-label">Текст статьи (WYSIWYG)</label>
+            <textarea name="content" class="form-control js-wysiwyg" rows="12" required>{{ $article->content }}</textarea>
         </div>
         <div class="mb-3">
             <label class="form-label">Добавить изображения</label>
@@ -41,4 +41,41 @@
         <button class="btn btn-success">Сохранить</button>
     </form>
 </div>
+@push('scripts')
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    tinymce.init({
+        selector: '.js-wysiwyg',
+        height: 500,
+        menubar: true,
+        plugins: 'link image lists table code codesample media',
+        toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image media | code',
+        images_upload_url: '{{ route('admin.articles.upload') }}',
+        images_upload_credentials: true,
+        relative_urls: false,
+        convert_urls: false,
+        setup: function (editor) {
+            editor.on('init', function(){
+                editor.options.set('images_upload_handler', function (blobInfo, success, failure){
+                    const xhr = new XMLHttpRequest();
+                    xhr.withCredentials = true;
+                    xhr.open('POST', '{{ route('admin.articles.upload') }}');
+                    xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
+                    xhr.onload = function() {
+                        if (xhr.status !== 200) { failure('HTTP Error: ' + xhr.status); return; }
+                        const json = JSON.parse(xhr.responseText);
+                        if (!json || typeof json.location != 'string') { failure('Invalid JSON: ' + xhr.responseText); return; }
+                        success(json.location);
+                    };
+                    const formData = new FormData();
+                    formData.append('file', blobInfo.blob(), blobInfo.filename());
+                    xhr.send(formData);
+                });
+            });
+        }
+    });
+});
+</script>
+@endpush
 @endsection
