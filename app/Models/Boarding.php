@@ -12,6 +12,7 @@ class Boarding extends Model
     protected $fillable = [
         'name',
         'description',
+        'service_type',
         'start_date',
         'end_date',
     ];

@@ -23,15 +23,22 @@
                     <label class="form-label">Кличка</label>
                     <input type="text" name="name" class="form-control" required>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Описание</label>
                     <input type="text" name="description" class="form-control" placeholder="Напр. особенности, контакт" maxlength="255">
                 </div>
                 <div class="col-md-2">
+                    <label class="form-label">Тип услуги</label>
+                    <select name="service_type" class="form-select" required>
+                        <option value="передержка">передержка</option>
+                        <option value="выгул">выгул</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
                     <label class="form-label">Дата начала</label>
                     <input type="text" name="start_date" class="form-control js-date" autocomplete="off" required placeholder="ГГГГ-ММ-ДД">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <label class="form-label">Дата окончания</label>
                     <input type="text" name="end_date" class="form-control js-date" autocomplete="off" required placeholder="ГГГГ-ММ-ДД">
                 </div>
@@ -53,6 +60,7 @@
                                 <th>#</th>
                                 <th>Кличка</th>
                                 <th>Описание</th>
+                                <th>Тип услуги</th>
                                 <th>Период</th>
                                 <th>Создано</th>
                             </tr>
@@ -63,6 +71,7 @@
                                     <td>{{ $row->id }}</td>
                                     <td>{{ $row->name }}</td>
                                     <td>{{ $row->description }}</td>
+                                    <td>{{ $row->service_type }}</td>
                                     <td>{{ $row->start_date->toDateString() }} — {{ $row->end_date->toDateString() }}</td>
                                     <td>{{ $row->created_at->format('d.m.Y H:i') }}</td>
                                 </tr>
@@ -119,6 +128,7 @@
 document.addEventListener('DOMContentLoaded', function(){
     const entries = JSON.parse(@json($entriesJson));
     let state = { year: {{ $year }}, entries };
+    const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
     const grid = document.getElementById('calendarGrid');
     const yearSelect = document.getElementById('yearSelect');
@@ -148,12 +158,11 @@ document.addEventListener('DOMContentLoaded', function(){
     function render(){
         const map = buildMap();
         grid.innerHTML='';
-        const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
         for(let m=0;m<12;m++){
             const first = new Date(state.year, m, 1);
             const wrap = document.createElement('div');
             wrap.className='cal-month';
-            wrap.innerHTML = `<h5>${months[m]} ${state.year}</h5>`;
+            wrap.innerHTML = `<h5>${MONTHS[m]} ${state.year}</h5>`;
 
             const header = document.createElement('div'); header.className='cal-header';
             ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d=>{
@@ -173,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 const list = map[dateStr] || [];
                 if(list.length>0){
                     cell.classList.add(list.length>1 ? 'conflict' : 'busy');
-                    cell.dataset.tooltip = list.map(x=>`${x.name} (${x.start_date} — ${x.end_date})`).join('\n');
+                    cell.dataset.tooltip = list.map(x=>`${x.name} • ${x.service_type} (${x.start_date} — ${x.end_date})`).join('\n');
                 }
                 body.appendChild(cell);
             }
@@ -231,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function(){
         const next = document.createElement('button'); next.type='button'; next.className='btn btn-light btn-sm'; next.textContent='›';
         const title = document.createElement('select'); title.className='form-select form-select-sm';
         for(let y=curYear-2; y<=curYear+5; y++){
-            const opt=document.createElement('option'); opt.value=y; opt.textContent=`${months[curMonth]} ${y}`;
+            const opt=document.createElement('option'); opt.value=y; opt.textContent=`${MONTHS[curMonth]} ${y}`;
             if(y===curYear) opt.selected=true; title.appendChild(opt);
         }
         header.appendChild(prev); header.appendChild(title); header.appendChild(next);

@@ -46,8 +46,13 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::post('boarding', [App\Http\Controllers\BoardingController::class, 'store'])->name('boarding.store');
     Route::get('boarding/data', [App\Http\Controllers\BoardingController::class, 'data'])->name('boarding.data');
     Route::get('boarding/export', [App\Http\Controllers\BoardingController::class, 'export'])->name('boarding.export');
+    Route::resource('articles', App\Http\Controllers\ArticleAdminController::class);
+    Route::resource('article-comments', App\Http\Controllers\ArticleCommentAdminController::class)->only(['index','update','destroy']);
 });
 
 // Main page
 Route::get('/', [HomeController::class, 'index']);
 Route::get('/gallery/more', [HomeController::class, 'galleryMore'])->name('gallery.more');
+Route::get('/articles', [App\Http\Controllers\ArticlePublicController::class, 'index'])->name('articles.index');
+Route::get('/articles/{article}', [App\Http\Controllers\ArticlePublicController::class, 'show'])->name('articles.show');
+Route::post('/articles/{article}/comments', [App\Http\Controllers\ArticlePublicController::class, 'comment'])->name('articles.comment');

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description')->nullable();
+            $table->string('service_type')->default('передержка');
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();

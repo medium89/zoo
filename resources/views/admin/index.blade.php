@@ -71,13 +71,15 @@
 
         /* Нормальные размеры и выравнивание иконок пагинации */
         .pagination svg {
-            width: 1em !important;
-            height: 1em !important;
+            width: 16px !important;
+            height: 16px !important;
+            flex-shrink: 0;
         }
         .pagination .page-link {
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            padding: 0.35rem 0.65rem;
         }
 
     </style>
@@ -100,6 +102,8 @@
                 <a href="/zooadmin/socials" class="{{ request()->is('zooadmin/socials*') ? 'active' : '' }}">Социальные контакты</a>
                 <a href="{{ route('admin.feedbacks.index') }}" class="{{ request()->is('zooadmin/feedbacks*') ? 'active' : '' }}">Обратная связь</a>
                 <a href="{{ route('admin.boarding.index') }}" class="{{ request()->is('zooadmin/boarding*') ? 'active' : '' }}">Передержка</a>
+                <a href="{{ route('admin.articles.index') }}" class="{{ request()->is('zooadmin/articles*') ? 'active' : '' }}">Статьи</a>
+                <a href="{{ route('admin.article-comments.index') }}" class="{{ request()->is('zooadmin/article-comments*') ? 'active' : '' }}">Комментарии</a>
             </div>
             <div class="sidebar-content__item">
                 <a href="{{ route('admin.users.index') }}" class="{{ request()->is('zooadmin/users*') ? 'active' : '' }}">Пользователи</a>

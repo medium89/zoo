@@ -27,6 +27,7 @@ class BoardingController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
+            'service_type' => 'required|string|in:передержка,выгул',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
@@ -56,9 +57,9 @@ class BoardingController extends Controller
 
         return response()->streamDownload(function() use ($entries) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['ID','Кличка','Описание','Дата начала','Дата окончания']);
+            fputcsv($out, ['ID','Кличка','Описание','Тип услуги','Дата начала','Дата окончания']);
             foreach ($entries as $row) {
-                fputcsv($out, [$row['id'], $row['name'], $row['description'], $row['start_date'], $row['end_date']]);
+                fputcsv($out, [$row['id'], $row['name'], $row['description'], $row['service_type'], $row['start_date'], $row['end_date']]);
             }
             fclose($out);
         }, 'boarding.csv', $headers);
@@ -83,6 +84,7 @@ class BoardingController extends Controller
                     'id' => $item->id,
                     'name' => $item->name,
                     'description' => $item->description,
+                    'service_type' => $item->service_type,
                     'start_date' => $item->start_date->toDateString(),
                     'end_date' => $item->end_date->toDateString(),
                 ];
