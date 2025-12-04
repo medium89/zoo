@@ -69,6 +69,17 @@
             align-self: flex-end;
         }
 
+        /* Нормальные размеры и выравнивание иконок пагинации */
+        .pagination svg {
+            width: 1em !important;
+            height: 1em !important;
+        }
+        .pagination .page-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
     </style>
     @vite(['resources/js/app.js'])
 </head>
