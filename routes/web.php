@@ -42,7 +42,10 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::post('socials/status', [App\Http\Controllers\SocialController::class, 'updateStatus'])->name('socials.status');
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::resource('feedbacks', FeedbackController::class)->except(['create', 'show']);
-    Route::resource('pets', App\Http\Controllers\PetController::class);
+    Route::get('boarding', [App\Http\Controllers\BoardingController::class, 'index'])->name('boarding.index');
+    Route::post('boarding', [App\Http\Controllers\BoardingController::class, 'store'])->name('boarding.store');
+    Route::get('boarding/data', [App\Http\Controllers\BoardingController::class, 'data'])->name('boarding.data');
+    Route::get('boarding/export', [App\Http\Controllers\BoardingController::class, 'export'])->name('boarding.export');
 });
 
 // Main page
