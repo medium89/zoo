@@ -17,6 +17,12 @@
                     <div class="contacts-content__item-description">
                         <form class="contact-form" action="{{ route('feedback.store') }}" method="POST">
                             @csrf
+                            @if(session('success'))
+                                <div class="alert alert-success">{{ session('success') }}</div>
+                            @endif
+                            @if($errors->any())
+                                <div class="alert alert-danger">{{ $errors->first() }}</div>
+                            @endif
                             <div class="form-group">
                                 <input type="text" name="name" placeholder="Ваше имя" required>
                             </div>
@@ -25,6 +31,12 @@
                             </div>
                             <div class="form-group">
                                 <textarea name="message" placeholder="Опишите необходимую услугу, животное, даты и адрес" rows="3" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                                @if($errors->has('g-recaptcha-response'))
+                                    <div class="text-danger small mt-1">{{ $errors->first('g-recaptcha-response') }}</div>
+                                @endif
                             </div>
                             <div class="form-group">
                                 <button type="submit" class="submit-btn">
@@ -60,3 +72,4 @@
         @endif
     </div>
 </section>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>

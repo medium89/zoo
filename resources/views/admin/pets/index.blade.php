@@ -6,15 +6,6 @@
     
 </div>
 
-<ul class="nav nav-tabs mb-3">
-  <li class="nav-item">
-    <a class="nav-link active" aria-current="page" href="{{ route('admin.pets.index') }}">Питомцы</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="{{ route('admin.pets.calendar') }}">Календарь</a>
-  </li>
-</ul>
-
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif

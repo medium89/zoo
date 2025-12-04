@@ -9,15 +9,6 @@
     
 </div>
 
-<ul class="nav nav-tabs mb-3">
-  <li class="nav-item">
-    <a class="nav-link active" aria-current="page" href="#">Питомцы</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link disabled" aria-disabled="true">Календарь (скоро)</a>
-  </li>
-</ul>
-
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="card">
@@ -113,4 +104,3 @@
     });
 </script>
 @endsection
-

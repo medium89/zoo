@@ -14,7 +14,23 @@ class FeedbackController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:255',
             'message' => 'required|string',
+            'g-recaptcha-response' => 'required|string',
         ]);
+
+        $recaptchaSecret = config('services.recaptcha.secret');
+        if (!$recaptchaSecret) {
+            return back()->withErrors(['g-recaptcha-response' => 'reCAPTCHA не настроена, обратитесь к администратору'])->withInput();
+        }
+
+        $verification = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => $recaptchaSecret,
+            'response' => $request->input('g-recaptcha-response'),
+            'remoteip' => $request->ip(),
+        ]);
+
+        if (!$verification->ok() || !$verification->json('success')) {
+            return back()->withErrors(['g-recaptcha-response' => 'Подтвердите, что вы не робот'])->withInput();
+        }
 
         Feedback::create([
             'name' => $request->name,

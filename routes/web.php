@@ -42,10 +42,6 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::post('socials/status', [App\Http\Controllers\SocialController::class, 'updateStatus'])->name('socials.status');
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::resource('feedbacks', FeedbackController::class)->except(['create', 'show']);
-    // Calendar routes must go BEFORE resource to avoid pets/{pet} catching 'calendar'
-    Route::get('pets/calendar', [App\Http\Controllers\PetController::class, 'calendar'])->name('pets.calendar');
-    Route::get('pets/calendar/data', [App\Http\Controllers\PetController::class, 'calendarData'])->name('pets.calendar.data');
-    Route::post('pets/calendar/toggle', [App\Http\Controllers\PetController::class, 'calendarToggle'])->name('pets.calendar.toggle');
     Route::resource('pets', App\Http\Controllers\PetController::class);
 });
 
