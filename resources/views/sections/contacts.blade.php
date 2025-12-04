@@ -34,11 +34,12 @@
                                 <textarea name="message" placeholder="Опишите необходимую услугу, животное, даты и адрес" rows="3" required></textarea>
                             </div>
                             @if($recaptchaKey)
-                                <input type="hidden" name="g-recaptcha-response" value="">
+                                <div class="form-group d-flex justify-content-center" style="margin-top:10px;">
+                                    <div class="g-recaptcha" data-sitekey="{{ $recaptchaKey }}"></div>
+                                </div>
                                 @if($errors->has('g-recaptcha-response'))
-                                    <div class="text-danger small mt-1">{{ $errors->first('g-recaptcha-response') }}</div>
+                                    <div class="text-danger small mt-1 text-center">{{ $errors->first('g-recaptcha-response') }}</div>
                                 @endif
-                                <div class="text-muted small mt-2">Сайт защищён reCAPTCHA v3 (Google Privacy Policy & Terms apply).</div>
                             @else
                                 <div class="alert alert-warning">reCAPTCHA не настроена. Добавьте ключи в .env</div>
                             @endif
@@ -77,34 +78,5 @@
     </div>
 </section>
 @if($recaptchaKey)
-    <script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaKey }}" async defer></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function(){
-            const form = document.querySelector('.contact-form');
-            if(!form) return;
-            const tokenInput = form.querySelector('input[name="g-recaptcha-response"]');
-            if(!tokenInput) return;
-
-            const executeRecaptcha = function(cb){
-                grecaptcha.ready(function(){
-                    grecaptcha.execute('{{ $recaptchaKey }}', {action: 'feedback'}).then(function(token){
-                        tokenInput.value = token;
-                        if(typeof cb === 'function') cb();
-                    }).catch(function(){
-                        alert('Не удалось подтвердить reCAPTCHA. Попробуйте ещё раз.');
-                    });
-                });
-            };
-
-            // Run once on load to show badge and prefill token
-            executeRecaptcha();
-
-            form.addEventListener('submit', function(e){
-                e.preventDefault();
-                executeRecaptcha(function(){
-                    form.submit();
-                });
-            });
-        });
-    </script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 @endif

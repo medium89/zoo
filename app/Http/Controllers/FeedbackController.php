@@ -32,15 +32,7 @@ class FeedbackController extends Controller
             'remoteip' => $request->ip(),
         ]);
 
-        $scoreThreshold = 0.5;
-        $action = $verification->json('action');
-        $score = $verification->json('score', 0);
-
-        if (!$verification->ok()
-            || !$verification->json('success')
-            || $action !== 'feedback'
-            || $score < $scoreThreshold
-        ) {
+        if (!$verification->ok() || !$verification->json('success')) {
             return back()->withErrors(['g-recaptcha-response' => 'Подтвердите, что вы не робот'])->withInput();
         }
 
