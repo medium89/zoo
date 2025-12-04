@@ -10,14 +10,18 @@ class FeedbackController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate([
+        $recaptchaSecret = config('services.recaptcha.secret');
+        $rules = [
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:255',
             'message' => 'required|string',
-            'g-recaptcha-response' => 'required|string',
-        ]);
+        ];
+        if ($recaptchaSecret) {
+            $rules['g-recaptcha-response'] = 'required|string';
+        }
 
-        $recaptchaSecret = config('services.recaptcha.secret');
+        $request->validate($rules);
+
         if (!$recaptchaSecret) {
             return back()->withErrors(['g-recaptcha-response' => 'reCAPTCHA не настроена, обратитесь к администратору'])->withInput();
         }
