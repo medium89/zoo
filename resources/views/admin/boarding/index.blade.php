@@ -113,7 +113,7 @@
     .cal-cell.day:hover { background:#f3f4f6; }
     .cal-cell.day.busy { background:#e9f8ef; border:1px solid #6cc17b; }
     .cal-cell.day.conflict { background:#fff3e0; border:1px solid #f0a500; }
-    .tooltip-box { position:absolute; z-index:20; background:#fff; border:1px solid #ddd; box-shadow:0 10px 30px rgba(0,0,0,0.15); padding:10px; border-radius:8px; font-size:12px; min-width:200px; }
+    .tooltip-box { position:absolute; z-index:20; background:#fff; border:1px solid #ddd; box-shadow:0 10px 30px rgba(0,0,0,0.15); padding:10px; border-radius:8px; font-size:12px; min-width:200px; white-space:pre-line; }
     .dp-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); display:flex; justify-content:center; align-items:center; z-index:2000; }
     .dp-box { background:#fff; border-radius:10px; padding:12px; width:320px; max-width:calc(100vw - 24px); box-shadow:0 10px 40px rgba(0,0,0,0.15); }
     .dp-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
@@ -202,8 +202,17 @@ document.addEventListener('DOMContentLoaded', function(){
                 tooltip.textContent = cell.dataset.tooltip;
                 document.body.appendChild(tooltip);
                 const rect = cell.getBoundingClientRect();
-                tooltip.style.left = rect.left + 'px';
-                tooltip.style.top = (rect.bottom + 6) + 'px';
+                tooltip.style.left = (rect.left + window.scrollX) + 'px';
+                tooltip.style.top = (rect.bottom + 6 + window.scrollY) + 'px';
+                // keep tooltip within viewport
+                const tRect = tooltip.getBoundingClientRect();
+                const maxLeft = window.innerWidth - tRect.width - 12;
+                if (tRect.right > window.innerWidth - 12) {
+                    tooltip.style.left = Math.max(12, maxLeft) + window.scrollX + 'px';
+                }
+                if (tRect.bottom > window.innerHeight - 12) {
+                    tooltip.style.top = (rect.top + window.scrollY - tRect.height - 8) + 'px';
+                }
             });
             cell.addEventListener('mouseleave', ()=>{
                 if(tooltip){ tooltip.remove(); tooltip=null; }
@@ -238,12 +247,15 @@ document.addEventListener('DOMContentLoaded', function(){
         const header = document.createElement('div'); header.className='dp-header';
         const prev = document.createElement('button'); prev.type='button'; prev.className='btn btn-light btn-sm'; prev.textContent='‹';
         const next = document.createElement('button'); next.type='button'; next.className='btn btn-light btn-sm'; next.textContent='›';
-        const title = document.createElement('select'); title.className='form-select form-select-sm';
+        const titleWrap = document.createElement('div'); titleWrap.className='d-flex align-items-center gap-2 flex-grow-1';
+        const titleText = document.createElement('div'); titleText.className='fw-semibold';
+        const yearSelectDp = document.createElement('select'); yearSelectDp.className='form-select form-select-sm'; yearSelectDp.style.width='auto';
         for(let y=curYear-2; y<=curYear+5; y++){
-            const opt=document.createElement('option'); opt.value=y; opt.textContent=`${MONTHS[curMonth]} ${y}`;
-            if(y===curYear) opt.selected=true; title.appendChild(opt);
+            const opt=document.createElement('option'); opt.value=y; opt.textContent=y;
+            if(y===curYear) opt.selected=true; yearSelectDp.appendChild(opt);
         }
-        header.appendChild(prev); header.appendChild(title); header.appendChild(next);
+        titleWrap.appendChild(titleText); titleWrap.appendChild(yearSelectDp);
+        header.appendChild(prev); header.appendChild(titleWrap); header.appendChild(next);
         box.appendChild(header);
 
         const gridDp = document.createElement('div'); gridDp.className='dp-grid';
@@ -268,14 +280,14 @@ document.addEventListener('DOMContentLoaded', function(){
                 });
                 gridDp.appendChild(c);
             }
-            title.querySelectorAll('option').forEach(opt=>{ opt.textContent = `${months[curMonth]} ${opt.value}`; });
-            title.value = curYear;
+            titleText.textContent = `${MONTHS[curMonth]} ${curYear}`;
+            yearSelectDp.value = curYear;
         }
         renderDp();
 
         prev.addEventListener('click', ()=>{ curMonth--; if(curMonth<0){ curMonth=11; curYear--; } renderDp(); });
         next.addEventListener('click', ()=>{ curMonth++; if(curMonth>11){ curMonth=0; curYear++; } renderDp(); });
-        title.addEventListener('change', (e)=>{ curYear=parseInt(e.target.value,10); renderDp(); });
+        yearSelectDp.addEventListener('change', (e)=>{ curYear=parseInt(e.target.value,10); renderDp(); });
         overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closePicker(); });
 
         document.body.appendChild(overlay);

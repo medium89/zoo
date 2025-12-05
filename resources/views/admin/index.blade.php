@@ -8,65 +8,100 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/font-awesome/css/all.min.css') }}">
     <style>
-        body { min-height: 100vh; }
-        .sidebar {
-            width: 220px;
-            background: #343a40;
-            color: #fff;
+        :root { --sidebar-width: 240px; }
+
+        body {
             min-height: 100vh;
-            transition: width 0.3s;
+            background: #f7f8fa;
         }
-        .sidebar.collapsed {
-            width: 0;
-        }
+
         #sidebarToggle {
             position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 1050;
+            top: 14px;
+            left: 14px;
+            z-index: 1100;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.12);
         }
-        .sidebar a {
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            flex: 0 0 var(--sidebar-width);
+            background: #1f232a;
+            color: #fff;
+            min-height: 100vh;
+            transition: transform 0.3s ease, width 0.3s ease, opacity 0.2s ease, visibility 0.2s ease;
+            position: sticky;
+            top: 0;
+            left: 0;
+            overflow-y: auto;
+            padding: 16px 0 24px;
+            border-right: 1px solid #2d323a;
+            box-shadow: 6px 0 16px rgba(0,0,0,0.08);
+        }
+
+        body.sidebar-collapsed .sidebar {
+            width: 0;
+            flex-basis: 0;
+            transform: translateX(-104%);
+            opacity: 0;
+            visibility: hidden;
+            box-shadow: none;
+        }
+
+        .sidebar h4 a {
             color: #fff;
             text-decoration: none;
-            display: block;
-            padding: 12px 20px;
-        }
-        .sidebar a.active, .sidebar a:hover {
-            background: #495057;
-        }
-        .content {
-            padding: 32px;
         }
 
         .sidebar-content {
             display: flex;
             flex-direction: column;
-            height: 92vh;
+            gap: 4px;
+            min-height: calc(100vh - 72px);
+            padding: 4px 0 0;
         }
-
-
 
         .sidebar-content__item {
             display: flex;
             flex-direction: column;
-            border-bottom: 2px solid #495057;
-            border-top: 2px solid #495057;
+            width: 100%;
+            border-bottom: 1px solid #2d323a;
+        }
+
+        .sidebar-content__item:last-child {
+            border-bottom: 0;
+        }
+
+        .sidebar a {
+            color: #e9ecef;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+        }
+
+        .sidebar a.active, .sidebar a:hover {
+            background: #2b3038;
+            color: #fff;
+            padding-left: 26px;
+        }
+
+        .content {
+            padding: 32px;
+            flex: 1 1 auto;
             width: 100%;
         }
 
-        .sidebar-content__item:nth-child(1) {
-            justify-content: flex-start;
-            align-self: flex-start;
-        }
-
-        .sidebar-content__item:nth-child(2) {
-            justify-content: center;
-            align-self: center;
-        }
-
-        .sidebar-content__item:nth-child(3) {
-            justify-content: flex-end;
-            align-self: flex-end;
+        .sidebar-backdrop {
+            display: none;
         }
 
         /* Нормальные размеры и выравнивание иконок пагинации */
@@ -75,6 +110,7 @@
             height: 16px !important;
             flex-shrink: 0;
         }
+
         .pagination .page-link {
             display: inline-flex;
             align-items: center;
@@ -82,12 +118,92 @@
             padding: 0.35rem 0.65rem;
         }
 
+        /* Шапки страниц и таблицы */
+        .content .d-flex.justify-content-between.align-items-center {
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .content .table img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .content .btn {
+            white-space: nowrap;
+        }
+
+        @media (max-width: 991.98px) {
+            :root { --sidebar-width: 280px; }
+
+            .admin-layout {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                inset: 0 auto 0 0;
+                height: 100vh;
+                transform: translateX(-104%);
+                opacity: 0;
+                visibility: hidden;
+                width: var(--sidebar-width);
+                flex-basis: var(--sidebar-width);
+                box-shadow: 12px 0 26px rgba(0,0,0,0.28);
+                z-index: 1040;
+            }
+
+            body.sidebar-open .sidebar {
+                transform: translateX(0);
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .sidebar-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.45);
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease;
+                z-index: 1030;
+            }
+
+            body.sidebar-open .sidebar-backdrop {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .content {
+                padding: 72px 16px 32px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .content {
+                padding: 72px 14px 28px;
+            }
+
+            .content .btn {
+                width: 100%;
+            }
+        }
+
+        @media (min-width: 992px) {
+            #sidebarToggle {
+                top: 18px;
+                left: 18px;
+            }
+        }
     </style>
     @vite(['resources/js/app.js'])
 </head>
 <body>
-<button id="sidebarToggle" class="btn btn-dark"><i class="fa fa-bars"></i></button>
-<div class="d-flex">
+<button id="sidebarToggle" class="btn btn-dark" aria-label="Переключить меню"><i class="fa fa-bars"></i></button>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<div class="d-flex admin-layout">
     <nav id="sidebar" class="sidebar d-flex flex-column p-0">
         <h4 class="text-center py-3 border-bottom mb-0">
             <a href="{{ route('admin.settings') }}">Админпанель</a></h4>
@@ -124,8 +240,60 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.getElementById('sidebarToggle').addEventListener('click', function () {
-        document.getElementById('sidebar').classList.toggle('collapsed');
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebar = document.getElementById('sidebar');
+        const toggleButton = document.getElementById('sidebarToggle');
+        const backdrop = document.getElementById('sidebarBackdrop');
+
+        const isDesktop = () => window.innerWidth >= 992;
+        let desktopOpen = true;
+        let mobileOpen = false;
+        let lastIsDesktop = isDesktop();
+
+        const applySidebarState = () => {
+            if (isDesktop()) {
+                document.body.classList.toggle('sidebar-collapsed', !desktopOpen);
+                document.body.classList.remove('sidebar-open');
+                toggleButton?.setAttribute('aria-expanded', desktopOpen);
+            } else {
+                document.body.classList.remove('sidebar-collapsed');
+                document.body.classList.toggle('sidebar-open', mobileOpen);
+                toggleButton?.setAttribute('aria-expanded', mobileOpen);
+            }
+        };
+
+        applySidebarState();
+
+        toggleButton?.addEventListener('click', () => {
+            if (isDesktop()) {
+                desktopOpen = !desktopOpen;
+            } else {
+                mobileOpen = !mobileOpen;
+            }
+            applySidebarState();
+        });
+
+        backdrop?.addEventListener('click', () => {
+            mobileOpen = false;
+            applySidebarState();
+        });
+
+        window.addEventListener('resize', () => {
+            const nowDesktop = isDesktop();
+            if (nowDesktop !== lastIsDesktop) {
+                lastIsDesktop = nowDesktop;
+                applySidebarState();
+            }
+        });
+
+        document.querySelectorAll('.content table').forEach((table) => {
+            if (!table.closest('.table-responsive')) {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('table-responsive', 'admin-table-responsive');
+                table.parentNode.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            }
+        });
     });
 </script>
 @yield('scripts')
