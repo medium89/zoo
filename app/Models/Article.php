@@ -9,7 +9,11 @@ class Article extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title','excerpt','content'];
+    protected $fillable = ['title','excerpt','content','published_at'];
+
+    protected $casts = [
+        'published_at' => 'datetime',
+    ];
 
     public function images()
     {

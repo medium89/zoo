@@ -20,6 +20,21 @@
             <label class="form-label">Краткое описание</label>
             <textarea name="excerpt" class="form-control" rows="2">{{ $article->excerpt }}</textarea>
         </div>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Дата публикации</label>
+                <input type="datetime-local" name="published_at" class="form-control"
+                       value="{{ old('published_at', optional($article->published_at)->format('Y-m-d\\TH:i')) }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Создана</label>
+                <input type="text" class="form-control" value="{{ $article->created_at->format('d.m.Y H:i') }}" readonly>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Обновлена</label>
+                <input type="text" class="form-control" value="{{ $article->updated_at->format('d.m.Y H:i') }}" readonly>
+            </div>
+        </div>
         <div class="mb-3">
             <label class="form-label">Текст статьи (WYSIWYG)</label>
             <textarea name="content" class="form-control js-wysiwyg" rows="12" required>{{ $article->content }}</textarea>

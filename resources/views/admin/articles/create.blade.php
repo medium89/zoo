@@ -17,6 +17,11 @@
             <textarea name="excerpt" class="form-control" rows="2"></textarea>
         </div>
         <div class="mb-3">
+            <label class="form-label">Дата публикации</label>
+            <input type="datetime-local" name="published_at" class="form-control"
+                   value="{{ old('published_at', now()->format('Y-m-d\\TH:i')) }}">
+        </div>
+        <div class="mb-3">
             <label class="form-label">Текст статьи (WYSIWYG)</label>
             <textarea name="content" class="form-control js-wysiwyg" rows="12" required></textarea>
         </div>

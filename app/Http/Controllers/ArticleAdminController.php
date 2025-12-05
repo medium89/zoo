@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\ArticleImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class ArticleAdminController extends Controller
 {
@@ -26,8 +27,13 @@ class ArticleAdminController extends Controller
             'title' => 'required|string|max:255',
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
+            'published_at' => 'nullable|date',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
+
+        if (empty($data['published_at'])) {
+            $data['published_at'] = Carbon::now();
+        }
 
         $article = Article::create($data);
         $this->storeImages($request, $article);
@@ -47,6 +53,7 @@ class ArticleAdminController extends Controller
             'title' => 'required|string|max:255',
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
+            'published_at' => 'nullable|date',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
 
