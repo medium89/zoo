@@ -44,7 +44,12 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::resource('feedbacks', FeedbackController::class)->except(['create', 'show']);
     Route::get('boarding', [App\Http\Controllers\BoardingController::class, 'index'])->name('boarding.index');
     Route::post('boarding', [App\Http\Controllers\BoardingController::class, 'store'])->name('boarding.store');
+    Route::get('boarding/animals', [App\Http\Controllers\BoardingController::class, 'animals'])->name('boarding.animals');
+    Route::get('boarding/archive', [App\Http\Controllers\BoardingController::class, 'archiveIndex'])->name('boarding.archive');
     Route::put('boarding/{boarding}', [App\Http\Controllers\BoardingController::class, 'update'])->name('boarding.update');
+    Route::post('boarding/{boarding}/archive', [App\Http\Controllers\BoardingController::class, 'archive'])->name('boarding.archive.store');
+    Route::post('boarding/{boarding}/restore', [App\Http\Controllers\BoardingController::class, 'restore'])->name('boarding.restore');
+    Route::delete('boarding/{boarding}', [App\Http\Controllers\BoardingController::class, 'destroy'])->name('boarding.destroy');
     Route::get('boarding/data', [App\Http\Controllers\BoardingController::class, 'data'])->name('boarding.data');
     Route::get('boarding/export', [App\Http\Controllers\BoardingController::class, 'export'])->name('boarding.export');
     Route::resource('articles', App\Http\Controllers\ArticleAdminController::class);

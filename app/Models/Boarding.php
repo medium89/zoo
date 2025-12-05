@@ -15,10 +15,12 @@ class Boarding extends Model
         'service_type',
         'start_date',
         'end_date',
+        'archived_at',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'archived_at' => 'datetime',
     ];
 }

@@ -5,8 +5,8 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Передержка: календарь приёма</h1>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.boarding.index', ['year' => $year]) }}" class="btn btn-outline-secondary">Обновить</a>
-            <a href="{{ route('admin.boarding.export', ['year' => $year]) }}" class="btn btn-outline-primary">Экспорт CSV</a>
+            <a href="{{ route('admin.boarding.animals') }}" class="btn btn-outline-secondary">Животные</a>
+            <a href="{{ route('admin.boarding.archive') }}" class="btn btn-outline-primary">Архив</a>
         </div>
     </div>
 
@@ -30,7 +30,8 @@
                 <input type="hidden" name="_method" value="PUT" id="boardingMethod" disabled>
                 <div class="col-md-4">
                     <label class="form-label">Кличка</label>
-                    <input type="text" name="name" class="form-control" required>
+                    <input type="text" name="name" class="form-control" required list="animalHints" autocomplete="off" placeholder="Выберите или введите">
+                    <div class="form-text">Предложения подтягиваются из сохранённых животных передержки.</div>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Описание</label>
@@ -58,6 +59,11 @@
                     </div>
                 </div>
             </form>
+            <datalist id="animalHints">
+                @foreach($animals as $animal)
+                    <option value="{{ $animal->name }}" data-description="{{ $animal->description }}">{{ $animal->description }}</option>
+                @endforeach
+            </datalist>
         </div>
     </div>
 
@@ -88,16 +94,32 @@
                                     <td>{{ $row->start_date->toDateString() }} — {{ $row->end_date->toDateString() }}</td>
                                     <td>{{ $row->created_at->format('d.m.Y H:i') }}</td>
                                     <td class="text-end">
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-primary js-edit-entry"
-                                                data-id="{{ $row->id }}"
-                                                data-name="{{ $row->name }}"
-                                                data-description="{{ $row->description }}"
-                                                data-service-type="{{ $row->service_type }}"
-                                                data-start="{{ $row->start_date->toDateString() }}"
-                                                data-end="{{ $row->end_date->toDateString() }}">
-                                            Редактировать
-                                        </button>
+                                        <div class="d-flex justify-content-end flex-wrap gap-1">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary js-edit-entry"
+                                                    data-id="{{ $row->id }}"
+                                                    data-name="{{ $row->name }}"
+                                                    data-description="{{ $row->description }}"
+                                                    data-service-type="{{ $row->service_type }}"
+                                                    data-start="{{ $row->start_date->toDateString() }}"
+                                                    data-end="{{ $row->end_date->toDateString() }}">
+                                                Редактировать
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-secondary js-archive-entry"
+                                                    data-id="{{ $row->id }}"
+                                                    data-name="{{ $row->name }}"
+                                                    data-url="{{ route('admin.boarding.archive.store', $row) }}">
+                                                В архив
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger js-delete-entry"
+                                                    data-id="{{ $row->id }}"
+                                                    data-name="{{ $row->name }}"
+                                                    data-url="{{ route('admin.boarding.destroy', $row) }}">
+                                                Удалить
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -146,6 +168,45 @@
     .dp-day:hover { background:#f3f4f6; }
 </style>
 
+<div class="modal fade" id="archiveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" class="modal-content" id="archiveForm">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title">Отправить в архив</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="archiveText"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-primary">Архивировать</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" class="modal-content" id="deleteForm">
+            @csrf
+            @method('DELETE')
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Удалить запись</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="deleteText"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-danger">Удалить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @php($entriesJson = $entries->toJson())
 
 <script>
@@ -192,14 +253,42 @@ document.addEventListener('DOMContentLoaded', function(){
         return map;
     }
 
+    function monthsToRender(list, baseYear){
+        const collected = [];
+        for(let m=0; m<12; m++){
+            collected.push({ year: baseYear, month: m });
+        }
+        list.forEach(entry => {
+            const start = new Date(entry.start_date);
+            const end = new Date(entry.end_date);
+            let cur = new Date(start.getFullYear(), start.getMonth(), 1);
+            const last = new Date(end.getFullYear(), end.getMonth(), 1);
+            while(cur <= last){
+                collected.push({ year: cur.getFullYear(), month: cur.getMonth() });
+                cur.setMonth(cur.getMonth()+1);
+            }
+        });
+        const seen = new Set();
+        const uniq = [];
+        collected.forEach(item=>{
+            const key = `${item.year}-${item.month}`;
+            if(seen.has(key)) return;
+            seen.add(key);
+            uniq.push(item);
+        });
+        uniq.sort((a,b)=> new Date(a.year, a.month, 1) - new Date(b.year, b.month, 1));
+        return uniq;
+    }
+
     function render(){
         const map = buildMap();
+        const months = monthsToRender(state.entries, state.year);
         grid.innerHTML='';
-        for(let m=0;m<12;m++){
-            const first = new Date(state.year, m, 1);
+        months.forEach(({year, month})=>{
+            const first = new Date(year, month, 1);
             const wrap = document.createElement('div');
             wrap.className='cal-month';
-            wrap.innerHTML = `<h5>${MONTHS[m]} ${state.year}</h5>`;
+            wrap.innerHTML = `<h5>${MONTHS[month]} ${year}</h5>`;
 
             const header = document.createElement('div'); header.className='cal-header';
             ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d=>{
@@ -210,12 +299,12 @@ document.addEventListener('DOMContentLoaded', function(){
             const body = document.createElement('div'); body.className='cal-row';
             const startIdx = (first.getDay()+6)%7; // Monday start
             for(let i=0;i<startIdx;i++){ body.appendChild(document.createElement('div')); }
-            const daysInMonth = new Date(state.year, m+1, 0).getDate();
+            const daysInMonth = new Date(year, month+1, 0).getDate();
             for(let d=1; d<=daysInMonth; d++){
                 const cell = document.createElement('div');
                 cell.className = 'cal-cell day';
                 cell.textContent = d;
-                const dateStr = new Date(state.year, m, d).toISOString().slice(0,10);
+                const dateStr = new Date(year, month, d).toISOString().slice(0,10);
                 const list = map[dateStr] || [];
                 if(list.length>0){
                     cell.classList.add(list.length>1 ? 'conflict' : 'busy');
@@ -225,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function(){
             }
             wrap.appendChild(body);
             grid.appendChild(wrap);
-        }
+        });
         bindTooltips();
     }
 
@@ -270,6 +359,7 @@ document.addEventListener('DOMContentLoaded', function(){
     // Добавление/редактирование записей
     function setCreateMode(){
         methodInput.disabled = true;
+        methodInput.value = 'PUT';
         form.action = form.dataset.storeAction;
         submitBtn.textContent = 'Добавить';
         modeBadge.textContent = 'добавление';
@@ -281,6 +371,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     function setEditMode(payload){
         methodInput.disabled = false;
+        methodInput.value = 'PUT';
         form.action = form.dataset.updateTemplate.replace('__ID__', payload.id);
         formFields.name.value = payload.name || '';
         formFields.description.value = payload.description || '';
@@ -293,6 +384,18 @@ document.addEventListener('DOMContentLoaded', function(){
         modeBadge.classList.add('bg-warning');
         cancelBtn.classList.remove('d-none');
         form.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    function bindNameHints(){
+        const options = Array.from(document.querySelectorAll('#animalHints option'));
+        const maybeFill = () => {
+            const found = options.find(opt => opt.value === formFields.name.value);
+            if(found && !formFields.description.value){
+                formFields.description.value = found.dataset.description || '';
+            }
+        };
+        formFields.name.addEventListener('change', maybeFill);
+        formFields.name.addEventListener('blur', maybeFill);
     }
 
     cancelBtn.addEventListener('click', (e)=>{ e.preventDefault(); setCreateMode(); });
@@ -309,6 +412,33 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     });
 
+    const archiveModalEl = document.getElementById('archiveModal');
+    const archiveForm = document.getElementById('archiveForm');
+    const archiveText = document.getElementById('archiveText');
+    const archiveModal = archiveModalEl ? new bootstrap.Modal(archiveModalEl) : null;
+    document.querySelectorAll('.js-archive-entry').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            if(!archiveModal) return;
+            archiveForm.action = btn.dataset.url;
+            archiveText.textContent = `Отправить запись #${btn.dataset.id} (${btn.dataset.name}) в архив?`;
+            archiveModal.show();
+        });
+    });
+
+    const deleteModalEl = document.getElementById('deleteModal');
+    const deleteForm = document.getElementById('deleteForm');
+    const deleteText = document.getElementById('deleteText');
+    const deleteModal = deleteModalEl ? new bootstrap.Modal(deleteModalEl) : null;
+    document.querySelectorAll('.js-delete-entry').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            if(!deleteModal) return;
+            deleteForm.action = btn.dataset.url;
+            deleteText.textContent = `Удалить запись #${btn.dataset.id} (${btn.dataset.name}) без возможности восстановления?`;
+            deleteModal.show();
+        });
+    });
+
+    bindNameHints();
     setCreateMode();
 
     // Кастомный datepicker около поля

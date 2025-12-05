@@ -250,8 +250,8 @@
             <a href="{{ route('admin.settings') }}">Админпанель</a></h4>
         <div class="sidebar-content">
             <div class="sidebar-content__item">
-                <a href="{{ route('admin.settings') }}" class="{{ request()->is('zooadmin/settings*') ? 'active' : '' }}">Настройки</a>
-                <a href="/zooadmin/sliders" class="{{ request()->is('zooadmin/sliders*') ? 'active' : '' }}">Слайдер</a>
+                <a href="{{ route('admin.settings') }}" class="{{ request()->is('zooadmin/settings*') ? 'active' : '' }}"><i class="fa fa-gear me-2"></i>Настройки</a>
+                <a href="/zooadmin/sliders" class="{{ request()->is('zooadmin/sliders*') ? 'active' : '' }}"><i class="fa fa-photo-film me-2"></i>Слайдер</a>
                 <a href="/zooadmin/about" class="{{ request()->is('zooadmin/about*') ? 'active' : '' }}"><i class="fa fa-id-card me-2"></i>Обо мне</a>
                 <a href="/zooadmin/advantages" class="{{ request()->is('zooadmin/advantages*') ? 'active' : '' }}"><i class="fa fa-star me-2"></i>Преимущества</a>
                 <a href="/zooadmin/services" class="{{ request()->is('zooadmin/services*') ? 'active' : '' }}"><i class="fa fa-briefcase me-2"></i>Услуги</a>
@@ -263,7 +263,7 @@
                 <a href="{{ route('admin.article-comments.index') }}" class="{{ request()->is('zooadmin/article-comments*') ? 'active' : '' }}"><i class="fa fa-comments me-2"></i>Комментарии</a>
             </div>
             <div class="sidebar-content__item">
-                <a href="{{ route('admin.users.index') }}" class="{{ request()->is('zooadmin/users*') ? 'active' : '' }}">Пользователи</a>
+                <a href="{{ route('admin.users.index') }}" class="{{ request()->is('zooadmin/users*') ? 'active' : '' }}"><i class="fa fa-users me-2"></i>Пользователи</a>
             </div>
             <div class="sidebar-content__item">
                 <a href="{{ route('logout') }}"

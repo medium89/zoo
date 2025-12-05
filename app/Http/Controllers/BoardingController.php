@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Animal;
 use App\Models\Boarding;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -12,13 +13,16 @@ class BoardingController extends Controller
     public function index(Request $request)
     {
         $year = (int)($request->query('year', 2026));
+        $this->hydrateAnimalsFromBoardings();
         $entries = $this->entriesForYear($year);
-        $latest = Boarding::orderByDesc('created_at')->take(20)->get();
+        $latest = Boarding::whereNull('archived_at')->orderByDesc('created_at')->take(20)->get();
+        $animals = Animal::orderBy('name')->get();
 
         return view('admin.boarding.index', [
             'year' => $year,
             'entries' => $entries,
             'latest' => $latest,
+            'animals' => $animals,
         ]);
     }
 
@@ -32,7 +36,8 @@ class BoardingController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
-        Boarding::create($data);
+        $entry = Boarding::create($data);
+        $this->syncAnimal($data);
 
         return back()->with('success', 'Запись добавлена');
     }
@@ -48,6 +53,7 @@ class BoardingController extends Controller
         ]);
 
         $boarding->update($data);
+        $this->syncAnimal($data);
 
         return back()->with('success', 'Запись обновлена');
     }
@@ -58,6 +64,52 @@ class BoardingController extends Controller
         return response()->json([
             'entries' => $this->entriesForYear($year),
         ]);
+    }
+
+    public function archive(Boarding $boarding)
+    {
+        $boarding->archived_at = now();
+        $boarding->save();
+
+        return back()->with('success', 'Запись перенесена в архив');
+    }
+
+    public function restore(Boarding $boarding)
+    {
+        $boarding->archived_at = null;
+        $boarding->save();
+
+        return back()->with('success', 'Запись восстановлена');
+    }
+
+    public function destroy(Boarding $boarding)
+    {
+        $boarding->delete();
+
+        return back()->with('success', 'Запись удалена');
+    }
+
+    public function archiveIndex()
+    {
+        $archived = Boarding::whereNotNull('archived_at')
+            ->orderByDesc('archived_at')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('admin.boarding.archive', compact('archived'));
+    }
+
+    public function animals()
+    {
+        $this->hydrateAnimalsFromBoardings();
+        $animals = Animal::withCount(['boardings'])
+            ->with(['boardings' => function($query) {
+                $query->latest('start_date')->limit(1);
+            }])
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.boarding.animals', compact('animals'));
     }
 
     public function export(Request $request): StreamedResponse
@@ -85,7 +137,8 @@ class BoardingController extends Controller
         $start = Carbon::create($year, 1, 1);
         $end = Carbon::create($year, 12, 31);
 
-        return Boarding::where(function($q) use ($start, $end) {
+        return Boarding::whereNull('archived_at')
+            ->where(function($q) use ($start, $end) {
                 $q->whereBetween('start_date', [$start, $end])
                   ->orWhereBetween('end_date', [$start, $end])
                   ->orWhere(function($sub) use ($start, $end) {
@@ -104,5 +157,41 @@ class BoardingController extends Controller
                     'end_date' => $item->end_date->toDateString(),
                 ];
             });
+    }
+
+    private function syncAnimal(array $data): void
+    {
+        if (($data['service_type'] ?? null) !== 'передержка') {
+            return;
+        }
+
+        $animal = Animal::firstOrNew(['name' => $data['name']]);
+
+        if (!empty($data['description'])) {
+            $animal->description = $data['description'];
+        }
+
+        if (!$animal->exists) {
+            $animal->save();
+        } elseif ($animal->isDirty()) {
+            $animal->save();
+        }
+    }
+
+    private function hydrateAnimalsFromBoardings(): void
+    {
+        $existingNames = Animal::pluck('name')->all();
+        $missing = Boarding::where('service_type', 'передержка')
+            ->whereNotIn('name', $existingNames)
+            ->orderByDesc('created_at')
+            ->get()
+            ->unique('name');
+
+        foreach ($missing as $boarding) {
+            Animal::create([
+                'name' => $boarding->name,
+                'description' => $boarding->description,
+            ]);
+        }
     }
 }
