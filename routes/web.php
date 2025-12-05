@@ -44,6 +44,7 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::resource('feedbacks', FeedbackController::class)->except(['create', 'show']);
     Route::get('boarding', [App\Http\Controllers\BoardingController::class, 'index'])->name('boarding.index');
     Route::post('boarding', [App\Http\Controllers\BoardingController::class, 'store'])->name('boarding.store');
+    Route::put('boarding/{boarding}', [App\Http\Controllers\BoardingController::class, 'update'])->name('boarding.update');
     Route::get('boarding/data', [App\Http\Controllers\BoardingController::class, 'data'])->name('boarding.data');
     Route::get('boarding/export', [App\Http\Controllers\BoardingController::class, 'export'])->name('boarding.export');
     Route::resource('articles', App\Http\Controllers\ArticleAdminController::class);

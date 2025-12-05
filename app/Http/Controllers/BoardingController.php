@@ -37,6 +37,21 @@ class BoardingController extends Controller
         return back()->with('success', 'Запись добавлена');
     }
 
+    public function update(Request $request, Boarding $boarding)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'service_type' => 'required|string|in:передержка,выгул',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $boarding->update($data);
+
+        return back()->with('success', 'Запись обновлена');
+    }
+
     public function data(Request $request)
     {
         $year = (int)($request->query('year', Carbon::now()->year));
