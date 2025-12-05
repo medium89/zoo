@@ -56,39 +56,39 @@
         <button class="btn btn-success">Сохранить</button>
     </form>
 </div>
+@include('admin.partials.wysiwyg-scripts')
 @push('scripts')
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
-    tinymce.init({
-        selector: '.js-wysiwyg',
-        height: 500,
-        menubar: true,
-        plugins: 'link image lists table code codesample media',
-        toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image media | code',
-        images_upload_url: '{{ route('admin.articles.upload') }}',
-        images_upload_credentials: true,
-        relative_urls: false,
-        convert_urls: false,
-        setup: function (editor) {
-            editor.on('init', function(){
-                editor.options.set('images_upload_handler', function (blobInfo, success, failure){
-                    const xhr = new XMLHttpRequest();
-                    xhr.withCredentials = true;
-                    xhr.open('POST', '{{ route('admin.articles.upload') }}');
-                    xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
-                    xhr.onload = function() {
-                        if (xhr.status !== 200) { failure('HTTP Error: ' + xhr.status); return; }
-                        const json = JSON.parse(xhr.responseText);
-                        if (!json || typeof json.location != 'string') { failure('Invalid JSON: ' + xhr.responseText); return; }
-                        success(json.location);
-                    };
-                    const formData = new FormData();
-                    formData.append('file', blobInfo.blob(), blobInfo.filename());
-                    xhr.send(formData);
-                });
-            });
-        }
+    const target = document.querySelector('.js-wysiwyg');
+    if(!target || !window.ClassicEditor){ return; }
+
+    ClassicEditor.create(target, {
+        toolbar: [
+            'undo','redo','|',
+            'heading','|',
+            'bold','italic','link','|',
+            'bulletedList','numberedList','|',
+            'insertTable','blockQuote','|',
+            'imageUpload','mediaEmbed'
+        ],
+        heading: {
+            options: [
+                { model: 'paragraph', title: 'Обычный', class: 'ck-heading_paragraph' },
+                { model: 'heading2', view: 'h2', title: 'Заголовок 2', class: 'ck-heading_heading2' },
+                { model: 'heading3', view: 'h3', title: 'Заголовок 3', class: 'ck-heading_heading3' }
+            ]
+        },
+        ckfinder: {
+            uploadUrl: '{{ route('admin.articles.upload') }}',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        },
+        link: { decorators: { addTargetToExternalLinks: true } },
+        mediaEmbed: { previewsInData: true }
+    }).then(editor => {
+        editor.ui.view.editable.element.style.minHeight = '420px';
+    }).catch(error => {
+        console.error('CKEditor init error', error);
     });
 });
 </script>
