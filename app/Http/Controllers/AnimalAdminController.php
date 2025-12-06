@@ -9,7 +9,7 @@ class AnimalAdminController extends Controller
 {
     public function index()
     {
-        $animals = Animal::orderBy('name')->paginate(20);
+        $animals = Animal::orderBy('order')->orderBy('name')->paginate(20);
         return view('admin.animals.index', compact('animals'));
     }
 
@@ -25,6 +25,7 @@ class AnimalAdminController extends Controller
             'description' => 'nullable|string|max:255',
         ]);
 
+        $data['order'] = (int)Animal::max('order') + 1;
         Animal::create($data);
 
         return redirect()->route('admin.animals.index')->with('success', 'Питомец добавлен');
@@ -52,5 +53,16 @@ class AnimalAdminController extends Controller
         $animal->delete();
 
         return redirect()->route('admin.animals.index')->with('success', 'Питомец удален');
+    }
+
+    public function reorder(Request $request)
+    {
+        foreach ($request->input('orders', []) as $id => $order) {
+            if ($model = Animal::find($id)) {
+                $model->order = (int)$order;
+                $model->save();
+            }
+        }
+        return back()->with('success', 'Порядок обновлён');
     }
 }

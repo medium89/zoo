@@ -493,6 +493,7 @@
         // Drag & drop сортировка
         if (window.Sortable) {
             document.querySelectorAll('.js-sortable').forEach((el)=>{
+                if (el.dataset.customSort === '1') return;
                 const sortable = Sortable.create(el, {
                     animation: 150,
                     handle: '.js-order-label',

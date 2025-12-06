@@ -1,4 +1,5 @@
 @extends('admin.index')
+@php use Illuminate\Support\Str; @endphp
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Услуги</h1>
@@ -19,7 +20,7 @@
         <div>Статус</div>
         <div class="text-end">Действия</div>
     </div>
-    <div class="admin-grid-body js-sortable" id="srvSort">
+    <div class="admin-grid-body js-sortable" id="srvSort" data-custom-sort="1">
         @foreach($services as $service)
             <div class="admin-grid-row" data-id="{{ $service->id }}">
                 <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
@@ -28,7 +29,6 @@
                 <div class="text-clip">{{ Str::limit(strip_tags($service->text), 140) }}</div>
                 <div>
                     <div class="d-flex align-items-center gap-2">
-                        <input type="hidden" name="statuses[{{ $service->id }}]" value="0" form="status-form">
                         <div class="form-check form-switch mb-0">
                             <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $service->id }}" {{ $service->active ? 'checked' : '' }}>
                         </div>
@@ -77,13 +77,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             handle: '.js-order-label',
             onEnd: ()=>{
                 renumber();
-                const form = document.getElementById('status-form');
-                form.querySelectorAll('input[name^="orders["]').forEach(el=>el.remove());
-                document.querySelectorAll('#srvSort .js-order-input').forEach(input=>{
-                    const clone = input.cloneNode(true);
-                    form.appendChild(clone);
-                });
-                form.submit();
+                document.getElementById('status-form').submit();
             }
         });
     }

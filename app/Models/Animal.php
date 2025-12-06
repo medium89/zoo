@@ -12,6 +12,7 @@ class Animal extends Model
     protected $fillable = [
         'name',
         'description',
+        'order',
     ];
 
     public function boardings()

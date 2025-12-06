@@ -17,7 +17,7 @@
         <div>Статус</div>
         <div class="text-end">Действия</div>
     </div>
-    <div class="admin-grid-body js-sortable" id="slidersSort">
+    <div class="admin-grid-body js-sortable" id="slidersSort" data-custom-sort="1">
         @foreach($sliders as $slider)
             <div class="admin-grid-row" data-id="{{ $slider->id }}">
                 <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
@@ -69,6 +69,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
             form.submit();
         });
     });
+
+    if (window.Sortable) {
+        Sortable.create(document.getElementById('slidersSort'), {
+            animation:150,
+            handle: '.js-order-label',
+            onEnd: ()=>{
+                renumber();
+                document.getElementById('status-form').submit();
+            }
+        });
+    }
 });
 </script>
 @endsection 

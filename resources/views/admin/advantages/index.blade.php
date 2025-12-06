@@ -1,4 +1,5 @@
 @extends('admin.index')
+@php use Illuminate\Support\Str; @endphp
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Преимущества</h1>
@@ -19,19 +20,16 @@
         <div>Статус</div>
         <div class="text-end">Действия</div>
     </div>
-    <div class="admin-grid-body js-sortable" id="advSort">
+    <div class="admin-grid-body js-sortable" id="advSort" data-custom-sort="1">
         @foreach($advantages as $advantage)
             <div class="admin-grid-row adv-card-row" data-id="{{ $advantage->id }}">
                 <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
                 <div><img src="{{ asset('storage/'.$advantage->image) }}" alt="" width="90" class="rounded shadow-sm"></div>
                 <div class="fw-semibold">{{ $advantage->title }}</div>
-                <div class="adv-text text-clip">{!! $advantage->text !!}</div>
-                <div>
-                    <div class="d-flex align-items-center gap-2">
-                        <input type="hidden" name="statuses[{{ $advantage->id }}]" value="0" form="status-form">
-                        <div class="form-check form-switch mb-0">
-                            <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $advantage->id }}" {{ $advantage->active ? 'checked' : '' }}>
-                        </div>
+                <div class="adv-text text-clip">{{ Str::limit(strip_tags($advantage->text), 260) }}</div>
+                <div class="d-flex align-items-center">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $advantage->id }}" {{ $advantage->active ? 'checked' : '' }}>
                     </div>
                     <input type="hidden" name="orders[{{ $advantage->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="status-form">
                 </div>
@@ -77,13 +75,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             handle: '.js-order-label',
             onEnd: ()=>{
                 renumber();
-                const form = document.getElementById('status-form');
-                form.querySelectorAll('input[name^="orders["]').forEach(el=>el.remove());
-                document.querySelectorAll('#advSort .js-order-input').forEach(input=>{
-                    const clone = input.cloneNode(true);
-                    form.appendChild(clone);
-                });
-                form.submit();
+                document.getElementById('status-form').submit();
             }
         });
     }

@@ -21,6 +21,7 @@ class Article extends Model
         'seo_robots',
         'seo_charset',
         'cover_path',
+        'order',
     ];
 
     protected $casts = [

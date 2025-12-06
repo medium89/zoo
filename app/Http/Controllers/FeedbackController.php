@@ -41,6 +41,7 @@ class FeedbackController extends Controller
             'phone' => $request->phone,
             'message' => $request->message,
             'status' => 'new',
+            'order' => (int)Feedback::max('order') + 1,
         ]);
 
         $text = "Новая заявка с сайта:\n";
@@ -68,7 +69,7 @@ class FeedbackController extends Controller
 
     public function index()
     {
-        $feedbacks = Feedback::latest()->paginate(10);
+        $feedbacks = Feedback::orderBy('order')->latest()->paginate(10);
         return view('admin.feedbacks.index', compact('feedbacks'));
     }
 
@@ -95,5 +96,23 @@ class FeedbackController extends Controller
     {
         $feedback->delete();
         return redirect()->route('admin.feedbacks.index')->with('success', 'Feedback deleted successfully!');
+    }
+
+    public function reorder(Request $request)
+    {
+        foreach ($request->input('orders', []) as $id => $order) {
+            if ($model = Feedback::find($id)) {
+                $model->order = (int)$order;
+                $model->save();
+            }
+        }
+        foreach ($request->input('statuses', []) as $id => $status) {
+            if ($model = Feedback::find($id)) {
+                $model->status = $status;
+                $model->save();
+            }
+        }
+
+        return back()->with('success', 'Изменения сохранены');
     }
 }

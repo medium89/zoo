@@ -41,8 +41,10 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::resource('socials', App\Http\Controllers\SocialController::class);
     Route::post('socials/status', [App\Http\Controllers\SocialController::class, 'updateStatus'])->name('socials.status');
     Route::resource('animals', App\Http\Controllers\AnimalAdminController::class)->except(['show']);
+    Route::post('animals/reorder', [App\Http\Controllers\AnimalAdminController::class, 'reorder'])->name('animals.reorder');
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::resource('feedbacks', FeedbackController::class)->except(['create', 'show']);
+    Route::post('feedbacks/reorder', [FeedbackController::class, 'reorder'])->name('feedbacks.reorder');
     Route::get('boarding', [App\Http\Controllers\BoardingController::class, 'index'])->name('boarding.index');
     Route::post('boarding', [App\Http\Controllers\BoardingController::class, 'store'])->name('boarding.store');
     Route::get('boarding/animals', [App\Http\Controllers\BoardingController::class, 'animals'])->name('boarding.animals');
@@ -54,7 +56,9 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::get('boarding/data', [App\Http\Controllers\BoardingController::class, 'data'])->name('boarding.data');
     Route::get('boarding/export', [App\Http\Controllers\BoardingController::class, 'export'])->name('boarding.export');
     Route::resource('articles', App\Http\Controllers\ArticleAdminController::class);
+    Route::post('articles/status', [App\Http\Controllers\ArticleAdminController::class, 'updateStatus'])->name('articles.status');
     Route::resource('article-comments', App\Http\Controllers\ArticleCommentAdminController::class)->only(['index','update','destroy']);
+    Route::post('article-comments/status', [App\Http\Controllers\ArticleCommentAdminController::class, 'updateStatus'])->name('article-comments.status');
     Route::post('articles/upload-image', [App\Http\Controllers\ArticleAdminController::class, 'uploadImage'])->name('articles.upload');
 });
 

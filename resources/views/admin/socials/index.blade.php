@@ -21,7 +21,7 @@
         <div>Статус</div>
         <div class="text-end">Действия</div>
     </div>
-    <div class="admin-grid-body js-sortable" id="socSort">
+    <div class="admin-grid-body js-sortable" id="socSort" data-custom-sort="1">
         @foreach($socials as $social)
             <div class="admin-grid-row" data-id="{{ $social->id }}">
                 <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
@@ -32,7 +32,6 @@
                 <div class="text-clip">{{ $social->text }}</div>
                 <div>
                     <div class="d-flex align-items-center gap-2">
-                        <input type="hidden" name="statuses[{{ $social->id }}]" value="0" form="status-form">
                         <div class="form-check form-switch mb-0">
                             <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $social->id }}" {{ $social->active ? 'checked' : '' }}>
                         </div>
@@ -81,13 +80,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             handle: '.js-order-label',
             onEnd: ()=>{
                 renumber();
-                const form = document.getElementById('status-form');
-                form.querySelectorAll('input[name^="orders["]').forEach(el=>el.remove());
-                document.querySelectorAll('#socSort .js-order-input').forEach(input=>{
-                    const clone = input.cloneNode(true);
-                    form.appendChild(clone);
-                });
-                form.submit();
+                document.getElementById('status-form').submit();
             }
         });
     }

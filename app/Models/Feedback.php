@@ -14,5 +14,6 @@ class Feedback extends Model
         'phone',
         'message',
         'status',
+        'order',
     ];
 }

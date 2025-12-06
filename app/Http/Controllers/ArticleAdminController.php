@@ -14,7 +14,7 @@ class ArticleAdminController extends Controller
 {
     public function index()
     {
-        $articles = Article::latest()->paginate(10);
+        $articles = Article::orderBy('order')->latest()->paginate(10);
         return view('admin.articles.index', compact('articles'));
     }
 
@@ -49,6 +49,7 @@ class ArticleAdminController extends Controller
         $data['slug'] = $this->makeSlug($data['slug'] ?? null, $data['title']);
         $data['seo_robots'] = $data['seo_robots'] ?? 'index, follow';
         $data['seo_charset'] = $data['seo_charset'] ?? 'UTF-8';
+        $data['order'] = (int)Article::max('order') + 1;
 
         $article = Article::create($data);
         $scale = (int)$request->input('image_scale', 100);
@@ -158,5 +159,23 @@ class ArticleAdminController extends Controller
             $slug = $base . '-' . $i++;
         }
         return $slug;
+    }
+
+    public function updateStatus(Request $request)
+    {
+        foreach ($request->input('statuses', []) as $id => $status) {
+            if ($model = Article::find($id)) {
+                $model->active = (bool)$status;
+                $model->save();
+            }
+        }
+        foreach ($request->input('orders', []) as $id => $order) {
+            if ($model = Article::find($id)) {
+                $model->order = (int)$order;
+                $model->save();
+            }
+        }
+
+        return back()->with('success', 'Изменения сохранены');
     }
 }

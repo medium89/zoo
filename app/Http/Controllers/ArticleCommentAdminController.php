@@ -9,7 +9,7 @@ class ArticleCommentAdminController extends Controller
 {
     public function index()
     {
-        $comments = ArticleComment::latest()->paginate(20);
+        $comments = ArticleComment::orderBy('order')->latest()->paginate(20);
         return view('admin.articles.comments', compact('comments'));
     }
 
@@ -26,5 +26,23 @@ class ArticleCommentAdminController extends Controller
     {
         $article_comment->delete();
         return back()->with('success', 'Комментарий удалён');
+    }
+
+    public function updateStatus(Request $request)
+    {
+        foreach ($request->input('statuses', []) as $id => $status) {
+            if ($comment = ArticleComment::find($id)) {
+                $comment->status = $status;
+                $comment->save();
+            }
+        }
+        foreach ($request->input('orders', []) as $id => $order) {
+            if ($comment = ArticleComment::find($id)) {
+                $comment->order = (int)$order;
+                $comment->save();
+            }
+        }
+
+        return back()->with('success', 'Изменения сохранены');
     }
 }

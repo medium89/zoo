@@ -11,27 +11,35 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <div class="admin-grid" style="--grid-cols: 80px 2fr 1.2fr 1.2fr 200px;">
+    <form id="articles-form" action="{{ route('admin.articles.status') }}" method="POST">@csrf</form>
+    <div class="admin-grid" style="--grid-cols: 100px 2fr 1.2fr 1.2fr 140px 180px;">
         <div class="admin-grid-header">
-            <div>#</div>
+            <div>Порядок</div>
             <div>Заголовок</div>
             <div>Создана</div>
             <div>Публикация</div>
+            <div>Статус</div>
             <div class="text-end">Действия</div>
         </div>
-        <div class="admin-grid-body">
+        <div class="admin-grid-body js-sortable" id="articlesSort" data-custom-sort="1">
             @forelse($articles as $article)
-                <div class="admin-grid-row">
-                    <div>{{ $article->id }}</div>
-                    <div>{{ $article->title }}</div>
+                <div class="admin-grid-row" data-id="{{ $article->id }}">
+                    <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
+                    <div class="text-clip">{{ $article->title }}</div>
                     <div>{{ $article->created_at->format('d.m.Y H:i') }}</div>
                     <div>{{ $article->published_at ? $article->published_at->format('d.m.Y H:i') : '—' }}</div>
+                    <div class="d-flex align-items-center">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $article->id }}" {{ $article->active ? 'checked' : '' }}>
+                        </div>
+                        <input type="hidden" name="orders[{{ $article->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="articles-form">
+                    </div>
                     <div class="actions">
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{{ route('admin.articles.edit', $article) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
                             <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="d-inline" onsubmit="return confirm('Удалить статью?')">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-danger">Удалить</button>
+                                <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
                             </form>
                         </div>
                     </div>
@@ -44,4 +52,40 @@
 
     {{ $articles->links() }}
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+    const renumber = ()=>{
+        document.querySelectorAll('#articlesSort .admin-grid-row').forEach((row, idx)=>{
+            row.querySelector('.js-order-label').innerHTML = `<i class="fa fa-grip-vertical me-1"></i>${idx+1}`;
+            const orderInput = row.querySelector('.js-order-input');
+            if (orderInput) orderInput.value = idx+1;
+        });
+    };
+    renumber();
+
+    const form = document.getElementById('articles-form');
+    document.querySelectorAll('#articlesSort .js-status-toggle').forEach(toggle=>{
+        toggle.addEventListener('change', ()=>{
+            form.querySelectorAll('input[name^="statuses["]').forEach(el=>el.remove());
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `statuses[${toggle.dataset.id}]`;
+            input.value = toggle.checked ? 1 : 0;
+            form.appendChild(input);
+            form.submit();
+        });
+    });
+
+    if (window.Sortable) {
+        Sortable.create(document.getElementById('articlesSort'), {
+            animation:150,
+            handle: '.js-order-label',
+            onEnd: ()=>{
+                renumber();
+                form.submit();
+            }
+        });
+    }
+});
+</script>
 @endsection

@@ -34,7 +34,7 @@ class ArticlePublicController extends Controller
             $q->whereDate('published_at', '<=', $toDate);
         }
 
-        $articles = $q->orderByDesc('published_at')->orderByDesc('created_at')->paginate(9)->appends(request()->query());
+        $articles = $q->orderBy('order')->orderByDesc('published_at')->orderByDesc('created_at')->paginate(9)->appends(request()->query());
 
         return view('articles.index', compact('articles', 'search', 'from', 'to'));
     }
@@ -44,6 +44,7 @@ class ArticlePublicController extends Controller
         $article->load('images');
         $comments = ArticleComment::where('article_id', $article->id)
             ->where('status', 'approved')
+            ->orderBy('order')
             ->orderBy('created_at')
             ->get();
 
@@ -63,6 +64,7 @@ class ArticlePublicController extends Controller
 
         $data['article_id'] = $article->id;
         $data['status'] = 'approved';
+        $data['order'] = (int)ArticleComment::max('order') + 1;
 
         ArticleComment::create($data);
 
