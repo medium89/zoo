@@ -24,7 +24,6 @@
                 <div><img src="{{ asset('storage/'.$slider->image) }}" alt="" width="120"></div>
                 <div>
                     <div class="d-flex align-items-center gap-2">
-                        <input type="hidden" name="statuses[{{ $slider->id }}]" value="0" form="status-form">
                         <div class="form-check form-switch mb-0">
                             <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $slider->id }}" {{ $slider->active ? 'checked' : '' }}>
                         </div>
@@ -50,14 +49,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.querySelectorAll('.js-status-toggle').forEach(toggle=>{
         toggle.addEventListener('change', ()=>{
             const form = document.getElementById('status-form');
-            let input = form.querySelector(`input[name="statuses[${toggle.dataset.id}]"]`);
-            if (!input) {
-                input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = `statuses[${toggle.dataset.id}]`;
-                form.appendChild(input);
-            }
+            // убрать старые статусы
+            form.querySelectorAll('input[name^="statuses["]').forEach(el=>el.remove());
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `statuses[${toggle.dataset.id}]`;
             input.value = toggle.checked ? 1 : 0;
+            form.appendChild(input);
             form.submit();
         });
     });
