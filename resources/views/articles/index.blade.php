@@ -5,9 +5,7 @@
 
 <section class="article-hero">
     <div class="container">
-        <p class="text-uppercase text-muted mb-2 small">Блог</p>
-        <h1 class="fw-bold">Статьи</h1>
-        <p class="text-muted mb-0">Свежие материалы о заботе за питомцами и сервисах.</p>
+        <h1 class="fw-bold mb-0">Статьи</h1>
     </div>
 </section>
 

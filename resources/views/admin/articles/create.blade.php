@@ -27,7 +27,7 @@
         </div>
         <div class="mb-3">
             <label class="form-label">Текст статьи (WYSIWYG)</label>
-            <textarea name="content" class="form-control js-wysiwyg" rows="12" required data-editor-custom="1"></textarea>
+            <textarea name="content" class="form-control js-wysiwyg" rows="12" data-editor-custom="1"></textarea>
         </div>
         <div class="mb-3">
             <label class="form-label">Изображения (можно несколько)</label>

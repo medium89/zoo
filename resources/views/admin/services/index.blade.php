@@ -17,18 +17,18 @@
             <th>Изображение</th>
             <th>Заголовок</th>
             <th>Текст</th>
-            <th>Действия</th>
+            <th></th>
             <th>Статус</th>
         </tr>
     </thead>
     <tbody class="js-sortable">
     @foreach($services as $service)
         <tr data-id="{{ $service->id }}">
-            <td class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $service->order }}</td>
-            <td><img src="{{ asset('storage/'.$service->image) }}" alt="" width="80"></td>
+            <td class="js-order-label text-muted no-label" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $service->order }}</td>
+            <td class="no-label"><img src="{{ asset('storage/'.$service->image) }}" alt="" width="80"></td>
             <td>{{ $service->title }}</td>
             <td>{{ Str::limit($service->text, 50) }}</td>
-            <td>
+            <td class="no-label">
                 <a href="{{ route('admin.services.edit', $service->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
                 <form action="{{ route('admin.services.destroy', $service->id) }}" method="POST" style="display:inline-block">
                     @csrf

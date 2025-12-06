@@ -20,21 +20,21 @@
             <th>Текст ссылки</th>
             <th>Текст</th>
             <th>Порядок</th>
-            <th>Действия</th>
+            <th></th>
             <th>Статус</th>
         </tr>
     </thead>
     <tbody class="js-sortable">
     @foreach($socials as $social)
         <tr data-id="{{ $social->id }}">
-            <td class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $social->order }}</td>
+            <td class="js-order-label text-muted no-label" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $social->order }}</td>
             <td><i class="{{ $social->icon }}"></i> <span class="text-muted">{{ $social->icon }}</span></td>
             <td>{{ $social->title }}</td>
             <td><a href="{{ $social->link }}" target="_blank">{{ $social->link }}</a></td>
             <td>{{ $social->link_text }}</td>
             <td>{{ $social->text }}</td>
             <td>{{ $social->order }}</td>
-            <td>
+            <td class="no-label">
                 <a href="{{ route('admin.socials.edit', $social->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
                 <form action="{{ route('admin.socials.destroy', $social->id) }}" method="POST" style="display:inline-block">
                     @csrf

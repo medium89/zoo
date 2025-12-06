@@ -17,18 +17,18 @@
             <th>Изображение</th>
             <th>Заголовок</th>
             <th>Текст</th>
-            <th>Действия</th>
+            <th></th>
             <th>Статус</th>
         </tr>
     </thead>
     <tbody class="js-sortable">
     @foreach($advantages as $advantage)
         <tr data-id="{{ $advantage->id }}">
-            <td class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $advantage->order }}</td>
-            <td><img src="{{ asset('storage/'.$advantage->image) }}" alt="" width="80"></td>
+            <td class="js-order-label text-muted no-label" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $advantage->order }}</td>
+            <td class="no-label"><img src="{{ asset('storage/'.$advantage->image) }}" alt="" width="80"></td>
             <td>{{ $advantage->title }}</td>
             <td>{{ $advantage->text }}</td>
-            <td>
+            <td class="no-label">
                 <a href="{{ route('admin.advantages.edit', $advantage->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
                 <form action="{{ route('admin.advantages.destroy', $advantage->id) }}" method="POST" style="display:inline-block">
                     @csrf

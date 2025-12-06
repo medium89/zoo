@@ -29,7 +29,7 @@
                     <td>{{ $article->title }}</td>
                     <td>{{ $article->created_at->format('d.m.Y H:i') }}</td>
                     <td>{{ $article->published_at ? $article->published_at->format('d.m.Y H:i') : '—' }}</td>
-                    <td class="text-end">
+                    <td class="text-end no-label">
                         <a href="{{ route('admin.articles.edit', $article) }}" class="btn btn-sm btn-warning">Редактировать</a>
                         <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="d-inline" onsubmit="return confirm('Удалить статью?')">
                             @csrf @method('DELETE')

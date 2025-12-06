@@ -80,7 +80,7 @@
                                 <th>Тип услуги</th>
                                 <th>Период</th>
                                 <th>Создано</th>
-                                <th class="text-end">Действия</th>
+                                <th class="text-end"></th>
                             </tr>
                         </thead>
                         <tbody>

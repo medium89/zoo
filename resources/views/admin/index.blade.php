@@ -6,7 +6,6 @@
     <title>Админпанель</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/font-awesome/css/all.min.css') }}">
     <style>
         :root { --sidebar-width: 240px; }
 
@@ -144,8 +143,10 @@
         }
         .content .admin-flex-table tr {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            flex-direction: row;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px 18px;
             padding: 14px 16px;
             border-radius: 14px;
             background: #fff;
@@ -158,7 +159,8 @@
             align-items: flex-start;
             gap: 10px;
             border: 0;
-            padding: 4px 0;
+            padding: 2px 0;
+            flex: 0 1 auto;
         }
         .content .admin-flex-table td::before {
             content: attr(data-label);
@@ -169,6 +171,16 @@
         }
         .content .admin-flex-table td:last-child {
             padding-bottom: 0;
+        }
+        .content .admin-flex-table td.no-label::before {
+            display: none;
+        }
+        .content .admin-flex-table td .js-order-label,
+        .js-order-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            vertical-align: middle;
         }
 
         .content .btn {
