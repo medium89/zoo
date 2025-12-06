@@ -45,6 +45,7 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::resource('feedbacks', FeedbackController::class)->except(['create', 'show']);
     Route::post('feedbacks/reorder', [FeedbackController::class, 'reorder'])->name('feedbacks.reorder');
+    Route::resource('categories', App\Http\Controllers\CategoryController::class)->except(['show']);
     Route::get('boarding', [App\Http\Controllers\BoardingController::class, 'index'])->name('boarding.index');
     Route::post('boarding', [App\Http\Controllers\BoardingController::class, 'store'])->name('boarding.store');
     Route::get('boarding/animals', [App\Http\Controllers\BoardingController::class, 'animals'])->name('boarding.animals');

@@ -58,6 +58,15 @@
                 <input type="text" class="form-control" value="{{ $article->updated_at->format('d.m.Y H:i') }}" readonly>
             </div>
         </div>
+        <div class="mb-3 mt-3">
+            <label class="form-label">Категория</label>
+            <select name="category_id" class="form-select">
+                <option value="">Без категории</option>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}" {{ $article->category_id == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                @endforeach
+            </select>
+        </div>
         <div class="mb-3">
             <label class="form-label">Текст статьи (WYSIWYG)</label>
             <textarea name="content" class="form-control js-wysiwyg" rows="12" data-editor-custom="1">{{ $article->content }}</textarea>

@@ -42,6 +42,15 @@
                    value="{{ old('published_at', now()->format('Y-m-d\\TH:i')) }}">
         </div>
         <div class="mb-3">
+            <label class="form-label">Категория</label>
+            <select name="category_id" class="form-select">
+                <option value="">Без категории</option>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="mb-3">
             <label class="form-label">Текст статьи (WYSIWYG)</label>
             <textarea name="content" class="form-control js-wysiwyg" rows="12" data-editor-custom="1"></textarea>
         </div>

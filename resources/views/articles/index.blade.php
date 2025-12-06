@@ -4,18 +4,29 @@
 @include('sections.header-lite')
 
 <section class="article-hero">
-    <div class="container">
+    <div class="container text-center">
         <h1 class="fw-bold mb-0 display-5">Статьи</h1>
     </div>
 </section>
+
+<nav class="article-breadcrumbs">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Статьи</li>
+        </ol>
+    </div>
+</nav>
 
 <section class="py-5 bg-light">
     <div class="container">
         <div class="row g-4">
             <div class="col-lg-3">
-                <div class="card shadow-sm border-0 sticky-top" style="top: 90px;">
+                <div class="card shadow-sm border-0 sticky-top filter-card" style="top: 90px;">
+                    <div class="filter-card__header">
+                        <span>Фильтр</span>
+                    </div>
                     <div class="card-body">
-                        <h6 class="fw-semibold mb-3">Фильтр</h6>
                         <form action="{{ route('articles.index') }}" method="GET" class="d-flex flex-column gap-3">
                             <div>
                                 <label class="form-label small text-muted mb-1">Поиск по названию</label>
@@ -29,6 +40,17 @@
                                 <label class="form-label small text-muted mb-1">Дата по</label>
                                 <input type="date" name="to" value="{{ request('to') }}" class="form-control">
                             </div>
+                            @if(!empty($categories) && $categories->count())
+                            <div>
+                                <label class="form-label small text-muted mb-1">Категория</label>
+                                <select name="category" class="form-select">
+                                    <option value="">Все категории</option>
+                                    @foreach($categories as $cat)
+                                        <option value="{{ $cat->slug }}" {{ ($categorySlug ?? '') === $cat->slug ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @endif
                             <div class="d-flex gap-2">
                                 <button class="btn btn-primary flex-grow-1" type="submit">Применить</button>
                                 <a href="{{ route('articles.index') }}" class="btn btn-outline-secondary" title="Сбросить"><i class="fa fa-rotate-left"></i></a>
@@ -47,12 +69,11 @@
                                     if(!$cover && $article->images->first()){
                                         $cover = asset('storage/'.$article->images->first()->path);
                                     }
-                                    $placeholder = 'data:image/svg+xml;utf8,'.rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360"><rect width="600" height="360" fill="%23e9ecef"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23898f96" font-size="22" font-family="Arial, sans-serif">нет изображения</text></svg>');
+                                    $placeholder = 'data:image/svg+xml;utf8,'.rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360"><rect width="600" height="360" fill="%23415366"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23ffffff" font-size="24" font-family="Arial, sans-serif">Нет изображения</text></svg>');
                                 @endphp
-                                <img src="{{ $cover ?? $placeholder }}" class="card-img-top" alt="{{ $article->title }}" style="height:180px;object-fit:cover;">
+                                <img src="{{ $cover ?? $placeholder }}" class="card-img-top" alt="{{ $article->title }}" style="height:200px;object-fit:contain;background:#fff;">
                                 <div class="card-body d-flex flex-column">
-                                    <span class="badge bg-secondary mb-2">{{ $article->published_at? $article->published_at->format('d.m.Y') : $article->created_at->format('d.m.Y') }}</span>
-                                    <h5 class="card-title">{{ $article->title }}</h5>
+                                    <h4 class="card-title fw-bold">{{ $article->title }}</h4>
                                     @if($article->excerpt)
                                         <p class="card-text text-muted">{{ \Illuminate\Support\Str::limit(strip_tags($article->excerpt), 160) }}</p>
                                     @endif
@@ -77,9 +98,28 @@
 
 <style>
     .article-hero{
-        padding: 72px 0 52px;
+        padding: 1.5rem 0;
         background: linear-gradient(135deg, #f8fafc 0%, #ffffff 60%);
         border-bottom: 1px solid #e9ecef;
+    }
+    .article-breadcrumbs{
+        padding: 0.75rem 0;
+        background: #f5f7fb;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .article-breadcrumbs .breadcrumb{
+        margin: 0;
+        background: transparent;
+        padding: 0;
+        font-size: 0.95rem;
+    }
+    .article-breadcrumbs a{
+        color: var(--color-option);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .article-breadcrumbs .breadcrumb-item.active{
+        color: #6c757d;
     }
     .article-card img{
         border-top-left-radius: 0.75rem;
@@ -87,11 +127,16 @@
     }
     .article-card{
         border-radius: 12px;
-        transition: transform .12s ease, box-shadow .12s ease;
     }
-    .article-card:hover{
-        transform: translateY(-4px);
-        box-shadow: 0 18px 40px rgba(15,23,42,0.12);
+    .filter-card__header{
+        background: var(--color-option-hover);
+        color: var(--color-quaternary);
+        padding: 14px 18px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
     }
 </style>
 @endsection

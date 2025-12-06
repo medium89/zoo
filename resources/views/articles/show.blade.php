@@ -4,12 +4,8 @@
 @include('sections.header-lite')
 
 <section class="article-hero">
-    <div class="container">
-        <h1 class="fw-bold mb-2">{{ $article->title }}</h1>
-        <div class="d-flex gap-3 align-items-center text-muted">
-            <span><i class="fa fa-calendar me-1"></i>{{ $article->published_at? $article->published_at->format('d.m.Y') : $article->created_at->format('d.m.Y') }}</span>
-            <span><i class="fa fa-clock me-1"></i>{{ $article->created_at->format('H:i') }}</span>
-        </div>
+    <div class="container text-center">
+        <h1 class="fw-bold mb-0 article-title-lg">{{ $article->title }}</h1>
     </div>
 </section>
 
@@ -22,14 +18,17 @@
                 @endforeach
             </div>
         @endif
-        <div class="card shadow-sm border-0 mb-5">
+        <div class="card shadow-sm border-0 mb-4">
             <div class="card-body article-content">
                 {!! $article->content !!}
             </div>
         </div>
+        <div class="text-muted mb-5">
+            Опубликовано: {{ $article->published_at? $article->published_at->format('d.m.Y') : $article->created_at->format('d.m.Y') }}
+        </div>
 
         <div class="card">
-            <div class="card-body">
+            <div class="p-4">
                 <h5 class="card-title">Комментарии</h5>
                 @if(session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
@@ -57,20 +56,22 @@
                 <div id="comments">{!! $render(0,0) !!}</div>
 
                 <h5 class="card-title mt-4">Оставить комментарий</h5>
-                <form action="{{ route('articles.comment', $article) }}" method="POST" id="commentForm">
-                    @csrf
-                    <input type="hidden" name="parent_id" value="">
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Текст</label>
-                        <textarea name="content" class="form-control" rows="3" required></textarea>
-                    </div>
-                    <div class="mb-2 text-muted small" id="replyInfo" style="display:none;">Ответ на комментарий #<span></span> <button type="button" class="btn btn-link btn-sm p-0" id="cancelReply">отменить</button></div>
-                    <button class="btn btn-primary">Отправить</button>
-                </form>
+                <div class="comment-form-wrapper">
+                    <form action="{{ route('articles.comment', $article) }}" method="POST" id="commentForm">
+                        @csrf
+                        <input type="hidden" name="parent_id" value="">
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Текст</label>
+                            <textarea name="content" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-2 text-muted small" id="replyInfo" style="display:none;">Ответ на комментарий #<span></span> <button type="button" class="btn btn-link btn-sm p-0" id="cancelReply">отменить</button></div>
+                        <button class="btn btn-primary">Отправить</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -84,6 +85,9 @@
         background: linear-gradient(135deg, #f8fafc 0%, #ffffff 60%);
         border-bottom: 1px solid #e9ecef;
     }
+    .article-title-lg{
+        font-size: 2.5rem;
+    }
     .article-gallery{
         display: grid;
         gap: 12px;
@@ -94,11 +98,25 @@
         height: 180px;
         object-fit: cover;
     }
+    .article-content{
+        padding: 3rem 3rem 3rem 4rem;
+    }
     .article-content h1, .article-content h2, .article-content h3{
         margin-top: 1.4rem;
+        font-size: inherit;
+        font-weight: 600;
     }
     .article-content p{
         line-height: 1.7;
+        margin-bottom: 0;
+    }
+    .comment-form-wrapper{
+        max-width: 30%;
+    }
+    @media (max-width: 991.98px){
+        .comment-form-wrapper{
+            max-width: 100%;
+        }
     }
 </style>
 

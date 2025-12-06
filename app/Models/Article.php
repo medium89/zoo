@@ -22,6 +22,7 @@ class Article extends Model
         'seo_charset',
         'cover_path',
         'order',
+        'category_id',
     ];
 
     protected $casts = [
@@ -32,6 +33,11 @@ class Article extends Model
     public function images()
     {
         return $this->hasMany(ArticleImage::class)->orderBy('order');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function comments()

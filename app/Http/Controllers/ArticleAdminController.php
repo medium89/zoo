@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\ArticleImage;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
@@ -14,13 +15,14 @@ class ArticleAdminController extends Controller
 {
     public function index()
     {
-        $articles = Article::orderBy('order')->latest()->paginate(10);
+        $articles = Article::with('category')->orderBy('order')->latest()->paginate(10);
         return view('admin.articles.index', compact('articles'));
     }
 
     public function create()
     {
-        return view('admin.articles.create');
+        $categories = Category::orderBy('name')->get();
+        return view('admin.articles.create', compact('categories'));
     }
 
     public function store(Request $request)
@@ -40,6 +42,7 @@ class ArticleAdminController extends Controller
             'image_quality' => 'nullable|integer|min:40|max:100',
             'active' => 'nullable|boolean',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
         if (empty($data['published_at'])) {
@@ -67,8 +70,9 @@ class ArticleAdminController extends Controller
 
     public function edit(Article $article)
     {
-        $article->load('images');
-        return view('admin.articles.edit', compact('article'));
+        $article->load('images','category');
+        $categories = Category::orderBy('name')->get();
+        return view('admin.articles.edit', compact('article','categories'));
     }
 
     public function update(Request $request, Article $article)
@@ -88,6 +92,7 @@ class ArticleAdminController extends Controller
             'image_quality' => 'nullable|integer|min:40|max:100',
             'active' => 'nullable|boolean',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
         $data['active'] = $request->boolean('active', true);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\ArticleComment;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -34,9 +35,19 @@ class ArticlePublicController extends Controller
             $q->whereDate('published_at', '<=', $toDate);
         }
 
-        $articles = $q->orderBy('order')->orderByDesc('published_at')->orderByDesc('created_at')->paginate(9)->appends(request()->query());
+        $categorySlug = request('category');
+        if ($categorySlug) {
+            $q->whereHas('category', function ($sub) use ($categorySlug) {
+                $sub->where('slug', $categorySlug);
+            });
+        }
 
-        return view('articles.index', compact('articles', 'search', 'from', 'to'));
+        $articles = $q->orderBy('order')->orderByDesc('published_at')->orderByDesc('created_at')->paginate(9)->appends(request()->query());
+        $categories = Category::whereHas('articles', function($sub){
+            $sub->where('active', true);
+        })->orderBy('name')->get();
+
+        return view('articles.index', compact('articles', 'search', 'from', 'to', 'categories', 'categorySlug'));
     }
 
     public function show(Article $article)

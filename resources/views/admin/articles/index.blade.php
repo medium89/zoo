@@ -12,12 +12,13 @@
     @endif
 
     <form id="articles-form" action="{{ route('admin.articles.status') }}" method="POST">@csrf</form>
-    <div class="admin-grid" style="--grid-cols: 100px 2fr 1.2fr 1.2fr 140px 180px;">
+    <div class="admin-grid" style="--grid-cols: 100px 1.6fr 1.2fr 1.2fr 1fr 140px 180px;">
         <div class="admin-grid-header">
             <div>Порядок</div>
             <div>Заголовок</div>
             <div>Создана</div>
             <div>Публикация</div>
+            <div>Категория</div>
             <div>Статус</div>
             <div class="text-end">Действия</div>
         </div>
@@ -28,6 +29,7 @@
                     <div class="text-clip">{{ $article->title }}</div>
                     <div>{{ $article->created_at->format('d.m.Y H:i') }}</div>
                     <div>{{ $article->published_at ? $article->published_at->format('d.m.Y H:i') : '—' }}</div>
+                    <div>{{ $article->category?->name ?? '—' }}</div>
                     <div class="d-flex align-items-center">
                         <div class="form-check form-switch mb-0">
                             <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $article->id }}" {{ $article->active ? 'checked' : '' }}>
