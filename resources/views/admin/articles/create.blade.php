@@ -21,6 +21,22 @@
             <textarea name="excerpt" class="form-control wysiwyg-excerpt" rows="3" data-editor-height="220"></textarea>
         </div>
         <div class="mb-3">
+            <label class="form-label">Обложка статьи</label>
+            <input type="file" name="cover" class="form-control">
+            <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                    <label class="form-label">Размер (в %)</label>
+                    <input type="range" class="form-range js-scale" name="image_scale" min="10" max="100" step="5" value="100">
+                    <small class="text-muted">Текущий: <span class="js-scale-val">100</span>%</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Качество (в %)</label>
+                    <input type="range" class="form-range js-quality" name="image_quality" min="40" max="100" step="5" value="85">
+                    <small class="text-muted">Текущее: <span class="js-quality-val">85</span>%</small>
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
             <label class="form-label">Дата публикации</label>
             <input type="datetime-local" name="published_at" class="form-control"
                    value="{{ old('published_at', now()->format('Y-m-d\\TH:i')) }}">
@@ -62,6 +78,16 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.js-scale').forEach(input=>{
+        input.addEventListener('input', ()=>{
+            input.closest('.col-md-6').querySelector('.js-scale-val').textContent = input.value;
+        });
+    });
+    document.querySelectorAll('.js-quality').forEach(input=>{
+        input.addEventListener('input', ()=>{
+            input.closest('.col-md-6').querySelector('.js-quality-val').textContent = input.value;
+        });
+    });
     const target = document.querySelector('.js-wysiwyg');
     if(!target || !window.ClassicEditor){ return; }
 

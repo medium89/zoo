@@ -10,18 +10,17 @@
 <form id="status-form" action="{{ route('admin.socials.status') }}" method="POST">
     @csrf
 </form>
-<table class="table table-bordered">
+<table class="table table-bordered admin-grid-table" style="--grid-cols: 120px 140px 1fr 1.3fr 1fr 1.5fr 180px 180px;">
     <thead>
         <tr>
-            <th></th>
+            <th>Порядок</th>
             <th>Иконка</th>
             <th>Заголовок</th>
             <th>Ссылка</th>
             <th>Текст ссылки</th>
             <th>Текст</th>
-            <th>Порядок</th>
-            <th></th>
             <th>Статус</th>
+            <th>Действия</th>
         </tr>
     </thead>
     <tbody class="js-sortable">
@@ -32,8 +31,7 @@
             <td>{{ $social->title }}</td>
             <td><a href="{{ $social->link }}" target="_blank">{{ $social->link }}</a></td>
             <td>{{ $social->link_text }}</td>
-            <td>{{ $social->text }}</td>
-            <td>{{ $social->order }}</td>
+            <td class="text-clip">{{ $social->text }}</td>
             <td class="no-label align-middle">
                 <div class="d-flex align-items-center gap-2">
                     <input type="hidden" name="statuses[{{ $social->id }}]" value="0" form="status-form">
@@ -44,9 +42,9 @@
                 </div>
                 <input type="hidden" name="orders[{{ $social->id }}]" value="{{ $social->order }}" class="js-order-input" form="status-form">
             </td>
-            <td class="no-label align-middle">
+            <td class="no-label align-middle actions">
                 <div class="d-flex gap-2 align-items-center">
-                    <a href="{{ route('admin.socials.edit', $social->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                    <a href="{{ route('admin.socials.edit', $social->id) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
                     <form action="{{ route('admin.socials.destroy', $social->id) }}" method="POST" style="display:inline-block">
                         @csrf
                         @method('DELETE')

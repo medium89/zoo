@@ -62,7 +62,7 @@ class ArticlePublicController extends Controller
         ]);
 
         $data['article_id'] = $article->id;
-        $data['status'] = 'pending';
+        $data['status'] = 'approved';
 
         ArticleComment::create($data);
 

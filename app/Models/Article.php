@@ -20,6 +20,7 @@ class Article extends Model
         'seo_description',
         'seo_robots',
         'seo_charset',
+        'cover_path',
     ];
 
     protected $casts = [

@@ -19,7 +19,7 @@
                     <p class="card-text"><strong>Текст сообщения:</strong> {{ Str::limit($feedback->message, 100) }}</p>
                     <p class="card-text"><strong>Статус:</strong> {{ $feedback->status }}</p>
                     <p class="card-text"><small class="text-muted">Получено: {{ $feedback->created_at->format('d.m.Y H:i') }}</small></p>
-                    <a href="{{ route('admin.feedbacks.edit', $feedback->id) }}" class="btn btn-warning btn-sm">Редактировать</a>
+                    <a href="{{ route('admin.feedbacks.edit', $feedback->id) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
                     <form action="{{ route('admin.feedbacks.destroy', $feedback->id) }}" method="POST" style="display:inline;">
                         @csrf
                         @method('DELETE')

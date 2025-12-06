@@ -42,9 +42,14 @@
                     @forelse($articles as $article)
                         <div class="col-md-6 col-xl-4">
                             <div class="card h-100 shadow-sm border-0 article-card">
-                                @if($article->images->first())
-                                    <img src="{{ asset('storage/'.$article->images->first()->path) }}" class="card-img-top" alt="{{ $article->title }}" style="height:180px;object-fit:cover;">
-                                @endif
+                                @php
+                                    $cover = $article->cover_path ? asset('storage/'.$article->cover_path) : null;
+                                    if(!$cover && $article->images->first()){
+                                        $cover = asset('storage/'.$article->images->first()->path);
+                                    }
+                                    $placeholder = 'data:image/svg+xml;utf8,'.rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360"><rect width="600" height="360" fill="%23e9ecef"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23898f96" font-size="22" font-family="Arial, sans-serif">нет изображения</text></svg>');
+                                @endphp
+                                <img src="{{ $cover ?? $placeholder }}" class="card-img-top" alt="{{ $article->title }}" style="height:180px;object-fit:cover;">
                                 <div class="card-body d-flex flex-column">
                                     <span class="badge bg-secondary mb-2">{{ $article->published_at? $article->published_at->format('d.m.Y') : $article->created_at->format('d.m.Y') }}</span>
                                     <h5 class="card-title">{{ $article->title }}</h5>

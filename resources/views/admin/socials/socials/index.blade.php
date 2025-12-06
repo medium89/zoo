@@ -31,7 +31,7 @@
             <td>{{ $social->text }}</td>
             <td>{{ $social->order }}</td>
             <td>
-                <a href="{{ route('admin.socials.edit', $social->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                <a href="{{ route('admin.socials.edit', $social->id) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
                 <form action="{{ route('admin.socials.destroy', $social->id) }}" method="POST" style="display:inline-block">
                     @csrf
                     @method('DELETE')

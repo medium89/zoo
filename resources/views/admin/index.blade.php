@@ -184,6 +184,58 @@
             min-width: 24px;
         }
 
+        /* Грид-списки */
+        .admin-grid-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .admin-grid-table thead {
+            display: grid;
+            grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(120px, 1fr)));
+            gap: 12px;
+            padding: 0 0 12px 0;
+        }
+        .admin-grid-table thead tr {
+            display: contents;
+        }
+        .admin-grid-table thead th {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+        .admin-grid-table tbody {
+            display: grid;
+            gap: 12px;
+        }
+        .admin-grid-table tbody tr {
+            display: grid;
+            grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(120px, 1fr)));
+            gap: 12px;
+            padding: 12px;
+            border-radius: 14px;
+            background: #fff;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 8px 20px rgba(31,35,42,0.08);
+            align-items: center;
+        }
+        .admin-grid-table td {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+            border: none;
+        }
+        .admin-grid-table td.actions {
+            justify-content: flex-end;
+        }
+        .text-clip {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
         .content .btn {
             white-space: nowrap;
         }

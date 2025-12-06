@@ -12,14 +12,14 @@
     @endif
 
     <div class="table-responsive">
-        <table class="table align-middle">
+        <table class="table align-middle admin-grid-table" style="--grid-cols: 80px 2fr 1.2fr 1.2fr 200px;">
             <thead>
                 <tr>
                     <th>#</th>
                     <th>Заголовок</th>
                     <th>Создана</th>
                     <th>Публикация</th>
-                    <th></th>
+                    <th>Действия</th>
                 </tr>
             </thead>
             <tbody>
@@ -29,12 +29,14 @@
                     <td>{{ $article->title }}</td>
                     <td>{{ $article->created_at->format('d.m.Y H:i') }}</td>
                     <td>{{ $article->published_at ? $article->published_at->format('d.m.Y H:i') : '—' }}</td>
-                    <td class="text-end no-label">
-                        <a href="{{ route('admin.articles.edit', $article) }}" class="btn btn-sm btn-warning">Редактировать</a>
-                        <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="d-inline" onsubmit="return confirm('Удалить статью?')">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-sm btn-danger">Удалить</button>
-                        </form>
+                    <td class="no-label actions">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ route('admin.articles.edit', $article) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
+                            <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="d-inline" onsubmit="return confirm('Удалить статью?')">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-danger">Удалить</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             @empty

@@ -10,15 +10,15 @@
 <form id="status-form" action="{{ route('admin.services.status') }}" method="POST">
     @csrf
 </form>
-<table class="table table-bordered">
+<table class="table table-bordered admin-grid-table" style="--grid-cols: 120px 150px 1fr 2fr 200px 160px;">
     <thead>
         <tr>
-            <th></th>
+            <th>Порядок</th>
             <th>Изображение</th>
             <th>Заголовок</th>
             <th>Текст</th>
-            <th></th>
             <th>Статус</th>
+            <th>Действия</th>
         </tr>
     </thead>
     <tbody class="js-sortable">
@@ -27,17 +27,7 @@
             <td class="js-order-label text-muted no-label align-middle" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $service->order }}</td>
             <td class="no-label align-middle"><img src="{{ asset('storage/'.$service->image) }}" alt="" width="90" class="rounded shadow-sm"></td>
             <td class="align-middle fw-semibold">{{ $service->title }}</td>
-            <td class="align-middle">{{ Str::limit(strip_tags($service->text), 90) }}</td>
-            <td class="no-label align-middle">
-                <div class="d-flex gap-2 align-items-center">
-                    <a href="{{ route('admin.services.edit', $service->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
-                    <form action="{{ route('admin.services.destroy', $service->id) }}" method="POST" style="display:inline-block">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить?')">Удалить</button>
-                    </form>
-                </div>
-            </td>
+            <td class="align-middle text-clip">{{ Str::limit(strip_tags($service->text), 140) }}</td>
             <td class="align-middle">
                 <div class="d-flex align-items-center gap-2">
                     <input type="hidden" name="statuses[{{ $service->id }}]" value="0" form="status-form">
@@ -47,6 +37,16 @@
                     <span class="text-muted small">Статус</span>
                 </div>
                 <input type="hidden" name="orders[{{ $service->id }}]" value="{{ $service->order }}" class="js-order-input" form="status-form">
+            </td>
+            <td class="no-label align-middle actions">
+                <div class="d-flex gap-2 align-items-center">
+                    <a href="{{ route('admin.services.edit', $service->id) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
+                    <form action="{{ route('admin.services.destroy', $service->id) }}" method="POST" style="display:inline-block">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить?')">Удалить</button>
+                    </form>
+                </div>
             </td>
         </tr>
     @endforeach

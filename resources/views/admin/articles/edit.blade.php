@@ -24,6 +24,25 @@
             <label class="form-label">Краткое описание</label>
             <textarea name="excerpt" class="form-control wysiwyg-excerpt" rows="3" data-editor-height="220">{{ $article->excerpt }}</textarea>
         </div>
+        <div class="mb-3">
+            <label class="form-label">Обложка статьи</label><br>
+            @if($article->cover_path)
+                <img src="{{ asset('storage/'.$article->cover_path) }}" alt="" width="140" class="mb-2 rounded shadow-sm"><br>
+            @endif
+            <input type="file" name="cover" class="form-control">
+            <div class="row g-2 mt-2">
+                <div class="col-md-6">
+                    <label class="form-label">Размер (в %)</label>
+                    <input type="range" class="form-range js-scale" name="image_scale" min="10" max="100" step="5" value="100">
+                    <small class="text-muted">Текущий: <span class="js-scale-val">100</span>%</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Качество (в %)</label>
+                    <input type="range" class="form-range js-quality" name="image_quality" min="40" max="100" step="5" value="85">
+                    <small class="text-muted">Текущее: <span class="js-quality-val">85</span>%</small>
+                </div>
+            </div>
+        </div>
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label">Дата публикации</label>
@@ -115,6 +134,16 @@ document.addEventListener('DOMContentLoaded', function(){
         editor.ui.view.editable.element.style.minHeight = '420px';
     }).catch(error => {
         console.error('CKEditor init error', error);
+    });
+    document.querySelectorAll('.js-scale').forEach(input=>{
+        input.addEventListener('input', ()=>{
+            input.closest('.col-md-6').querySelector('.js-scale-val').textContent = input.value;
+        });
+    });
+    document.querySelectorAll('.js-quality').forEach(input=>{
+        input.addEventListener('input', ()=>{
+            input.closest('.col-md-6').querySelector('.js-quality-val').textContent = input.value;
+        });
     });
 });
 </script>

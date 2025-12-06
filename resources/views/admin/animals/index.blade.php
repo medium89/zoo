@@ -15,13 +15,13 @@
         <div class="card-body">
             @if($animals->count())
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table align-middle admin-grid-table" style="--grid-cols: 80px 1fr 2fr 200px;">
                         <thead>
                         <tr>
                             <th>#</th>
                             <th>Кличка</th>
                             <th>Описание</th>
-                            <th class="text-end">Действия</th>
+                            <th>Действия</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -29,10 +29,10 @@
                             <tr>
                                 <td>{{ $animal->id }}</td>
                                 <td>{{ $animal->name }}</td>
-                                <td>{{ $animal->description }}</td>
-                                <td class="text-end">
+                                <td class="text-clip">{{ $animal->description }}</td>
+                                <td class="actions">
                                     <div class="d-flex justify-content-end gap-2">
-                                        <a href="{{ route('admin.animals.edit', $animal) }}" class="btn btn-sm btn-outline-primary">Редактировать</a>
+                                        <a href="{{ route('admin.animals.edit', $animal) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
                                         <form action="{{ route('admin.animals.destroy', $animal) }}" method="POST" class="d-inline js-delete-form" data-confirm="Удалить питомца?">
                                             @csrf
                                             @method('DELETE')

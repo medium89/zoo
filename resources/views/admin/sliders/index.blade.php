@@ -10,14 +10,13 @@
 <form id="status-form" action="{{ route('admin.sliders.status') }}" method="POST">
     @csrf
 </form>
-<table class="table table-bordered">
+<table class="table table-bordered admin-grid-table" style="--grid-cols: 140px 200px 1fr 220px;">
     <thead>
         <tr>
-            <th></th>
+            <th>Порядок</th>
             <th>Изображение</th>
-            <th></th>
-            <th></th>
             <th>Статус</th>
+            <th>Действия</th>
         </tr>
     </thead>
     <tbody id="slidersSort" class="js-sortable">
@@ -25,7 +24,6 @@
         <tr data-id="{{ $slider->id }}">
             <td class="js-order-label text-muted no-label align-middle" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $slider->order }}</td>
             <td class="no-label"><img src="{{ asset('storage/'.$slider->image) }}" alt="" width="120"></td>
-            <td class="no-label">{{ $slider->order }}</td>
             <td class="no-label align-middle">
                 <div class="d-flex align-items-center gap-2">
                     <input type="hidden" name="statuses[{{ $slider->id }}]" value="0" form="status-form">
@@ -36,9 +34,9 @@
                 </div>
                 <input type="hidden" name="orders[{{ $slider->id }}]" value="{{ $slider->order }}" class="js-order-input" form="status-form">
             </td>
-            <td class="no-label align-middle">
+            <td class="no-label align-middle actions">
                 <div class="d-flex gap-2 align-items-center">
-                    <a href="{{ route('admin.sliders.edit', $slider) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                    <a href="{{ route('admin.sliders.edit', $slider) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
                     <form action="{{ route('admin.sliders.destroy', $slider) }}" method="POST" style="display:inline-block">
                         @csrf
                         @method('DELETE')

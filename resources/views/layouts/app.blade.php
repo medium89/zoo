@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="/css/main.css">
     
 </head>
-<body>
+<body class="{{ request()->is('/') ? 'landing' : '' }}">
     @yield('content')
     <script src="/js/main.js"></script>
 </body>
