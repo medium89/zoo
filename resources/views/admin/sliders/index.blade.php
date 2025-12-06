@@ -20,7 +20,7 @@
     <div class="admin-grid-body js-sortable" id="slidersSort">
         @foreach($sliders as $slider)
             <div class="admin-grid-row" data-id="{{ $slider->id }}">
-                <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $slider->order }}</div>
+                <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
                 <div><img src="{{ asset('storage/'.$slider->image) }}" alt="" width="120"></div>
                 <div>
                     <div class="d-flex align-items-center gap-2">
@@ -28,7 +28,7 @@
                             <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $slider->id }}" {{ $slider->active ? 'checked' : '' }}>
                         </div>
                     </div>
-                    <input type="hidden" name="orders[{{ $slider->id }}]" value="{{ $slider->order }}" class="js-order-input" form="status-form">
+                    <input type="hidden" name="orders[{{ $slider->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="status-form">
                 </div>
                 <div class="actions">
                     <div class="d-flex justify-content-end gap-2 align-items-center">
