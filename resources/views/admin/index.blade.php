@@ -183,6 +183,45 @@
             vertical-align: middle;
             min-width: 24px;
         }
+        /* Грид-списки (общие) */
+        .admin-grid {
+            display: grid;
+            gap: 12px;
+        }
+        .admin-grid-header {
+            display: grid;
+            grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(120px,1fr)));
+            gap: 12px;
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.95rem;
+            padding-left: 2px;
+        }
+        .admin-grid-body {
+            display: grid;
+            gap: 12px;
+        }
+        .admin-grid-row {
+            display: grid;
+            grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(120px,1fr)));
+            gap: 12px;
+            padding: 12px;
+            border-radius: 14px;
+            background: #fff;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 8px 20px rgba(31,35,42,0.08);
+            align-items: center;
+        }
+        .admin-grid-row .actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .text-clip {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
         /* Грид-списки */
         .admin-grid-table {

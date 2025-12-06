@@ -10,7 +10,7 @@
 <form id="status-form" action="{{ route('admin.sliders.status') }}" method="POST">
     @csrf
 </form>
-<div class="admin-grid" style="--grid-cols: 140px 200px 1fr 220px;">
+<div class="admin-grid" style="--grid-cols: 120px 200px 1fr 180px;">
     <div class="admin-grid-header">
         <div>Порядок</div>
         <div>Изображение</div>
@@ -46,6 +46,16 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
+    const renumber = ()=>{
+        document.querySelectorAll('#slidersSort .admin-grid-row').forEach((row, idx)=>{
+            const label = row.querySelector('.js-order-label');
+            const orderField = row.querySelector('.js-order-input');
+            if (label) label.innerHTML = `<i class="fa fa-grip-vertical me-1"></i>${idx+1}`;
+            if (orderField) orderField.value = idx + 1;
+        });
+    };
+    renumber();
+
     document.querySelectorAll('.js-status-toggle').forEach(toggle=>{
         toggle.addEventListener('change', ()=>{
             const form = document.getElementById('status-form');
@@ -61,38 +71,4 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
 });
 </script>
-<style>
-    .admin-grid {
-        display: grid;
-        gap: 12px;
-    }
-    .admin-grid-header {
-        display: grid;
-        grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(120px,1fr)));
-        gap: 12px;
-        font-weight: 600;
-        color: #6c757d;
-        font-size: 0.95rem;
-        padding-left: 2px;
-    }
-    .admin-grid-body {
-        display: grid;
-        gap: 12px;
-    }
-    .admin-grid-row {
-        display: grid;
-        grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(120px,1fr)));
-        gap: 12px;
-        padding: 12px;
-        border-radius: 14px;
-        background: #fff;
-        border: 1px solid #e9ecef;
-        box-shadow: 0 8px 20px rgba(31,35,42,0.08);
-        align-items: center;
-    }
-    .admin-grid-row .actions {
-        display: flex;
-        justify-content: flex-end;
-    }
-</style>
 @endsection 

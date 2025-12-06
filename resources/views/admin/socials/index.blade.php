@@ -10,51 +10,87 @@
 <form id="status-form" action="{{ route('admin.socials.status') }}" method="POST">
     @csrf
 </form>
-<table class="table table-bordered admin-grid-table" style="--grid-cols: 120px 140px 1fr 1.3fr 1fr 1.5fr 180px 180px;">
-    <thead>
-        <tr>
-            <th>Порядок</th>
-            <th>Иконка</th>
-            <th>Заголовок</th>
-            <th>Ссылка</th>
-            <th>Текст ссылки</th>
-            <th>Текст</th>
-            <th>Статус</th>
-            <th>Действия</th>
-        </tr>
-    </thead>
-    <tbody class="js-sortable">
-    @foreach($socials as $social)
-        <tr data-id="{{ $social->id }}">
-            <td class="js-order-label text-muted no-label" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $social->order }}</td>
-            <td><i class="{{ $social->icon }}"></i> <span class="text-muted">{{ $social->icon }}</span></td>
-            <td>{{ $social->title }}</td>
-            <td><a href="{{ $social->link }}" target="_blank">{{ $social->link }}</a></td>
-            <td>{{ $social->link_text }}</td>
-            <td class="text-clip">{{ $social->text }}</td>
-            <td class="no-label align-middle">
-                <div class="d-flex align-items-center gap-2">
-                    <input type="hidden" name="statuses[{{ $social->id }}]" value="0" form="status-form">
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" name="statuses[{{ $social->id }}]" value="1" form="status-form" {{ $social->active ? 'checked' : '' }}>
+<div class="admin-grid" style="--grid-cols: 120px 140px 1fr 1.3fr 1fr 1.5fr 150px 150px;">
+    <div class="admin-grid-header">
+        <div>Порядок</div>
+        <div>Иконка</div>
+        <div>Заголовок</div>
+        <div>Ссылка</div>
+        <div>Текст ссылки</div>
+        <div>Текст</div>
+        <div>Статус</div>
+        <div class="text-end">Действия</div>
+    </div>
+    <div class="admin-grid-body js-sortable" id="socSort">
+        @foreach($socials as $social)
+            <div class="admin-grid-row" data-id="{{ $social->id }}">
+                <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
+                <div><i class="{{ $social->icon }}"></i> <span class="text-muted">{{ $social->icon }}</span></div>
+                <div>{{ $social->title }}</div>
+                <div><a href="{{ $social->link }}" target="_blank">{{ $social->link }}</a></div>
+                <div>{{ $social->link_text }}</div>
+                <div class="text-clip">{{ $social->text }}</div>
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="hidden" name="statuses[{{ $social->id }}]" value="0" form="status-form">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $social->id }}" {{ $social->active ? 'checked' : '' }}>
+                        </div>
                     </div>
-                    <span class="text-muted small">Статус</span>
+                    <input type="hidden" name="orders[{{ $social->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="status-form">
                 </div>
-                <input type="hidden" name="orders[{{ $social->id }}]" value="{{ $social->order }}" class="js-order-input" form="status-form">
-            </td>
-            <td class="no-label align-middle actions">
-                <div class="d-flex gap-2 align-items-center">
-                    <a href="{{ route('admin.socials.edit', $social->id) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
-                    <form action="{{ route('admin.socials.destroy', $social->id) }}" method="POST" style="display:inline-block">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить контакт?')">Удалить</button>
-                    </form>
+                <div class="actions">
+                    <div class="d-flex gap-2 align-items-center justify-content-end">
+                        <a href="{{ route('admin.socials.edit', $social->id) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
+                        <form action="{{ route('admin.socials.destroy', $social->id) }}" method="POST" style="display:inline-block">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить контакт?')">Удалить</button>
+                        </form>
+                    </div>
                 </div>
-            </td>
-        </tr>
-    @endforeach
-    </tbody>
-</table>
-<button type="submit" form="status-form" class="btn btn-primary mt-2">Сохранить статусы</button>
+            </div>
+        @endforeach
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+    const renumber = ()=>{
+        document.querySelectorAll('#socSort .admin-grid-row').forEach((row, idx)=>{
+            row.querySelector('.js-order-label').innerHTML = `<i class="fa fa-grip-vertical me-1"></i>${idx+1}`;
+            const orderInput = row.querySelector('.js-order-input');
+            if (orderInput) orderInput.value = idx+1;
+        });
+    };
+    renumber();
+    document.querySelectorAll('#socSort .js-status-toggle').forEach(toggle=>{
+        toggle.addEventListener('change', ()=>{
+            const form = document.getElementById('status-form');
+            form.querySelectorAll('input[name^="statuses["]').forEach(el=>el.remove());
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `statuses[${toggle.dataset.id}]`;
+            input.value = toggle.checked ? 1 : 0;
+            form.appendChild(input);
+            form.submit();
+        });
+    });
+    if (window.Sortable) {
+        Sortable.create(document.getElementById('socSort'), {
+            animation:150,
+            handle: '.js-order-label',
+            onEnd: ()=>{
+                renumber();
+                const form = document.getElementById('status-form');
+                form.querySelectorAll('input[name^="orders["]').forEach(el=>el.remove());
+                document.querySelectorAll('#socSort .js-order-input').forEach(input=>{
+                    const clone = input.cloneNode(true);
+                    form.appendChild(clone);
+                });
+                form.submit();
+            }
+        });
+    }
+});
+</script>
 @endsection 

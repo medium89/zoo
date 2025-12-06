@@ -11,25 +11,22 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <div class="table-responsive">
-        <table class="table align-middle admin-grid-table" style="--grid-cols: 80px 2fr 1.2fr 1.2fr 200px;">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Заголовок</th>
-                    <th>Создана</th>
-                    <th>Публикация</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
+    <div class="admin-grid" style="--grid-cols: 80px 2fr 1.2fr 1.2fr 200px;">
+        <div class="admin-grid-header">
+            <div>#</div>
+            <div>Заголовок</div>
+            <div>Создана</div>
+            <div>Публикация</div>
+            <div class="text-end">Действия</div>
+        </div>
+        <div class="admin-grid-body">
             @forelse($articles as $article)
-                <tr>
-                    <td>{{ $article->id }}</td>
-                    <td>{{ $article->title }}</td>
-                    <td>{{ $article->created_at->format('d.m.Y H:i') }}</td>
-                    <td>{{ $article->published_at ? $article->published_at->format('d.m.Y H:i') : '—' }}</td>
-                    <td class="no-label actions">
+                <div class="admin-grid-row">
+                    <div>{{ $article->id }}</div>
+                    <div>{{ $article->title }}</div>
+                    <div>{{ $article->created_at->format('d.m.Y H:i') }}</div>
+                    <div>{{ $article->published_at ? $article->published_at->format('d.m.Y H:i') : '—' }}</div>
+                    <div class="actions">
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{{ route('admin.articles.edit', $article) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
                             <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="d-inline" onsubmit="return confirm('Удалить статью?')">
@@ -37,13 +34,12 @@
                                 <button class="btn btn-sm btn-danger">Удалить</button>
                             </form>
                         </div>
-                    </td>
-                </tr>
+                    </div>
+                </div>
             @empty
-                <tr><td colspan="4" class="text-muted">Статей нет.</td></tr>
+                <div class="text-muted">Статей нет.</div>
             @endforelse
-            </tbody>
-        </table>
+        </div>
     </div>
 
     {{ $articles->links() }}

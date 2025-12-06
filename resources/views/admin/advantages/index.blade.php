@@ -10,54 +10,83 @@
 <form id="status-form" action="{{ route('admin.advantages.status') }}" method="POST">
     @csrf
 </form>
-<table class="table table-bordered admin-grid-table" style="--grid-cols: 120px 150px 1fr 2fr 200px 160px;">
-    <thead>
-        <tr>
-            <th>Порядок</th>
-            <th>Изображение</th>
-            <th>Заголовок</th>
-            <th>Текст</th>
-            <th>Статус</th>
-            <th>Действия</th>
-        </tr>
-    </thead>
-    <tbody class="js-sortable">
-    @foreach($advantages as $advantage)
-        <tr data-id="{{ $advantage->id }}" class="adv-card-row">
-            <td class="js-order-label text-muted no-label align-middle" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $advantage->order }}</td>
-            <td class="no-label align-middle"><img src="{{ asset('storage/'.$advantage->image) }}" alt="" width="90" class="rounded shadow-sm"></td>
-            <td class="align-middle fw-semibold">{{ $advantage->title }}</td>
-            <td class="adv-text text-clip">{!! $advantage->text !!}</td>
-            <td class="align-middle">
-                <div class="d-flex align-items-center gap-2">
-                    <input type="hidden" name="statuses[{{ $advantage->id }}]" value="0" form="status-form">
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" name="statuses[{{ $advantage->id }}]" value="1" form="status-form" {{ $advantage->active ? 'checked' : '' }}>
+<div class="admin-grid" style="--grid-cols: 120px 150px 1fr 2fr 180px 180px;">
+    <div class="admin-grid-header">
+        <div>Порядок</div>
+        <div>Изображение</div>
+        <div>Заголовок</div>
+        <div>Текст</div>
+        <div>Статус</div>
+        <div class="text-end">Действия</div>
+    </div>
+    <div class="admin-grid-body js-sortable" id="advSort">
+        @foreach($advantages as $advantage)
+            <div class="admin-grid-row adv-card-row" data-id="{{ $advantage->id }}">
+                <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
+                <div><img src="{{ asset('storage/'.$advantage->image) }}" alt="" width="90" class="rounded shadow-sm"></div>
+                <div class="fw-semibold">{{ $advantage->title }}</div>
+                <div class="adv-text text-clip">{!! $advantage->text !!}</div>
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="hidden" name="statuses[{{ $advantage->id }}]" value="0" form="status-form">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $advantage->id }}" {{ $advantage->active ? 'checked' : '' }}>
+                        </div>
                     </div>
-                    <span class="text-muted small">Статус</span>
+                    <input type="hidden" name="orders[{{ $advantage->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="status-form">
                 </div>
-                <input type="hidden" name="orders[{{ $advantage->id }}]" value="{{ $advantage->order }}" class="js-order-input" form="status-form">
-            </td>
-            <td class="no-label align-middle actions">
-                <div class="d-flex gap-2 align-items-center">
-                    <a href="{{ route('admin.advantages.edit', $advantage->id) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
-                    <form action="{{ route('admin.advantages.destroy', $advantage->id) }}" method="POST" style="display:inline-block">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить?')">Удалить</button>
-                    </form>
+                <div class="actions">
+                    <div class="d-flex gap-2 align-items-center justify-content-end">
+                        <a href="{{ route('admin.advantages.edit', $advantage->id) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
+                        <form action="{{ route('admin.advantages.destroy', $advantage->id) }}" method="POST" style="display:inline-block">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить?')">Удалить</button>
+                        </form>
+                    </div>
                 </div>
-            </td>
-        </tr>
-    @endforeach
-    </tbody>
-</table>
-<button type="submit" form="status-form" class="btn btn-primary mt-2">Сохранить статусы</button>
-<style>
-.adv-card-row td { align-items: flex-start !important; }
-.adv-card-row .adv-text p { margin-bottom: 8px; }
-.adv-card-row .adv-text { max-width: 720px; }
-.adv-card-row .js-order-label { align-items: center; }
-.adv-card-row .js-order-label i { vertical-align: middle; }
-</style>
+            </div>
+        @endforeach
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+    const renumber = ()=>{
+        document.querySelectorAll('#advSort .admin-grid-row').forEach((row, idx)=>{
+            row.querySelector('.js-order-label').innerHTML = `<i class="fa fa-grip-vertical me-1"></i>${idx+1}`;
+            const orderInput = row.querySelector('.js-order-input');
+            if (orderInput) orderInput.value = idx+1;
+        });
+    };
+    renumber();
+    document.querySelectorAll('#advSort .js-status-toggle').forEach(toggle=>{
+        toggle.addEventListener('change', ()=>{
+            const form = document.getElementById('status-form');
+            form.querySelectorAll('input[name^="statuses["]').forEach(el=>el.remove());
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `statuses[${toggle.dataset.id}]`;
+            input.value = toggle.checked ? 1 : 0;
+            form.appendChild(input);
+            form.submit();
+        });
+    });
+    if (window.Sortable) {
+        Sortable.create(document.getElementById('advSort'), {
+            animation:150,
+            handle: '.js-order-label',
+            onEnd: ()=>{
+                renumber();
+                const form = document.getElementById('status-form');
+                form.querySelectorAll('input[name^="orders["]').forEach(el=>el.remove());
+                document.querySelectorAll('#advSort .js-order-input').forEach(input=>{
+                    const clone = input.cloneNode(true);
+                    form.appendChild(clone);
+                });
+                form.submit();
+            }
+        });
+    }
+});
+</script>
 @endsection 
