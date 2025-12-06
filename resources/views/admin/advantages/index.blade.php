@@ -13,7 +13,7 @@
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th>#</th>
+            <th></th>
             <th>Изображение</th>
             <th>Заголовок</th>
             <th>Текст</th>
@@ -21,10 +21,10 @@
             <th>Статус</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody class="js-sortable">
     @foreach($advantages as $advantage)
-        <tr>
-            <td>{{ $advantage->id }}</td>
+        <tr data-id="{{ $advantage->id }}">
+            <td class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $advantage->order }}</td>
             <td><img src="{{ asset('storage/'.$advantage->image) }}" alt="" width="80"></td>
             <td>{{ $advantage->title }}</td>
             <td>{{ $advantage->text }}</td>
@@ -37,10 +37,11 @@
                 </form>
             </td>
             <td>
-                <select name="statuses[{{ $advantage->id }}]" class="form-select form-select-sm" form="status-form">
-                    <option value="1" {{ $advantage->active ? 'selected' : '' }}>Вкл</option>
-                    <option value="0" {{ !$advantage->active ? 'selected' : '' }}>Выкл</option>
-                </select>
+                <input type="hidden" name="statuses[{{ $advantage->id }}]" value="0" form="status-form">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="statuses[{{ $advantage->id }}]" value="1" form="status-form" {{ $advantage->active ? 'checked' : '' }}>
+                </div>
+                <input type="hidden" name="orders[{{ $advantage->id }}]" value="{{ $advantage->order }}" class="js-order-input" form="status-form">
             </td>
         </tr>
     @endforeach

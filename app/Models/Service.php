@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Service extends Model
 {
-    protected $fillable = ['image', 'title', 'text', 'active'];
+    protected $fillable = ['image', 'title', 'text', 'active', 'order'];
     use HasFactory;
 
     protected $casts = [

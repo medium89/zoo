@@ -13,7 +13,7 @@
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th>#</th>
+            <th></th>
             <th>Изображение</th>
             <th>Заголовок</th>
             <th>Текст</th>
@@ -21,10 +21,10 @@
             <th>Статус</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody class="js-sortable">
     @foreach($services as $service)
-        <tr>
-            <td>{{ $service->id }}</td>
+        <tr data-id="{{ $service->id }}">
+            <td class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $service->order }}</td>
             <td><img src="{{ asset('storage/'.$service->image) }}" alt="" width="80"></td>
             <td>{{ $service->title }}</td>
             <td>{{ Str::limit($service->text, 50) }}</td>
@@ -37,10 +37,11 @@
                 </form>
             </td>
             <td>
-                <select name="statuses[{{ $service->id }}]" class="form-select form-select-sm" form="status-form">
-                    <option value="1" {{ $service->active ? 'selected' : '' }}>Вкл</option>
-                    <option value="0" {{ !$service->active ? 'selected' : '' }}>Выкл</option>
-                </select>
+                <input type="hidden" name="statuses[{{ $service->id }}]" value="0" form="status-form">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="statuses[{{ $service->id }}]" value="1" form="status-form" {{ $service->active ? 'checked' : '' }}>
+                </div>
+                <input type="hidden" name="orders[{{ $service->id }}]" value="{{ $service->order }}" class="js-order-input" form="status-form">
             </td>
         </tr>
     @endforeach

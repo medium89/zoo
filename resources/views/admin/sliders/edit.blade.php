@@ -67,12 +67,9 @@
         <label for="order" class="form-label">Порядок</label>
         <input type="number" class="form-control" id="order" name="order" value="{{ $slider->order }}">
     </div>
-    <div class="mb-3">
-        <label for="active" class="form-label">Статус</label>
-        <select id="active" name="active" class="form-select">
-            <option value="1" {{ $slider->active ? 'selected' : '' }}>Вкл</option>
-            <option value="0" {{ !$slider->active ? 'selected' : '' }}>Выкл</option>
-        </select>
+    <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="active" name="active" value="1" {{ $slider->active ? 'checked' : '' }}>
+        <label class="form-check-label" for="active">Активен</label>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
     <a href="{{ route('admin.sliders.index') }}" class="btn btn-secondary">Назад</a>

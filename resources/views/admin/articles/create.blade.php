@@ -14,7 +14,7 @@
         </div>
         <div class="mb-3">
             <label class="form-label">Краткое описание</label>
-            <textarea name="excerpt" class="form-control" rows="2"></textarea>
+            <textarea name="excerpt" class="form-control wysiwyg-excerpt" rows="3" data-editor-height="220"></textarea>
         </div>
         <div class="mb-3">
             <label class="form-label">Дата публикации</label>
@@ -23,11 +23,15 @@
         </div>
         <div class="mb-3">
             <label class="form-label">Текст статьи (WYSIWYG)</label>
-            <textarea name="content" class="form-control js-wysiwyg" rows="12" required></textarea>
+            <textarea name="content" class="form-control js-wysiwyg" rows="12" required data-editor-custom="1"></textarea>
         </div>
         <div class="mb-3">
             <label class="form-label">Изображения (можно несколько)</label>
             <input type="file" name="images[]" class="form-control" multiple>
+        </div>
+        <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" role="switch" id="active" name="active" value="1" checked>
+            <label class="form-check-label" for="active">Активно</label>
         </div>
         <button class="btn btn-success">Сохранить</button>
     </form>

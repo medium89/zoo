@@ -40,6 +40,7 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::post('galleries/status', [App\Http\Controllers\GalleryController::class, 'updateStatus'])->name('galleries.status');
     Route::resource('socials', App\Http\Controllers\SocialController::class);
     Route::post('socials/status', [App\Http\Controllers\SocialController::class, 'updateStatus'])->name('socials.status');
+    Route::resource('animals', App\Http\Controllers\AnimalAdminController::class)->except(['show']);
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::resource('feedbacks', FeedbackController::class)->except(['create', 'show']);
     Route::get('boarding', [App\Http\Controllers\BoardingController::class, 'index'])->name('boarding.index');

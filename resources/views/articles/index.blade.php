@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-@php(use Illuminate\Support\Str;)
 <div class="container py-5">
     <h1 class="mb-4">Статьи</h1>
     <div class="row g-4">
@@ -11,7 +10,7 @@
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">{{ $article->title }}</h5>
                         @if($article->excerpt)
-                            <p class="card-text text-muted">{{ Str::limit($article->excerpt, 160) }}</p>
+                            <p class="card-text text-muted">{{ \Illuminate\Support\Str::limit($article->excerpt, 160) }}</p>
                         @endif
                         <div class="mt-auto d-flex justify-content-between align-items-center">
                             <span class="text-muted" style="font-size:12px;">{{ $article->created_at->format('d.m.Y') }}</span>

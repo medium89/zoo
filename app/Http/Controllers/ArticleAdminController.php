@@ -28,12 +28,14 @@ class ArticleAdminController extends Controller
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
             'published_at' => 'nullable|date',
+            'active' => 'nullable|boolean',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
 
         if (empty($data['published_at'])) {
             $data['published_at'] = Carbon::now();
         }
+        $data['active'] = $request->boolean('active', true);
 
         $article = Article::create($data);
         $this->storeImages($request, $article);
@@ -54,9 +56,11 @@ class ArticleAdminController extends Controller
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
             'published_at' => 'nullable|date',
+            'active' => 'nullable|boolean',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
 
+        $data['active'] = $request->boolean('active', true);
         $article->update($data);
         $this->storeImages($request, $article);
 

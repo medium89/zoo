@@ -20,6 +20,10 @@
         <label for="image" class="form-label">Фото</label><br>
         @if($about && $about->image)
             <img src="{{ asset('storage/'.$about->image) }}" alt="" width="120" class="mb-2"><br>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" value="1" id="remove_image" name="remove_image">
+                <label class="form-check-label" for="remove_image">Удалить фото</label>
+            </div>
         @endif
         <input type="file" class="form-control" id="image" name="image">
         <small class="text-muted">Оставьте пустым, если не хотите менять фото</small>

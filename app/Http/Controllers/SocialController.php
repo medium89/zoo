@@ -67,6 +67,12 @@ class SocialController extends Controller
                 $social->save();
             }
         }
+        foreach ($request->input('orders', []) as $id => $order) {
+            if ($social = Social::find($id)) {
+                $social->order = (int)$order;
+                $social->save();
+            }
+        }
         return back()->with('success', 'Статусы обновлены');
     }
 }

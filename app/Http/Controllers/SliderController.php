@@ -114,6 +114,12 @@ class SliderController extends Controller
                 $slider->save();
             }
         }
+        foreach ($request->input('orders', []) as $id => $order) {
+            if ($slider = Slider::find($id)) {
+                $slider->order = (int)$order;
+                $slider->save();
+            }
+        }
         return back()->with('success', 'Статусы обновлены');
     }
 

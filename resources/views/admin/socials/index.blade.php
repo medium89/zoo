@@ -13,7 +13,7 @@
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th>#</th>
+            <th></th>
             <th>Иконка</th>
             <th>Заголовок</th>
             <th>Ссылка</th>
@@ -24,10 +24,10 @@
             <th>Статус</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody class="js-sortable">
     @foreach($socials as $social)
-        <tr>
-            <td>{{ $social->id }}</td>
+        <tr data-id="{{ $social->id }}">
+            <td class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $social->order }}</td>
             <td><i class="{{ $social->icon }}"></i> <span class="text-muted">{{ $social->icon }}</span></td>
             <td>{{ $social->title }}</td>
             <td><a href="{{ $social->link }}" target="_blank">{{ $social->link }}</a></td>
@@ -43,10 +43,11 @@
                 </form>
             </td>
             <td>
-                <select name="statuses[{{ $social->id }}]" class="form-select form-select-sm" form="status-form">
-                    <option value="1" {{ $social->active ? 'selected' : '' }}>Вкл</option>
-                    <option value="0" {{ !$social->active ? 'selected' : '' }}>Выкл</option>
-                </select>
+                <input type="hidden" name="statuses[{{ $social->id }}]" value="0" form="status-form">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="statuses[{{ $social->id }}]" value="1" form="status-form" {{ $social->active ? 'checked' : '' }}>
+                </div>
+                <input type="hidden" name="orders[{{ $social->id }}]" value="{{ $social->order }}" class="js-order-input" form="status-form">
             </td>
         </tr>
     @endforeach

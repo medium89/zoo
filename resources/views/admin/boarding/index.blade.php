@@ -31,7 +31,6 @@
                 <div class="col-md-4">
                     <label class="form-label">Кличка</label>
                     <input type="text" name="name" class="form-control" required list="animalHints" autocomplete="off" placeholder="Выберите или введите">
-                    <div class="form-text">Предложения подтягиваются из сохранённых животных передержки.</div>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Описание</label>
@@ -44,11 +43,11 @@
                         <option value="выгул">выгул</option>
                     </select>
                 </div>
-                <div class="col-md-1">
+                <div class="col-md-2 col-lg-2">
                     <label class="form-label">Начало</label>
                     <input type="text" name="start_date" class="form-control js-date" autocomplete="off" required placeholder="ГГГГ-ММ-ДД">
                 </div>
-                <div class="col-md-1">
+                <div class="col-md-2 col-lg-2">
                     <label class="form-label">Окончание</label>
                     <input type="text" name="end_date" class="form-control js-date" autocomplete="off" required placeholder="ГГГГ-ММ-ДД">
                 </div>

@@ -11,7 +11,7 @@ class AdvantageController extends Controller
 {
     public function index()
     {
-        $advantages = Advantage::all();
+        $advantages = Advantage::orderBy('order')->orderBy('id')->get();
         return view('admin.advantages.index', compact('advantages'));
     }
 
@@ -27,6 +27,7 @@ class AdvantageController extends Controller
             'title' => 'required|string|max:255',
             'text' => 'required|string',
             'active' => 'required|boolean',
+            'order' => 'nullable|integer',
             'image_scale' => 'nullable|integer|min:10|max:100',
             'image_quality' => 'nullable|integer|min:40|max:100',
         ]);
@@ -36,6 +37,7 @@ class AdvantageController extends Controller
             'title' => $request->title,
             'text' => $request->text,
             'active' => $request->boolean('active'),
+            'order' => $request->input('order', 0),
         ]);
         return redirect()->route('admin.advantages.index')->with('success', 'Преимущество добавлено');
     }
@@ -52,6 +54,7 @@ class AdvantageController extends Controller
             'title' => 'required|string|max:255',
             'text' => 'required|string',
             'active' => 'required|boolean',
+            'order' => 'nullable|integer',
             'image_scale' => 'nullable|integer|min:10|max:100',
             'image_quality' => 'nullable|integer|min:40|max:100',
         ]);
@@ -65,6 +68,7 @@ class AdvantageController extends Controller
         $advantage->title = $request->title;
         $advantage->text = $request->text;
         $advantage->active = $request->boolean('active');
+        $advantage->order = $request->input('order', 0);
         $advantage->save();
         return redirect()->route('admin.advantages.index')->with('success', 'Преимущество обновлено');
     }
@@ -83,6 +87,12 @@ class AdvantageController extends Controller
         foreach ($request->input('statuses', []) as $id => $status) {
             if ($adv = Advantage::find($id)) {
                 $adv->active = (bool)$status;
+                $adv->save();
+            }
+        }
+        foreach ($request->input('orders', []) as $id => $order) {
+            if ($adv = Advantage::find($id)) {
+                $adv->order = (int)$order;
                 $adv->save();
             }
         }

@@ -10,33 +10,31 @@
 <form id="status-form" action="{{ route('admin.galleries.status') }}" method="POST">
     @csrf
 </form>
-<div class="row">
+<div class="row js-sortable">
     @foreach($galleries as $gallery)
-        <div class="col-md-3 mb-4">
-            <div class="card">
+        <div class="col-md-3 mb-4" data-id="{{ $gallery->id }}">
+            <div class="card h-100">
                 @php
                     $thumb = preg_replace('/^galleries\//', 'galleries/thumbs/', $gallery->image);
                     $thumbExists = \Illuminate\Support\Facades\Storage::disk('public')->exists($thumb);
                     $thumbUrl = $thumbExists ? asset('storage/' . $thumb) : asset('storage/' . $gallery->image);
                 @endphp
-                <img src="{{ $thumbUrl }}" class="card-img-top" alt="" style="height:180px;object-fit:cover;">
-                <div class="card-body text-center">
-                    <div class="mb-2">
-                        <select name="numbers[{{ $gallery->id }}]" class="form-select form-select-sm" form="status-form">
-                            @for($i = 1; $i <= $galleries->count(); $i++)
-                                <option value="{{ $i }}" {{ $gallery->number == $i ? 'selected' : '' }}>{{ $i }}</option>
-                            @endfor
-                        </select>
-                    </div>
+                <div class="position-relative">
+                    <div class="position-absolute top-0 start-0 m-2 badge bg-secondary js-order-label" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $gallery->number }}</div>
+                    <img src="{{ $thumbUrl }}" class="card-img-top" alt="" style="height:180px;object-fit:cover;">
+                </div>
+                <div class="card-body text-center d-flex flex-column gap-2">
+                    <input type="hidden" name="numbers[{{ $gallery->id }}]" value="{{ $gallery->number }}" class="js-order-input" form="status-form">
                     <form action="{{ route('admin.galleries.destroy', $gallery->id) }}" method="POST" class="mb-2">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить фото?')">Удалить</button>
                     </form>
-                    <select name="statuses[{{ $gallery->id }}]" class="form-select form-select-sm" form="status-form">
-                        <option value="1" {{ $gallery->active ? 'selected' : '' }}>Вкл</option>
-                        <option value="0" {{ !$gallery->active ? 'selected' : '' }}>Выкл</option>
-                    </select>
+                    <div class="form-check form-switch">
+                        <input type="hidden" name="statuses[{{ $gallery->id }}]" value="0" form="status-form">
+                        <input class="form-check-input" type="checkbox" name="statuses[{{ $gallery->id }}]" value="1" form="status-form" {{ $gallery->active ? 'checked' : '' }}>
+                        <label class="form-check-label">Активно</label>
+                    </div>
                 </div>
             </div>
         </div>

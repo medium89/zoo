@@ -13,17 +13,17 @@
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th>#</th>
+            <th></th>
             <th>Изображение</th>
             <th>Порядок</th>
             <th>Действия</th>
             <th>Статус</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="slidersSort" class="js-sortable">
     @foreach($sliders as $slider)
-        <tr>
-            <td>{{ $slider->id }}</td>
+        <tr data-id="{{ $slider->id }}">
+            <td class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $slider->order }}</td>
             <td><img src="{{ asset('storage/'.$slider->image) }}" alt="" width="120"></td>
             <td>{{ $slider->order }}</td>
             <td>
@@ -35,10 +35,11 @@
                 </form>
             </td>
             <td>
-                <select name="statuses[{{ $slider->id }}]" class="form-select form-select-sm" form="status-form">
-                    <option value="1" {{ $slider->active ? 'selected' : '' }}>Вкл</option>
-                    <option value="0" {{ !$slider->active ? 'selected' : '' }}>Выкл</option>
-                </select>
+                <input type="hidden" name="statuses[{{ $slider->id }}]" value="0" form="status-form">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="statuses[{{ $slider->id }}]" value="1" form="status-form" {{ $slider->active ? 'checked' : '' }}>
+                </div>
+                <input type="hidden" name="orders[{{ $slider->id }}]" value="{{ $slider->order }}" class="js-order-input" form="status-form">
             </td>
         </tr>
     @endforeach

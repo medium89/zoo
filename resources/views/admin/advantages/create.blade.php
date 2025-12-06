@@ -37,11 +37,12 @@
         <textarea class="form-control wysiwyg" id="text" name="text" rows="4"></textarea>
     </div>
     <div class="mb-3">
-        <label for="active" class="form-label">Статус</label>
-        <select id="active" name="active" class="form-select">
-            <option value="1" selected>Вкл</option>
-            <option value="0">Выкл</option>
-        </select>
+        <label for="order" class="form-label">Порядок</label>
+        <input type="number" class="form-control" id="order" name="order" value="0">
+    </div>
+    <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="active" name="active" value="1" checked>
+        <label class="form-check-label" for="active">Активно</label>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
     <a href="{{ route('admin.advantages.index') }}" class="btn btn-secondary">Назад</a>

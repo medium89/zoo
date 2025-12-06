@@ -26,7 +26,14 @@ class AboutController extends Controller
             'text' => 'required|string',
             'image_scale' => 'nullable|integer|min:10|max:100',
             'image_quality' => 'nullable|integer|min:40|max:100',
+            'remove_image' => 'nullable|boolean',
         ]);
+        if ($request->boolean('remove_image') && $about->image) {
+            if (Storage::disk('public')->exists($about->image)) {
+                Storage::disk('public')->delete($about->image);
+            }
+            $about->image = null;
+        }
         if ($request->hasFile('image')) {
             if ($about->image && Storage::disk('public')->exists($about->image)) {
                 Storage::disk('public')->delete($about->image);

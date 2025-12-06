@@ -11,7 +11,7 @@ class ServiceController extends Controller
 {
     public function index()
     {
-        $services = Service::all();
+        $services = Service::orderBy('order')->orderBy('id')->get();
         return view('admin.services.index', compact('services'));
     }
 
@@ -27,6 +27,7 @@ class ServiceController extends Controller
             'title' => 'required|string|max:255',
             'text' => 'required|string',
             'active' => 'required|boolean',
+            'order' => 'nullable|integer',
             'image_scale' => 'nullable|integer|min:10|max:100',
             'image_quality' => 'nullable|integer|min:40|max:100',
         ]);
@@ -36,6 +37,7 @@ class ServiceController extends Controller
             'title' => $request->title,
             'text' => $request->text,
             'active' => $request->boolean('active'),
+            'order' => $request->input('order', 0),
         ]);
         return redirect()->route('admin.services.index')->with('success', 'Услуга добавлена');
     }
@@ -52,6 +54,7 @@ class ServiceController extends Controller
             'title' => 'required|string|max:255',
             'text' => 'required|string',
             'active' => 'required|boolean',
+            'order' => 'nullable|integer',
             'image_scale' => 'nullable|integer|min:10|max:100',
             'image_quality' => 'nullable|integer|min:40|max:100',
         ]);
@@ -65,6 +68,7 @@ class ServiceController extends Controller
         $service->title = $request->title;
         $service->text = $request->text;
         $service->active = $request->boolean('active');
+        $service->order = $request->input('order', 0);
         $service->save();
         return redirect()->route('admin.services.index')->with('success', 'Услуга обновлена');
     }
@@ -83,6 +87,12 @@ class ServiceController extends Controller
         foreach ($request->input('statuses', []) as $id => $status) {
             if ($service = Service::find($id)) {
                 $service->active = (bool)$status;
+                $service->save();
+            }
+        }
+        foreach ($request->input('orders', []) as $id => $order) {
+            if ($service = Service::find($id)) {
+                $service->order = (int)$order;
                 $service->save();
             }
         }

@@ -238,6 +238,25 @@
                 left: 18px;
             }
         }
+
+        /* CKEditor высота и читаемость */
+        .ck-editor__editable_inline {
+            min-height: 280px;
+            border: 1px solid #ced4da !important;
+            border-radius: 8px !important;
+            padding: 12px 14px !important;
+            background: #fff;
+            resize: vertical;
+        }
+        .ck.ck-editor { width: 100%; }
+        textarea.wysiwyg, textarea.js-wysiwyg { min-height: 220px; resize: vertical; }
+        .ck-toolbar { border-radius: 8px 8px 0 0 !important; }
+
+        /* Ползунки масштаба/качества */
+        .form-range::-webkit-slider-thumb { background: #0d6efd; }
+        .form-range::-moz-range-thumb { background: #0d6efd; }
+        .form-range::-webkit-slider-runnable-track { background: #dfe3e8; }
+        .form-range::-moz-range-track { background: #dfe3e8; }
     </style>
     @vite(['resources/js/app.js'])
 </head>
@@ -257,6 +276,7 @@
                 <a href="/zooadmin/services" class="{{ request()->is('zooadmin/services*') ? 'active' : '' }}"><i class="fa fa-briefcase me-2"></i>Услуги</a>
                 <a href="/zooadmin/galleries" class="{{ request()->is('zooadmin/galleries*') ? 'active' : '' }}"><i class="fa fa-image me-2"></i>Фотоальбом</a>
                 <a href="/zooadmin/socials" class="{{ request()->is('zooadmin/socials*') ? 'active' : '' }}"><i class="fa fa-share-alt me-2"></i>Социальные контакты</a>
+                <a href="{{ route('admin.animals.index') }}" class="{{ request()->is('zooadmin/animals*') ? 'active' : '' }}"><i class="fa fa-paw me-2"></i>Питомцы</a>
                 <a href="{{ route('admin.feedbacks.index') }}" class="{{ request()->is('zooadmin/feedbacks*') ? 'active' : '' }}"><i class="fa fa-envelope me-2"></i>Обратная связь</a>
                 <a href="{{ route('admin.boarding.index') }}" class="{{ request()->is('zooadmin/boarding*') ? 'active' : '' }}"><i class="fa fa-calendar-check me-2"></i>Передержка</a>
                 <a href="{{ route('admin.articles.index') }}" class="{{ request()->is('zooadmin/articles*') ? 'active' : '' }}"><i class="fa fa-newspaper me-2"></i>Статьи</a>
@@ -279,7 +299,25 @@
         @yield('content')
     </div>
 </div>
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Удаление</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="confirmDeleteText">Удалить запись?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const sidebar = document.getElementById('sidebar');
@@ -345,6 +383,71 @@
                         }
                     });
                 });
+            }
+        });
+
+        // Drag & drop сортировка
+        if (window.Sortable) {
+            document.querySelectorAll('.js-sortable').forEach((el)=>{
+                const sortable = Sortable.create(el, {
+                    animation: 150,
+                    handle: '.js-order-label',
+                    onEnd: updateOrders
+                });
+                function updateOrders(){
+                    const items = el.querySelectorAll('[data-id]')?.length ? el.querySelectorAll('[data-id]') : el.querySelectorAll('tr');
+                    items.forEach((row, idx)=>{
+                        const orderField = row.querySelector('.js-order-input');
+                        const label = row.querySelector('.js-order-label');
+                        if (orderField) orderField.value = idx + 1;
+                        if (label) label.innerHTML = `<i class="fa fa-grip-vertical me-1"></i>${idx+1}`;
+                    });
+                }
+                updateOrders();
+            });
+        }
+
+        // Глобальная замена текста кнопок на иконки
+        document.querySelectorAll('button, a').forEach((btn) => {
+            if (btn.closest('.modal')) return;
+            const txt = (btn.textContent || '').trim();
+            if (txt === 'Редактировать') {
+                btn.innerHTML = '<i class="fa fa-pen"></i>';
+                btn.title = 'Редактировать';
+                btn.classList.add('btn-icon');
+            }
+            if (txt === 'Удалить') {
+                if (btn.hasAttribute('onclick')) btn.removeAttribute('onclick');
+                btn.innerHTML = '<i class="fa fa-trash"></i>';
+                btn.title = 'Удалить';
+                btn.classList.add('btn-icon', 'js-delete-trigger');
+                if (!btn.getAttribute('type')) {
+                    btn.setAttribute('type','button');
+                }
+            }
+        });
+
+        // Глобальное подтверждение удаления через модалку
+        const deleteModalEl = document.getElementById('confirmDeleteModal');
+        const deleteTextEl = document.getElementById('confirmDeleteText');
+        const deleteBtn = document.getElementById('confirmDeleteBtn');
+        const deleteModal = deleteModalEl ? new bootstrap.Modal(deleteModalEl) : null;
+        let deleteForm = null;
+        document.addEventListener('click', (e)=>{
+            const btn = e.target.closest('.js-delete-trigger, form.js-delete-form button[type="submit"]');
+            if (!btn || !deleteModal) return;
+            if (btn.closest('.modal')) return;
+            const form = btn.closest('form');
+            if (!form) return;
+            e.preventDefault();
+            deleteForm = form;
+            deleteTextEl.textContent = btn.dataset.confirm || form.dataset.confirm || 'Удалить запись?';
+            deleteModal.show();
+        });
+        deleteBtn?.addEventListener('click', ()=>{
+            if (deleteForm) {
+                deleteForm.submit();
+                deleteForm = null;
             }
         });
     });
