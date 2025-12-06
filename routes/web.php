@@ -62,5 +62,5 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
 Route::get('/', [HomeController::class, 'index']);
 Route::get('/gallery/more', [HomeController::class, 'galleryMore'])->name('gallery.more');
 Route::get('/articles', [App\Http\Controllers\ArticlePublicController::class, 'index'])->name('articles.index');
-Route::get('/articles/{article}', [App\Http\Controllers\ArticlePublicController::class, 'show'])->name('articles.show');
-Route::post('/articles/{article}/comments', [App\Http\Controllers\ArticlePublicController::class, 'comment'])->name('articles.comment');
+Route::get('/articles/{article:slug}', [App\Http\Controllers\ArticlePublicController::class, 'show'])->name('articles.show');
+Route::post('/articles/{article:slug}/comments', [App\Http\Controllers\ArticlePublicController::class, 'comment'])->name('articles.comment');

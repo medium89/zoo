@@ -130,45 +130,45 @@
             display: block;
         }
 
-        /* Псевдо-табличный формат на мобильных */
+        /* Псевдо-табличный формат → плитки */
         .content .admin-flex-table {
             width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 14px;
         }
-
-        @media (max-width: 991.98px) {
-            .content .admin-flex-table thead {
-                display: none;
-            }
-            .content .admin-flex-table tbody {
-                display: grid;
-                gap: 12px;
-            }
-            .content .admin-flex-table tr {
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
-                padding: 12px;
-                border: 1px solid #e9ecef;
-                border-radius: 12px;
-                background: #fff;
-            }
-            .content .admin-flex-table td {
-                display: flex;
-                align-items: flex-start;
-                gap: 10px;
-                border: 0;
-                padding: 4px 0;
-            }
-            .content .admin-flex-table td::before {
-                content: attr(data-label);
-                min-width: 120px;
-                font-weight: 600;
-                color: #6c757d;
-                font-size: 0.95rem;
-            }
-            .content .admin-flex-table td:last-child {
-                padding-bottom: 0;
-            }
+        .content .admin-flex-table thead {
+            display: none;
+        }
+        .content .admin-flex-table tbody {
+            display: block;
+        }
+        .content .admin-flex-table tr {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: #fff;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 10px 24px rgba(31,35,42,0.08);
+            margin-bottom: 10px;
+        }
+        .content .admin-flex-table td {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            border: 0;
+            padding: 4px 0;
+        }
+        .content .admin-flex-table td::before {
+            content: attr(data-label);
+            min-width: 140px;
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+        .content .admin-flex-table td:last-child {
+            padding-bottom: 0;
         }
 
         .content .btn {

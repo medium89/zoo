@@ -13,6 +13,10 @@
             <input type="text" name="title" class="form-control" required>
         </div>
         <div class="mb-3">
+            <label class="form-label">ЧПУ (slug)</label>
+            <input type="text" name="slug" class="form-control" placeholder="Автоиз генерации заголовка, можно задать вручную">
+        </div>
+        <div class="mb-3">
             <label class="form-label">Краткое описание</label>
             <textarea name="excerpt" class="form-control wysiwyg-excerpt" rows="3" data-editor-height="220"></textarea>
         </div>
@@ -28,6 +32,24 @@
         <div class="mb-3">
             <label class="form-label">Изображения (можно несколько)</label>
             <input type="file" name="images[]" class="form-control" multiple>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">SEO Title</label>
+                <input type="text" name="seo_title" class="form-control" placeholder="Если пусто — будет использован заголовок">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">SEO Description</label>
+                <input type="text" name="seo_description" class="form-control">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Robots</label>
+                <input type="text" name="seo_robots" class="form-control" value="index, follow">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Charset</label>
+                <input type="text" name="seo_charset" class="form-control" value="UTF-8">
+            </div>
         </div>
         <div class="form-check form-switch mb-4">
             <input class="form-check-input" type="checkbox" role="switch" id="active" name="active" value="1" checked>

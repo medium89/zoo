@@ -9,7 +9,18 @@ class Article extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title','excerpt','content','published_at','active'];
+    protected $fillable = [
+        'title',
+        'excerpt',
+        'content',
+        'published_at',
+        'active',
+        'slug',
+        'seo_title',
+        'seo_description',
+        'seo_robots',
+        'seo_charset',
+    ];
 
     protected $casts = [
         'published_at' => 'datetime',
@@ -24,5 +35,10 @@ class Article extends Model
     public function comments()
     {
         return $this->hasMany(ArticleComment::class);
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
     }
 }

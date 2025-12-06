@@ -7,6 +7,7 @@ use App\Models\ArticleImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class ArticleAdminController extends Controller
 {
@@ -28,6 +29,11 @@ class ArticleAdminController extends Controller
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
             'published_at' => 'nullable|date',
+            'slug' => 'nullable|string|max:255|unique:articles,slug',
+            'seo_title' => 'nullable|string|max:255',
+            'seo_description' => 'nullable|string|max:255',
+            'seo_robots' => 'nullable|string|max:255',
+            'seo_charset' => 'nullable|string|max:50',
             'active' => 'nullable|boolean',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
@@ -36,6 +42,9 @@ class ArticleAdminController extends Controller
             $data['published_at'] = Carbon::now();
         }
         $data['active'] = $request->boolean('active', true);
+        $data['slug'] = $this->makeSlug($data['slug'] ?? null, $data['title']);
+        $data['seo_robots'] = $data['seo_robots'] ?? 'index, follow';
+        $data['seo_charset'] = $data['seo_charset'] ?? 'UTF-8';
 
         $article = Article::create($data);
         $this->storeImages($request, $article);
@@ -56,11 +65,19 @@ class ArticleAdminController extends Controller
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
             'published_at' => 'nullable|date',
+            'slug' => 'nullable|string|max:255|unique:articles,slug,' . $article->id,
+            'seo_title' => 'nullable|string|max:255',
+            'seo_description' => 'nullable|string|max:255',
+            'seo_robots' => 'nullable|string|max:255',
+            'seo_charset' => 'nullable|string|max:50',
             'active' => 'nullable|boolean',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
 
         $data['active'] = $request->boolean('active', true);
+        $data['slug'] = $this->makeSlug($data['slug'] ?? $article->slug, $data['title'], $article->id);
+        $data['seo_robots'] = $data['seo_robots'] ?? 'index, follow';
+        $data['seo_charset'] = $data['seo_charset'] ?? 'UTF-8';
         $article->update($data);
         $this->storeImages($request, $article);
 
@@ -100,5 +117,20 @@ class ArticleAdminController extends Controller
         ]);
         $path = $request->file('file')->store('articles', 'public');
         return response()->json(['location' => asset('storage/'.$path)]);
+    }
+
+    private function makeSlug(?string $candidate, string $title, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($candidate ?: $title) ?: 'article';
+        $slug = $base;
+        $i = 1;
+        while (
+            Article::where('slug', $slug)
+                ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = $base . '-' . $i++;
+        }
+        return $slug;
     }
 }
