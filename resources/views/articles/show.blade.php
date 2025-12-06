@@ -42,7 +42,7 @@
                         foreach($tree[$parentId] as $c){
                             echo '<li class="mb-3">';
                             echo '<div class="p-3 border rounded bg-white">';
-                            echo '<div class="fw-bold">'.$c->email.'</div>';
+                            echo '<div class="fw-bold mb-1" style="margin-bottom:5px;">'.$c->email.'</div>';
                             echo '<div class="text-muted" style="font-size:12px;">'.$c->created_at->format('d.m.Y H:i').'</div>';
                             echo '<div class="mt-2">'.e($c->content).'</div>';
                             echo '<button class="btn btn-link btn-sm p-0 mt-2 js-reply" data-id="'.$c->id.'">Ответить</button>';
@@ -53,9 +53,9 @@
                         echo '</ul>';
                     };
                 @endphp
-                <div id="comments">{!! $render(0,0) !!}</div>
+                <div id="article-comments">{!! $render(0,0) !!}</div>
 
-                <h5 class="card-title mt-4">Оставить комментарий</h5>
+                <h5 class="card-title mt-4 mb-3">Оставить комментарий</h5>
                 <div class="comment-form-wrapper">
                     <form action="{{ route('articles.comment', $article) }}" method="POST" id="commentForm">
                         @csrf
