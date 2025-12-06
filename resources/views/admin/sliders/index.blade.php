@@ -28,7 +28,6 @@
                         <div class="form-check form-switch mb-0">
                             <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $slider->id }}" {{ $slider->active ? 'checked' : '' }}>
                         </div>
-                        <span class="text-muted small">Статус</span>
                     </div>
                     <input type="hidden" name="orders[{{ $slider->id }}]" value="{{ $slider->order }}" class="js-order-input" form="status-form">
                 </div>
@@ -51,14 +50,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.querySelectorAll('.js-status-toggle').forEach(toggle=>{
         toggle.addEventListener('change', ()=>{
             const form = document.getElementById('status-form');
-            // очистить предыдущие
-            form.querySelectorAll('input[name^="statuses["]').forEach(el=>el.remove());
-            // собрать только текущий переключатель
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = `statuses[${toggle.dataset.id}]`;
+            let input = form.querySelector(`input[name="statuses[${toggle.dataset.id}]"]`);
+            if (!input) {
+                input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `statuses[${toggle.dataset.id}]`;
+                form.appendChild(input);
+            }
             input.value = toggle.checked ? 1 : 0;
-            form.appendChild(input);
             form.submit();
         });
     });
