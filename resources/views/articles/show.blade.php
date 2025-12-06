@@ -1,12 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-@include('sections.header')
-
 <section class="article-hero">
     <div class="container">
-        <p class="text-uppercase text-muted mb-2 small">Блог</p>
-        <h1 class="fw-bold">{{ $article->title }}</h1>
+        <h1 class="fw-bold mb-2">{{ $article->title }}</h1>
         <div class="d-flex gap-3 align-items-center text-muted">
             <span><i class="fa fa-calendar me-1"></i>{{ $article->published_at? $article->published_at->format('d.m.Y') : $article->created_at->format('d.m.Y') }}</span>
             <span><i class="fa fa-clock me-1"></i>{{ $article->created_at->format('H:i') }}</span>
@@ -81,8 +78,8 @@
 
 <style>
     .article-hero{
-        padding: 96px 0 48px;
-        background: radial-gradient(circle at 20% 20%, #f0f6ff 0, transparent 35%), radial-gradient(circle at 80% 10%, #fce7f3 0, transparent 32%), linear-gradient(135deg, #f8fafc 0%, #ffffff 60%);
+        padding: 72px 0 40px;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 60%);
         border-bottom: 1px solid #e9ecef;
     }
     .article-gallery{

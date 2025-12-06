@@ -156,7 +156,7 @@
         }
         .content .admin-flex-table td {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 10px;
             border: 0;
             padding: 2px 0;
@@ -181,6 +181,7 @@
             align-items: center;
             gap: 6px;
             vertical-align: middle;
+            min-width: 24px;
         }
 
         .content .btn {

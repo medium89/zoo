@@ -1,11 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-@include('sections.header')
-
 <section class="article-hero">
     <div class="container">
-        <h1 class="fw-bold mb-0">Статьи</h1>
+        <h1 class="fw-bold mb-0 display-5">Статьи</h1>
     </div>
 </section>
 
@@ -72,8 +70,8 @@
 
 <style>
     .article-hero{
-        padding: 96px 0 64px;
-        background: radial-gradient(circle at 20% 20%, #f0f6ff 0, transparent 35%), radial-gradient(circle at 80% 10%, #fce7f3 0, transparent 32%), linear-gradient(135deg, #f8fafc 0%, #ffffff 60%);
+        padding: 72px 0 52px;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 60%);
         border-bottom: 1px solid #e9ecef;
     }
     .article-card img{

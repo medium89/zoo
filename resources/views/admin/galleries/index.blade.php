@@ -30,10 +30,10 @@
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить фото?')">Удалить</button>
                     </form>
-                    <div class="form-check form-switch">
+                    <div class="form-check form-switch d-flex align-items-center gap-2">
                         <input type="hidden" name="statuses[{{ $gallery->id }}]" value="0" form="status-form">
                         <input class="form-check-input" type="checkbox" name="statuses[{{ $gallery->id }}]" value="1" form="status-form" {{ $gallery->active ? 'checked' : '' }}>
-                        <label class="form-check-label">Активно</label>
+                        <label class="form-check-label mb-0">Статус</label>
                     </div>
                 </div>
             </div>

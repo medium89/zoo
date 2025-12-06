@@ -34,20 +34,25 @@
             <td>{{ $social->link_text }}</td>
             <td>{{ $social->text }}</td>
             <td>{{ $social->order }}</td>
-            <td class="no-label">
-                <a href="{{ route('admin.socials.edit', $social->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
-                <form action="{{ route('admin.socials.destroy', $social->id) }}" method="POST" style="display:inline-block">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить контакт?')">Удалить</button>
-                </form>
-            </td>
-            <td>
-                <input type="hidden" name="statuses[{{ $social->id }}]" value="0" form="status-form">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" name="statuses[{{ $social->id }}]" value="1" form="status-form" {{ $social->active ? 'checked' : '' }}>
+            <td class="no-label align-middle">
+                <div class="d-flex align-items-center gap-2">
+                    <input type="hidden" name="statuses[{{ $social->id }}]" value="0" form="status-form">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" name="statuses[{{ $social->id }}]" value="1" form="status-form" {{ $social->active ? 'checked' : '' }}>
+                    </div>
+                    <span class="text-muted small">Статус</span>
                 </div>
                 <input type="hidden" name="orders[{{ $social->id }}]" value="{{ $social->order }}" class="js-order-input" form="status-form">
+            </td>
+            <td class="no-label align-middle">
+                <div class="d-flex gap-2 align-items-center">
+                    <a href="{{ route('admin.socials.edit', $social->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                    <form action="{{ route('admin.socials.destroy', $social->id) }}" method="POST" style="display:inline-block">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить контакт?')">Удалить</button>
+                    </form>
+                </div>
             </td>
         </tr>
     @endforeach
