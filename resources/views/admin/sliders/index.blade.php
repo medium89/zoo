@@ -26,7 +26,7 @@
                     <div class="d-flex align-items-center gap-2">
                         <input type="hidden" name="statuses[{{ $slider->id }}]" value="0" form="status-form">
                         <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" name="statuses[{{ $slider->id }}]" value="1" form="status-form" {{ $slider->active ? 'checked' : '' }}>
+                            <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $slider->id }}" {{ $slider->active ? 'checked' : '' }}>
                         </div>
                         <span class="text-muted small">Статус</span>
                     </div>
@@ -46,7 +46,24 @@
         @endforeach
     </div>
 </div>
-<button type="submit" form="status-form" class="btn btn-primary mt-2">Сохранить статусы</button>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+    document.querySelectorAll('.js-status-toggle').forEach(toggle=>{
+        toggle.addEventListener('change', ()=>{
+            const form = document.getElementById('status-form');
+            // очистить предыдущие
+            form.querySelectorAll('input[name^="statuses["]').forEach(el=>el.remove());
+            // собрать только текущий переключатель
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `statuses[${toggle.dataset.id}]`;
+            input.value = toggle.checked ? 1 : 0;
+            form.appendChild(input);
+            form.submit();
+        });
+    });
+});
+</script>
 <style>
     .admin-grid {
         display: grid;
