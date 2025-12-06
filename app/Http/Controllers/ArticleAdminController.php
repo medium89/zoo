@@ -148,7 +148,10 @@ class ArticleAdminController extends Controller
             'file' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
         $path = $request->file('file')->store('articles', 'public');
-        return response()->json(['location' => asset('storage/'.$path)]);
+        return response()->json([
+            'uploaded' => true,
+            'url' => asset('storage/'.$path),
+        ]);
     }
 
     private function makeSlug(?string $candidate, string $title, ?int $ignoreId = null): string

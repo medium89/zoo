@@ -105,6 +105,16 @@
         margin-top: 1.4rem;
         font-size: inherit;
         font-weight: 600;
+        text-transform: none;
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+        position: static;
+    }
+    .article-content h1::after,
+    .article-content h2::after,
+    .article-content h3::after{
+        display: none !important;
     }
     .article-content p{
         line-height: 1.7;
