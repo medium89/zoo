@@ -10,43 +10,75 @@
 <form id="status-form" action="{{ route('admin.sliders.status') }}" method="POST">
     @csrf
 </form>
-<table class="table table-bordered admin-grid-table" style="--grid-cols: 140px 200px 1fr 220px;">
-    <thead>
-        <tr>
-            <th>Порядок</th>
-            <th>Изображение</th>
-            <th>Статус</th>
-            <th>Действия</th>
-        </tr>
-    </thead>
-    <tbody id="slidersSort" class="js-sortable">
-    @foreach($sliders as $slider)
-        <tr data-id="{{ $slider->id }}">
-            <td class="js-order-label text-muted no-label align-middle" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $slider->order }}</td>
-            <td class="no-label"><img src="{{ asset('storage/'.$slider->image) }}" alt="" width="120"></td>
-            <td class="no-label align-middle">
-                <div class="d-flex align-items-center gap-2">
-                    <input type="hidden" name="statuses[{{ $slider->id }}]" value="0" form="status-form">
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" name="statuses[{{ $slider->id }}]" value="1" form="status-form" {{ $slider->active ? 'checked' : '' }}>
+<div class="admin-grid" style="--grid-cols: 140px 200px 1fr 220px;">
+    <div class="admin-grid-header">
+        <div>Порядок</div>
+        <div>Изображение</div>
+        <div>Статус</div>
+        <div class="text-end">Действия</div>
+    </div>
+    <div class="admin-grid-body js-sortable" id="slidersSort">
+        @foreach($sliders as $slider)
+            <div class="admin-grid-row" data-id="{{ $slider->id }}">
+                <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $slider->order }}</div>
+                <div><img src="{{ asset('storage/'.$slider->image) }}" alt="" width="120"></div>
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="hidden" name="statuses[{{ $slider->id }}]" value="0" form="status-form">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" name="statuses[{{ $slider->id }}]" value="1" form="status-form" {{ $slider->active ? 'checked' : '' }}>
+                        </div>
+                        <span class="text-muted small">Статус</span>
                     </div>
-                    <span class="text-muted small">Статус</span>
+                    <input type="hidden" name="orders[{{ $slider->id }}]" value="{{ $slider->order }}" class="js-order-input" form="status-form">
                 </div>
-                <input type="hidden" name="orders[{{ $slider->id }}]" value="{{ $slider->order }}" class="js-order-input" form="status-form">
-            </td>
-            <td class="no-label align-middle actions">
-                <div class="d-flex gap-2 align-items-center">
-                    <a href="{{ route('admin.sliders.edit', $slider) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
-                    <form action="{{ route('admin.sliders.destroy', $slider) }}" method="POST" style="display:inline-block">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить слайд?')">Удалить</button>
-                    </form>
+                <div class="actions">
+                    <div class="d-flex justify-content-end gap-2 align-items-center">
+                        <a href="{{ route('admin.sliders.edit', $slider) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
+                        <form action="{{ route('admin.sliders.destroy', $slider) }}" method="POST" style="display:inline-block">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить слайд?')">Удалить</button>
+                        </form>
+                    </div>
                 </div>
-            </td>
-        </tr>
-    @endforeach
-    </tbody>
-</table>
+            </div>
+        @endforeach
+    </div>
+</div>
 <button type="submit" form="status-form" class="btn btn-primary mt-2">Сохранить статусы</button>
+<style>
+    .admin-grid {
+        display: grid;
+        gap: 12px;
+    }
+    .admin-grid-header {
+        display: grid;
+        grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(120px,1fr)));
+        gap: 12px;
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.95rem;
+        padding-left: 2px;
+    }
+    .admin-grid-body {
+        display: grid;
+        gap: 12px;
+    }
+    .admin-grid-row {
+        display: grid;
+        grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(120px,1fr)));
+        gap: 12px;
+        padding: 12px;
+        border-radius: 14px;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 8px 20px rgba(31,35,42,0.08);
+        align-items: center;
+    }
+    .admin-grid-row .actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+</style>
 @endsection 
