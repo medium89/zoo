@@ -7,6 +7,7 @@ use App\Models\ArticleImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use App\Support\ImageProcessor;
 use Illuminate\Support\Str;
 
 class ArticleAdminController extends Controller
@@ -34,6 +35,9 @@ class ArticleAdminController extends Controller
             'seo_description' => 'nullable|string|max:255',
             'seo_robots' => 'nullable|string|max:255',
             'seo_charset' => 'nullable|string|max:50',
+            'cover' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
+            'image_scale' => 'nullable|integer|min:10|max:100',
+            'image_quality' => 'nullable|integer|min:40|max:100',
             'active' => 'nullable|boolean',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
@@ -47,7 +51,15 @@ class ArticleAdminController extends Controller
         $data['seo_charset'] = $data['seo_charset'] ?? 'UTF-8';
 
         $article = Article::create($data);
-        $this->storeImages($request, $article);
+        $scale = (int)$request->input('image_scale', 100);
+        $quality = (int)$request->input('image_quality', 85);
+
+        if ($request->hasFile('cover')) {
+            $article->cover_path = ImageProcessor::processAndStore($request->file('cover'), 'articles/covers', $scale, $quality);
+            $article->save();
+        }
+
+        $this->storeImages($request, $article, $scale, $quality);
 
         return redirect()->route('admin.articles.index')->with('success', 'Статья добавлена');
     }
@@ -70,6 +82,9 @@ class ArticleAdminController extends Controller
             'seo_description' => 'nullable|string|max:255',
             'seo_robots' => 'nullable|string|max:255',
             'seo_charset' => 'nullable|string|max:50',
+            'cover' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
+            'image_scale' => 'nullable|integer|min:10|max:100',
+            'image_quality' => 'nullable|integer|min:40|max:100',
             'active' => 'nullable|boolean',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
@@ -79,7 +94,18 @@ class ArticleAdminController extends Controller
         $data['seo_robots'] = $data['seo_robots'] ?? 'index, follow';
         $data['seo_charset'] = $data['seo_charset'] ?? 'UTF-8';
         $article->update($data);
-        $this->storeImages($request, $article);
+        $scale = (int)$request->input('image_scale', 100);
+        $quality = (int)$request->input('image_quality', 85);
+
+        if ($request->hasFile('cover')) {
+            if ($article->cover_path && Storage::disk('public')->exists($article->cover_path)) {
+                Storage::disk('public')->delete($article->cover_path);
+            }
+            $article->cover_path = ImageProcessor::processAndStore($request->file('cover'), 'articles/covers', $scale, $quality);
+            $article->save();
+        }
+
+        $this->storeImages($request, $article, $scale, $quality);
 
         return redirect()->route('admin.articles.edit', $article)->with('success', 'Статья обновлена');
     }
@@ -95,13 +121,13 @@ class ArticleAdminController extends Controller
         return redirect()->route('admin.articles.index')->with('success', 'Статья удалена');
     }
 
-    private function storeImages(Request $request, Article $article): void
+    private function storeImages(Request $request, Article $article, int $scale = 100, int $quality = 85): void
     {
         if (!$request->hasFile('images')) return;
         $order = (int)($article->images()->max('order') ?? 0) + 1;
         foreach ($request->file('images') as $file) {
             if (!$file) continue;
-            $path = $file->store('articles', 'public');
+            $path = ImageProcessor::processAndStore($file, 'articles', $scale, $quality);
             ArticleImage::create([
                 'article_id' => $article->id,
                 'path' => $path,
