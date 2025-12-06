@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+@include('sections.header-lite')
+
 <section class="article-hero">
     <div class="container">
         <h1 class="fw-bold mb-0 display-5">Статьи</h1>

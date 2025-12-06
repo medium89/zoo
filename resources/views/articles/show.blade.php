@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-@include('sections.header')
+@include('sections.header-lite')
 
 <section class="article-hero">
     <div class="container">
