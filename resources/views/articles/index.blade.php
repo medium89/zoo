@@ -66,7 +66,7 @@
     </div>
 </section>
 
-@include('sections.footer')
+@include('sections.footer-lite')
 
 <style>
     .article-hero{

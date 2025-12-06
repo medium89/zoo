@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+@include('sections.header')
+
 <section class="article-hero">
     <div class="container">
         <h1 class="fw-bold mb-2">{{ $article->title }}</h1>
@@ -74,7 +76,7 @@
     </div>
 </section>
 
-@include('sections.footer')
+@include('sections.footer-lite')
 
 <style>
     .article-hero{
