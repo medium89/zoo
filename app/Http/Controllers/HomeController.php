@@ -26,7 +26,7 @@ class HomeController extends Controller
         $about = About::first();
         $advantages = Advantage::where('active', true)->get();
         $services = Service::where('active', true)->get();
-        $galleries = Gallery::where('active', true)->orderBy('number')->take(9)->get();
+        $galleries = Gallery::where('active', true)->orderBy('number')->orderBy('id')->take(9)->get();
         $totalGalleries = Gallery::where('active', true)->count();
         $hasMoreGalleries = $totalGalleries > $galleries->count();
         $socials = Social::where('active', true)->orderBy('order')->get();
@@ -39,7 +39,7 @@ class HomeController extends Controller
         $limit = max(1, min(24, (int)$request->query('limit', 6)));
         $offset = max(0, (int)$request->query('offset', 0));
         $items = Gallery::where('active', true)
-            ->orderBy('number')
+            ->orderBy('number')->orderBy('id')
             ->skip($offset)
             ->take($limit)
             ->get();

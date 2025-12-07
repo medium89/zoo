@@ -16,6 +16,7 @@
                 <a href="#services"><span>Услуги</span></a>
                 <a href="#gallery"><span>Фотоальбом</span></a>
                 <a href="#contacts"><span>Контакты</span></a>
+                <a href="{{ route('articles.index') }}" class="nav-articles"><span>Статьи</span></a>
             </div>
         </nav>
     </div>

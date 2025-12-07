@@ -86,6 +86,7 @@
             try {
                 const url = `/gallery/more?offset=${offset}&limit=${limit}`;
                 const res = await fetch(url, {headers: {'X-Requested-With':'XMLHttpRequest'}});
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 if (data && data.html) {
                     container.insertAdjacentHTML('beforeend', data.html);
@@ -94,6 +95,7 @@
                 }
             } catch(e) {
                 console.error(e);
+                btn.textContent = 'Ошибка, попробовать еще';
             } finally {
                 loading = false; btn.disabled = false; btn.textContent = 'загрузить еще';
             }

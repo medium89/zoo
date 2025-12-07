@@ -235,6 +235,25 @@ nav {
     border: 2px solid var(--color-secondary);
 }
 
+.nav-menu a.nav-articles{
+    margin-left: 18px;
+}
+.nav-menu a.nav-articles span{
+    background: var(--color-secondary);
+    color: #fff;
+    border-color: var(--color-secondary);
+    padding: 8px 12px 6px 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+}
+.nav-menu a.nav-articles:hover span{
+    background: #fff;
+    color: var(--color-secondary);
+}
+.nav-menu a.nav-articles.active span{
+    background: #fff;
+    color: var(--color-secondary);
+}
+
 /* ÐœÐ¾Ð±Ð¸Ð»ÑŒÐ½Ð°Ñ ÐºÐ½Ð¾Ð¿ÐºÐ°-Ð³Ð°Ð¼Ð±ÑƒÑ€Ð³ÐµÑ€ */
 .nav-toggle {
     display: none;
