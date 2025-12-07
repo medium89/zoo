@@ -59,6 +59,8 @@ class ImageManagerController extends Controller
             return back()->with('error', 'Запись не найдена');
         }
 
+        $this->saveBackup($data['type'], $data['id'], $data['field'], $path);
+
         $tmp = tempnam(sys_get_temp_dir(), 'img');
         copy($fullPath, $tmp);
         $uploaded = new UploadedFile($tmp, basename($path), mime_content_type($fullPath) ?: null, null, true);
@@ -67,11 +69,37 @@ class ImageManagerController extends Controller
 
         $this->updateModelPath($target, $data['field'], $newPath);
 
-        if ($path !== $newPath && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
+        return back()->with('success', 'Изображение обновлено');
+    }
+
+    public function revert(Request $request)
+    {
+        $data = $request->validate([
+            'type' => 'required|string',
+            'id' => 'required',
+            'field' => 'required|string',
+        ]);
+
+        $target = $this->findModel($data['type'], $data['id']);
+        if (!$target) {
+            return back()->with('error', 'Запись не найдена');
         }
 
-        return back()->with('success', 'Изображение обновлено');
+        $backup = $this->getBackup($data['type'], $data['id'], $data['field']);
+        if (!$backup || empty($backup['path']) || !Storage::disk('public')->exists($backup['path'])) {
+            return back()->with('error', 'Резервная копия не найдена');
+        }
+
+        $currentPath = $target->{$data['field']};
+        $this->updateModelPath($target, $data['field'], $backup['path']);
+
+        if ($currentPath && $currentPath !== $backup['path'] && Storage::disk('public')->exists($currentPath)) {
+            Storage::disk('public')->delete($currentPath);
+        }
+
+        $this->clearBackup($data['type'], $data['id'], $data['field']);
+
+        return back()->with('success', 'Откат выполнен');
     }
 
     private function collectImages(): Collection
@@ -131,6 +159,7 @@ class ImageManagerController extends Controller
         $sizeBytes = Storage::disk('public')->exists($path) ? Storage::disk('public')->size($path) : null;
         $sizeKb = $sizeBytes ? round($sizeBytes / 1024, 1) : null;
         $sizeMb = $sizeBytes ? round($sizeBytes / 1024 / 1024, 2) : null;
+        $backup = $this->getBackup($type, $id, $field);
 
         return [
             'type' => $type,
@@ -141,6 +170,7 @@ class ImageManagerController extends Controller
             'url' => asset('storage/'.$path),
             'size_kb' => $sizeKb,
             'size_mb' => $sizeMb,
+            'backup' => $backup,
         ];
     }
 
@@ -162,5 +192,35 @@ class ImageManagerController extends Controller
     {
         $model->{$field} = $newPath;
         $model->save();
+    }
+
+    private function backupKey(string $type, $id, string $field): string
+    {
+        return "image_backups/{$type}_{$id}_{$field}.json";
+    }
+
+    private function saveBackup(string $type, $id, string $field, string $path): void
+    {
+        $key = $this->backupKey($type, $id, $field);
+        $payload = ['path' => $path];
+        Storage::disk('local')->put($key, json_encode($payload));
+    }
+
+    private function getBackup(string $type, $id, string $field): ?array
+    {
+        $key = $this->backupKey($type, $id, $field);
+        if (!Storage::disk('local')->exists($key)) {
+            return null;
+        }
+        $json = Storage::disk('local')->get($key);
+        return json_decode($json, true) ?: null;
+    }
+
+    private function clearBackup(string $type, $id, string $field): void
+    {
+        $key = $this->backupKey($type, $id, $field);
+        if (Storage::disk('local')->exists($key)) {
+            Storage::disk('local')->delete($key);
+        }
     }
 }
