@@ -12,6 +12,16 @@
     </div>
 </section>
 
+<nav class="article-breadcrumbs">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('articles.index') }}">Статьи</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ $article->title }}</li>
+        </ol>
+    </div>
+</nav>
+
 <section class="py-5 bg-light">
     <div class="container">
         <div class="card shadow-sm border-0 mb-4">
@@ -116,6 +126,35 @@
         color: #fff;
         margin: 0;
     }
+    .article-breadcrumbs{
+        padding: 0.85rem 0;
+        background: #f3f5f9;
+        border-bottom: 1px solid #e1e7ef;
+    }
+    .article-breadcrumbs .breadcrumb{
+        margin: 0;
+        background: transparent;
+        padding: 0;
+        font-size: 0.95rem;
+        align-items: center;
+        gap: 6px;
+    }
+    .article-breadcrumbs a{
+        color: #0d6efd;
+        text-decoration: none;
+        font-weight: 600;
+        background: #fff;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid #e4e8ef;
+    }
+    .article-breadcrumbs .breadcrumb-item.active{
+        color: #6c757d;
+        font-weight: 600;
+    }
+    .article-breadcrumbs .breadcrumb-item + .breadcrumb-item::before{
+        color: #adb5bd;
+    }
     .article-gallery{
         display: grid;
         gap: 12px;
@@ -163,17 +202,6 @@
         border-radius: 14px;
         padding: 14px 16px;
         box-shadow: 0 8px 22px rgba(31,35,42,0.06);
-    }
-    .comment-item::before{
-        content: '';
-        position: absolute;
-        left: -12px;
-        top: 20px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #0d6efd;
-        opacity: calc(var(--level) > 0 ? 0.6 : 0);
     }
     .comment-meta{
         gap: 10px;

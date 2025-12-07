@@ -103,23 +103,33 @@
         border-bottom: 1px solid #e9ecef;
     }
     .article-breadcrumbs{
-        padding: 0.75rem 0;
-        background: #f5f7fb;
-        border-bottom: 1px solid #e9ecef;
+        padding: 0.85rem 0;
+        background: #f3f5f9;
+        border-bottom: 1px solid #e1e7ef;
     }
     .article-breadcrumbs .breadcrumb{
         margin: 0;
         background: transparent;
         padding: 0;
         font-size: 0.95rem;
+        gap: 6px;
+        align-items: center;
     }
     .article-breadcrumbs a{
-        color: var(--color-option);
+        color: #0d6efd;
         text-decoration: none;
         font-weight: 600;
+        background: #fff;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid #e4e8ef;
     }
     .article-breadcrumbs .breadcrumb-item.active{
         color: #6c757d;
+        font-weight: 600;
+    }
+    .article-breadcrumbs .breadcrumb-item + .breadcrumb-item::before{
+        color: #adb5bd;
     }
     .article-card img{
         border-top-left-radius: 0.75rem;
