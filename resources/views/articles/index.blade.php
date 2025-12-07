@@ -104,7 +104,10 @@
         color: #fff;
         box-shadow: inset 0 -1px 0 rgba(255,255,255,0.18);
     }
-    .article-hero h1{ color:#fff; text-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+    .article-hero h1{
+        color:#fff;
+        text-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    }
     .article-breadcrumbs{
         padding: 0.85rem 0;
         background: #f3f5f9;
@@ -150,6 +153,15 @@
         text-transform: uppercase;
         border-top-left-radius: 0.5rem;
         border-top-right-radius: 0.5rem;
+    }
+    .filter-card .btn-primary{
+        background: #f06c6c;
+        border-color: #f06c6c;
+        box-shadow: 0 6px 16px rgba(240,108,108,0.25);
+    }
+    .filter-card .btn-primary:hover{
+        background: #e65d5d;
+        border-color: #e65d5d;
     }
 </style>
 @endsection
