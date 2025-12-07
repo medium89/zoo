@@ -313,6 +313,17 @@
         background: transparent;
         box-shadow: none;
     }
+    /* For consistency with filter header style */
+    .filter-card__header{
+        background: #8c4dc7;
+        color: #fff;
+        padding: 14px 18px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
     @media (max-width: 991.98px){
         .comment-form-wrapper{
             max-width: 100%;
