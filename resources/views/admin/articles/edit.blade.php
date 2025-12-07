@@ -41,11 +41,11 @@
             </div>
         </div>
         <div class="row g-3 mb-3">
-            <div class="col-lg-6">
+            <div class="col-12">
                 <label class="form-label">Краткое описание</label>
                 <textarea name="excerpt" class="form-control wysiwyg-excerpt" rows="3" data-editor-height="220">{{ $article->excerpt }}</textarea>
             </div>
-            <div class="col-lg-6">
+            <div class="col-12">
                 <label class="form-label">Текст статьи</label>
                 <textarea name="content" class="form-control js-wysiwyg" rows="12" data-editor-custom="1">{{ $article->content }}</textarea>
             </div>
@@ -128,8 +128,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const target = document.querySelector('.js-wysiwyg');
-    if(!target || !window.ClassicEditor){ return; }
-
     const Editor = window.ClassicEditor || (window.CKEDITOR && window.CKEDITOR.ClassicEditor);
     const removePlugins = [
         'AIAssistant','CKBox','CKFinder','EasyImage',
@@ -138,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function(){
         'RevisionHistory','Pagination','WProofreader','SlashCommand','Template',
         'DocumentOutline','FormatPainter','TableOfContents','PasteFromOfficeEnhanced','CaseChange'
     ];
-    if(!Editor){ return; }
+    if(!target || !Editor){ return; }
 
     Editor.create(target, {
         toolbar: [

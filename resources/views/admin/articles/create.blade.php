@@ -37,11 +37,11 @@
             </div>
         </div>
         <div class="row g-3 mb-3">
-            <div class="col-lg-6">
+            <div class="col-12">
                 <label class="form-label">Краткое описание</label>
                 <textarea name="excerpt" class="form-control wysiwyg-excerpt" rows="3" data-editor-height="220"></textarea>
             </div>
-            <div class="col-lg-6">
+            <div class="col-12">
                 <label class="form-label">Текст статьи</label>
                 <textarea name="content" class="form-control js-wysiwyg" rows="12" data-editor-custom="1"></textarea>
             </div>
