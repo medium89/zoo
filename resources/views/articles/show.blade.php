@@ -116,13 +116,12 @@
 
 <style>
     .article-hero{
-        --hero-bg: linear-gradient(135deg, #0b1f3f 0%, #0f2a52 50%, #122f5d 100%);
         position: relative;
-        padding: 140px 0 120px;
-        background-image: linear-gradient(135deg, rgba(6,12,28,0.35), rgba(7,18,41,0.35)), var(--hero-bg);
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
+        padding: 2.5rem 0 2.8rem;
+        background: var(--color-secondary) url('/assets/img/bg.png') repeat center center;
+        background-size: 6%;
+        color: #fff;
+        box-shadow: inset 0 -1px 0 rgba(255,255,255,0.18);
         overflow: hidden;
     }
     .hero-container{
@@ -136,16 +135,15 @@
     .article-title-lg{
         font-size: 2.6rem;
         color: #fff;
+        text-shadow: 0 6px 18px rgba(0,0,0,0.18);
     }
     .hero-header{
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 22px 36px;
-        background: rgba(8, 18, 44, 0.85);
+        padding: 14px 26px;
+        background: transparent;
         border-radius: 14px;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-        backdrop-filter: blur(4px);
     }
     .hero-header h1{
         color: #fff;
@@ -230,18 +228,26 @@
         font-size: 1.05rem;
         letter-spacing: 0.3px;
         color: var(--color-primary);
+        background: var(--color-secondary);
+        color: #fff;
+        border-radius: 12px;
+        padding: 8px 12px;
+    }
+    .toc-title h5{
+        font-size: 1.3rem;
+        padding: 0.6rem 0rem 0rem 1rem;
+        color: #fff;
     }
     .toc-nav{
         display: block;
     }
     .toc-nav a{
         display: block;
-        margin: 0 0 12px;
+        margin: 10px 0 12px;
         padding: 0;
         border: none;
         background: transparent;
         text-decoration: none;
-        font-weight: 700;
         font-size: 0.97rem;
         letter-spacing: 0.02em;
         text-transform: uppercase;
@@ -259,6 +265,9 @@
     }
     .toc-nav .toc-sub{
         margin-left: 0;
+    }
+    .toc-nav .toc-list{
+        padding: 0.3rem 1rem 0rem 0.9rem;
     }
     .comment-tree{
         margin: 0;

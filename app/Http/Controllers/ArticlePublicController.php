@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\ArticleComment;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 
 class ArticlePublicController extends Controller
@@ -77,7 +78,25 @@ class ArticlePublicController extends Controller
         $data['status'] = 'approved';
         $data['order'] = (int)ArticleComment::max('order') + 1;
 
-        ArticleComment::create($data);
+        $comment = ArticleComment::create($data);
+
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $chatIds = [
+            env('TELEGRAM_CHAT_ID'),
+            env('TELEGRAM_CHAT_ID_2')
+        ];
+        $text = "Новый комментарий к статье:\n";
+        $text .= "Статья: {$article->title}\n";
+        $text .= "Email: {$comment->email}\n";
+        $text .= "Текст: ".trim($comment->content);
+        foreach ($chatIds as $id) {
+            if ($token && $id) {
+                Http::get("https://api.telegram.org/bot{$token}/sendMessage", [
+                    'chat_id' => $id,
+                    'text'    => $text,
+                ]);
+            }
+        }
 
         return back()->with('success', 'Комментарий отправлен на модерацию');
     }
