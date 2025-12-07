@@ -3,18 +3,12 @@
 @section('content')
 @include('sections.header-lite')
 
-<section class="article-hero">
-    <div class="container">
+@php $heroImage = $article->images->first(); @endphp
+<section class="article-hero" @if($heroImage) style="--hero-bg: url('{{ asset('storage/'.$heroImage->path) }}');" @endif>
+    <div class="container hero-container">
         <div class="hero-header text-center">
             <h1 class="fw-bold mb-0 article-title-lg">{{ $article->title }}</h1>
         </div>
-        @if($article->images->count())
-            <div class="article-gallery hero-gallery mt-4">
-                @foreach($article->images as $img)
-                    <img src="{{ asset('storage/'.$img->path) }}" alt="" class="rounded shadow-sm">
-                @endforeach
-            </div>
-        @endif
     </div>
 </section>
 
@@ -83,16 +77,31 @@
 
 <style>
     .article-hero{
-        padding: 72px 0 40px;
-        background: linear-gradient(135deg, #0b1f3f 0%, #0f2a52 50%, #122f5d 100%);
-        border-bottom: 1px solid #0c1d38;
+        --hero-bg: linear-gradient(135deg, #0b1f3f 0%, #0f2a52 50%, #122f5d 100%);
+        position: relative;
+        padding: 140px 0 120px;
+        background-image: linear-gradient(135deg, rgba(6,12,28,0.75), rgba(7,18,41,0.75)), var(--hero-bg);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        overflow: hidden;
+    }
+    .hero-container{
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
     }
     .article-title-lg{
-        font-size: 2.5rem;
+        font-size: 2.6rem;
         color: #fff;
     }
     .hero-header{
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         padding: 22px 36px;
         background: rgba(8, 18, 44, 0.85);
         border-radius: 14px;
@@ -102,9 +111,6 @@
     .hero-header h1{
         color: #fff;
         margin: 0;
-    }
-    .hero-gallery img{
-        border: 2px solid rgba(255,255,255,0.08);
     }
     .article-gallery{
         display: grid;
@@ -152,6 +158,17 @@
     @media (max-width: 991.98px){
         .comment-form-wrapper{
             max-width: 100%;
+        }
+    }
+    @media (max-width: 767.98px){
+        .article-hero{
+            padding: 120px 0 90px;
+        }
+        .article-title-lg{
+            font-size: 2rem;
+        }
+        .hero-header{
+            padding: 16px 22px;
         }
     }
 </style>
