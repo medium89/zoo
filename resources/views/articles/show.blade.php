@@ -28,8 +28,8 @@
             <div class="col-lg-3 d-none d-lg-block">
                 <div class="card shadow-sm border-0 sticky-top toc-card" style="top: 110px;">
                     <div class="card-body">
-                        <div class="toc-title d-flex align-items-center mb-3">
-                            <h5 class="fw-bold mb-0">Содержание</h5>
+                        <div class="filter-card__header">
+                            <span>Содержание</span>
                         </div>
                         <nav id="tocNav" class="toc-nav small">
                             <div class="text-muted">Заголовков нет</div>
