@@ -250,6 +250,7 @@
                 gap: 8px;
                 padding: 2px 0;
                 width: 100%;
+                flex-wrap: wrap;
             }
             .admin-grid-row > *::before {
                 content: attr(data-label);
@@ -261,6 +262,7 @@
                 display: inline-block;
                 margin: 0;
                 padding-top: 3px;
+                flex: 0 0 120px;
             }
             .admin-grid-row > .actions {
                 justify-content: flex-start;
@@ -274,6 +276,12 @@
             .admin-grid-row img {
                 max-width: 160px;
                 height: auto;
+            }
+            .admin-grid-row .js-order-label{
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                line-height: 1.2;
             }
             .text-clip {
                 -webkit-line-clamp: unset;
