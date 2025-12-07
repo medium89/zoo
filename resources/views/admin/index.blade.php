@@ -219,6 +219,47 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+        @media (max-width: 767.98px) {
+            .admin-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+            .admin-grid-header {
+                display: none;
+            }
+            .admin-grid-body {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .admin-grid-row {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 14px;
+            }
+            .admin-grid-row > * {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 2px 0;
+            }
+            .admin-grid-row > *::before {
+                content: attr(data-label);
+                min-width: 120px;
+                font-weight: 600;
+                color: #6c757d;
+                font-size: 0.95rem;
+                line-height: 1.3;
+            }
+            .admin-grid-row > .actions {
+                justify-content: flex-start;
+            }
+            .admin-grid-row .text-end {
+                text-align: left !important;
+            }
+        }
 
         /* Грид-списки */
         .admin-grid-table {
@@ -494,6 +535,19 @@
                     });
                 });
             }
+        });
+
+        document.querySelectorAll('.admin-grid').forEach((grid)=>{
+            const headerCells = grid.querySelectorAll(':scope > .admin-grid-header > *');
+            if (!headerCells.length) return;
+            const labels = Array.from(headerCells).map(cell => cell.textContent.trim());
+            grid.querySelectorAll(':scope > .admin-grid-body > .admin-grid-row').forEach((row)=>{
+                Array.from(row.children).forEach((cell, idx)=>{
+                    if (!cell.dataset.label && labels[idx]) {
+                        cell.dataset.label = labels[idx];
+                    }
+                });
+            });
         });
 
         // Drag & drop сортировка
