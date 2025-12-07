@@ -51,7 +51,9 @@
         </div>
     </div>
 
-    {{ $feedbacks->links() }}
+    <div class="mt-3 d-flex justify-content-start">
+        {{ $feedbacks->links('pagination::bootstrap-4') }}
+    </div>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
