@@ -52,7 +52,7 @@
     .quick-contact-badge{
         position: fixed;
         left: 18px;
-        bottom: 18px;
+        top: 18px;
         background: #7b5bdb;
         color: #fff;
         border: 2px solid #fff;
@@ -64,7 +64,7 @@
         gap: 8px;
         cursor: pointer;
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(-12px);
         transition: opacity 0.35s ease, transform 0.35s ease;
         z-index: 1045;
         font-weight: 700;
@@ -122,8 +122,7 @@
     @media (max-width: 575.98px){
         .quick-contact-badge{
             left: 12px;
-            right: 12px;
-            bottom: 14px;
+            top: 12px;
             justify-content: center;
         }
     }
