@@ -267,7 +267,7 @@
         margin-left: 0;
     }
     .toc-nav .toc-list{
-        padding: 0.3rem 1rem 0rem 0.9rem;
+        padding: 0.3rem 1rem 0rem 2rem;
     }
     .article-content ul{
         padding-left: 2rem;
