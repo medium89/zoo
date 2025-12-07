@@ -87,6 +87,10 @@
             transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
         }
 
+        .sidebar .text-muted {
+            color: #fff !important;
+        }
+
         .sidebar a.active { background: #2b3038; color: #fff; padding-left: 26px; }
         .sidebar a:hover { background: #1f232a; color: #fff; padding-left: 20px; }
 
@@ -241,9 +245,11 @@
             }
             .admin-grid-row > * {
                 display: flex;
+                flex-direction: column;
                 align-items: flex-start;
-                gap: 8px;
+                gap: 6px;
                 padding: 2px 0;
+                width: 100%;
             }
             .admin-grid-row > *::before {
                 content: attr(data-label);
@@ -252,12 +258,25 @@
                 color: #6c757d;
                 font-size: 0.95rem;
                 line-height: 1.3;
+                display: block;
+                margin-bottom: 2px;
             }
             .admin-grid-row > .actions {
                 justify-content: flex-start;
             }
+            .admin-grid-row .actions > .d-flex {
+                justify-content: flex-start;
+            }
             .admin-grid-row .text-end {
                 text-align: left !important;
+            }
+            .admin-grid-row img {
+                max-width: 160px;
+                height: auto;
+            }
+            .text-clip {
+                -webkit-line-clamp: unset;
+                white-space: normal;
             }
         }
 
@@ -417,7 +436,6 @@
                 <a href="/zooadmin/services" class="{{ request()->is('zooadmin/services*') ? 'active' : '' }}"><i class="fa fa-briefcase me-2"></i>Услуги</a>
                 <a href="/zooadmin/galleries" class="{{ request()->is('zooadmin/galleries*') ? 'active' : '' }}"><i class="fa fa-image me-2"></i>Фотоальбом</a>
                 <a href="/zooadmin/socials" class="{{ request()->is('zooadmin/socials*') ? 'active' : '' }}"><i class="fa fa-share-alt me-2"></i>Социальные контакты</a>
-                <a href="{{ route('admin.articles.index') }}" class="{{ request()->is('zooadmin/articles*') ? 'active' : '' }}"><i class="fa fa-newspaper me-2"></i>Статьи</a>
             </div>
             <div class="sidebar-content__item px-3 text-uppercase text-muted small border-top pt-2 mt-2">Работа</div>
             <div class="sidebar-content__item">
