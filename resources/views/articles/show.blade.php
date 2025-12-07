@@ -34,14 +34,16 @@
                     foreach($comments as $c){ $tree[$c->parent_id ?? 0][] = $c; }
                     $render = function($parentId, $depth) use (&$render, $tree){
                         if(!isset($tree[$parentId])) return;
-                        echo '<ul class="list-unstyled" style="margin-left:'.($depth*20).'px">';
+                        echo '<ul class="comment-tree list-unstyled">';
                         foreach($tree[$parentId] as $c){
                             echo '<li class="mb-3">';
-                            echo '<div class="p-3 border rounded bg-white">';
-                            echo '<div class="fw-bold mb-1" style="margin-bottom:5px;">'.$c->email.'</div>';
-                            echo '<div class="text-muted" style="font-size:12px;">'.$c->created_at->format('d.m.Y H:i').'</div>';
-                            echo '<div class="mt-2">'.e($c->content).'</div>';
-                            echo '<button class="btn btn-link btn-sm p-0 mt-2 js-reply" data-id="'.$c->id.'">Ответить</button>';
+                            echo '<div class="comment-item" style="--level:'.$depth.'">';
+                            echo '<div class="comment-meta d-flex justify-content-between align-items-start gap-3">';
+                            echo '<div class="comment-author">'.$c->email.'</div>';
+                            echo '<div class="comment-date text-muted">'.$c->created_at->format('d.m.Y H:i').'</div>';
+                            echo '</div>';
+                            echo '<div class="comment-text mt-2">'.nl2br(e($c->content)).'</div>';
+                            echo '<button class="btn btn-link btn-sm p-0 mt-3 comment-reply js-reply" data-id="'.$c->id.'">Ответить</button>';
                             echo '</div>';
                             $render($c->id, $depth+1);
                             echo '</li>';
@@ -53,19 +55,21 @@
 
                 <h5 class="card-title mt-4 mb-3">Оставить комментарий</h5>
                 <div class="comment-form-wrapper">
-                    <form action="{{ route('articles.comment', $article) }}" method="POST" id="commentForm">
+                    <form action="{{ route('articles.comment', $article) }}" method="POST" id="commentForm" class="comment-form card border-0 shadow-sm">
                         @csrf
                         <input type="hidden" name="parent_id" value="">
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control" required>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Текст</label>
+                                <textarea name="content" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-2 text-muted small" id="replyInfo" style="display:none;">Ответ на комментарий #<span></span> <button type="button" class="btn btn-link btn-sm p-0" id="cancelReply">отменить</button></div>
+                            <button class="btn btn-primary">Отправить</button>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Текст</label>
-                            <textarea name="content" class="form-control" rows="3" required></textarea>
-                        </div>
-                        <div class="mb-2 text-muted small" id="replyInfo" style="display:none;">Ответ на комментарий #<span></span> <button type="button" class="btn btn-link btn-sm p-0" id="cancelReply">отменить</button></div>
-                        <button class="btn btn-primary">Отправить</button>
                     </form>
                 </div>
             </div>
@@ -147,8 +151,55 @@
     .article-meta{
         font-size: 0.95rem;
     }
+    .comment-tree{
+        margin: 0;
+        padding: 0;
+    }
+    .comment-item{
+        position: relative;
+        margin-left: calc(var(--level) * 18px);
+        border: 1px solid #e5e9f0;
+        background: #fff;
+        border-radius: 14px;
+        padding: 14px 16px;
+        box-shadow: 0 8px 22px rgba(31,35,42,0.06);
+    }
+    .comment-item::before{
+        content: '';
+        position: absolute;
+        left: -12px;
+        top: 20px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #0d6efd;
+        opacity: calc(var(--level) > 0 ? 0.6 : 0);
+    }
+    .comment-meta{
+        gap: 10px;
+    }
+    .comment-author{
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    .comment-date{
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    .comment-text{
+        font-size: 0.97rem;
+        line-height: 1.55;
+        color: #1f2630;
+    }
+    .comment-reply{
+        font-weight: 600;
+        color: #0d6efd;
+    }
     .comment-form-wrapper{
-        max-width: 30%;
+        max-width: 38%;
+    }
+    .comment-form.card{
+        border-radius: 16px;
     }
     .comment-card{
         border: 0;
