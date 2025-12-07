@@ -26,9 +26,12 @@
     <div class="container">
         <div class="row g-4">
             <div class="col-lg-3 d-none d-lg-block">
-                <div class="card shadow-sm border-0 sticky-top" style="top: 110px;">
+                <div class="card shadow-sm border-0 sticky-top toc-card" style="top: 110px;">
                     <div class="card-body">
-                        <h6 class="fw-bold mb-3">Содержание</h6>
+                        <div class="toc-title d-flex align-items-center gap-2 mb-3">
+                            <span class="toc-dot"></span>
+                            <h6 class="fw-bold mb-0">Содержание</h6>
+                        </div>
                         <nav id="tocNav" class="toc-nav small">
                             <div class="text-muted">Заголовков нет</div>
                         </nav>
@@ -219,6 +222,70 @@
     .article-meta{
         font-size: 0.95rem;
     }
+    /* Toc as vertical navbar style */
+    .toc-card{
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    .toc-title{
+        font-size: 0.95rem;
+        letter-spacing: 0.3px;
+        color: var(--color-primary);
+    }
+    .toc-dot{
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--color-secondary);
+        box-shadow: 0 0 0 6px rgba(123, 91, 219, 0.15);
+        display: inline-block;
+        flex-shrink: 0;
+    }
+    .toc-nav{
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .toc-nav a{
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        color: var(--color-primary);
+        transition: all 0.2s ease;
+        background: linear-gradient(135deg, #f8f7ff 0%, #f1f4ff 100%);
+        border: 1px solid #ebeefe;
+        box-shadow: 0 6px 16px rgba(17, 24, 39, 0.06);
+    }
+    .toc-nav a::before{
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--color-secondary);
+        box-shadow: 0 0 0 6px rgba(123, 91, 219, 0.12);
+        flex-shrink: 0;
+    }
+    .toc-nav a:hover{
+        transform: translateX(4px);
+        box-shadow: 0 10px 20px rgba(17, 24, 39, 0.10);
+    }
+    .toc-nav a.active{
+        background: linear-gradient(135deg, #7b5bdb 0%, #8c67e8 100%);
+        color: #fff;
+        border-color: #7b5bdb;
+        box-shadow: 0 12px 24px rgba(123, 91, 219, 0.32);
+    }
+    .toc-nav a.active::before{
+        background: #fff;
+        box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.25);
+    }
+    .toc-nav .toc-sub{
+        margin-left: 14px;
+    }
     .comment-tree{
         margin: 0;
         padding: 0;
@@ -262,28 +329,6 @@
         border: 0;
         background: transparent;
         box-shadow: none;
-    }
-    .toc-nav{
-        padding-left: 0;
-    }
-    .toc-nav .toc-list{
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    .toc-item a{
-        text-decoration: none;
-        color: #1f2630;
-        font-size: 0.95rem;
-        display: inline-block;
-    }
-    .toc-item-h3 a{
-        padding-left: 12px;
-        font-size: 0.92rem;
-        color: #495057;
     }
     @media (max-width: 991.98px){
         .comment-form-wrapper{
