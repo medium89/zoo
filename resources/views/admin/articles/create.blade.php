@@ -116,10 +116,8 @@ document.addEventListener('DOMContentLoaded', function(){
                 { model: 'heading3', view: 'h3', title: 'Заголовок 3', class: 'ck-heading_heading3' }
             ]
         },
-        simpleUpload: {
-            uploadUrl: '{{ route('admin.articles.upload') }}',
-            withCredentials: true,
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        ckfinder: {
+            uploadUrl: '{{ route('admin.articles.upload') }}'
         },
         link: { decorators: { addTargetToExternalLinks: true } },
         mediaEmbed: { previewsInData: true }
