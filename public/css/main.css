@@ -10,6 +10,21 @@
     --color-quaternary: #fff;
 }
 
+/* Кнопки в фирменном стиле */
+.btn-primary {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(123, 91, 219, 0.25);
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--color-secondary-hover);
+    border-color: var(--color-secondary-hover);
+    color: #fff;
+}
+
 /* ===== CSS RESET ===== */
 * {
     margin: 0;

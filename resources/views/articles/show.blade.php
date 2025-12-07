@@ -301,7 +301,7 @@
     }
     @media (min-width: 1200px){
         .article-content{
-            padding: 3rem 3rem 3rem 3rem;
+            padding: 3rem 3rem 3rem 5rem;
         }
     }
 </style>
