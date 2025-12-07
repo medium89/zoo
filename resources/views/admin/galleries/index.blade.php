@@ -12,8 +12,8 @@
 </form>
 <div class="row js-sortable">
     @foreach($galleries as $gallery)
-        <div class="col-md-3 mb-4" data-id="{{ $gallery->id }}">
-            <div class="card h-100">
+        <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3" data-id="{{ $gallery->id }}">
+            <div class="card h-100 shadow-sm">
                 @php
                     $thumb = preg_replace('/^galleries\//', 'galleries/thumbs/', $gallery->image);
                     $thumbExists = \Illuminate\Support\Facades\Storage::disk('public')->exists($thumb);
@@ -21,9 +21,9 @@
                 @endphp
                 <div class="position-relative">
                     <div class="position-absolute top-0 start-0 m-2 badge bg-secondary js-order-label" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $gallery->number }}</div>
-                    <img src="{{ $thumbUrl }}" class="card-img-top" alt="" style="height:180px;object-fit:cover;">
+                    <img src="{{ $thumbUrl }}" class="card-img-top" alt="" style="height:140px;object-fit:cover;">
                 </div>
-                <div class="card-body text-center d-flex flex-column gap-2">
+                <div class="card-body text-center d-flex flex-column gap-2 py-2">
                     <input type="hidden" name="numbers[{{ $gallery->id }}]" value="{{ $gallery->number }}" class="js-order-input" form="status-form">
                     <form action="{{ route('admin.galleries.destroy', $gallery->id) }}" method="POST" class="mb-2">
                         @csrf

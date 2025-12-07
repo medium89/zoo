@@ -12,9 +12,11 @@ class BoardingController extends Controller
 {
     public function index(Request $request)
     {
-        $year = (int)($request->query('year', 2026));
+        $yearParam = $request->query('year', 'all');
+        $year = $yearParam === 'all' ? 'all' : (int)$yearParam;
+        $range = $this->activeRange();
         $this->hydrateAnimalsFromBoardings();
-        $entries = $this->entriesForYear($year);
+        $entries = $year === 'all' ? $this->entriesAllActive() : $this->entriesForYear($year);
         $latest = Boarding::whereNull('archived_at')->orderByDesc('created_at')->take(20)->get();
         $animals = Animal::orderBy('name')->get();
 
@@ -23,6 +25,8 @@ class BoardingController extends Controller
             'entries' => $entries,
             'latest' => $latest,
             'animals' => $animals,
+            'minYear' => $range['min'],
+            'maxYear' => $range['max'],
         ]);
     }
 
@@ -60,9 +64,20 @@ class BoardingController extends Controller
 
     public function data(Request $request)
     {
-        $year = (int)($request->query('year', Carbon::now()->year));
+        $yearParam = $request->query('year', Carbon::now()->year);
+        $range = $this->activeRange();
+        if ($yearParam === 'all') {
+            return response()->json([
+                'entries' => $this->entriesAllActive(),
+                'minYear' => $range['min'],
+                'maxYear' => $range['max'],
+            ]);
+        }
+        $year = (int)$yearParam;
         return response()->json([
             'entries' => $this->entriesForYear($year),
+            'minYear' => $range['min'],
+            'maxYear' => $range['max'],
         ]);
     }
 
@@ -157,6 +172,35 @@ class BoardingController extends Controller
                     'end_date' => $item->end_date->toDateString(),
                 ];
             });
+    }
+
+    private function entriesAllActive()
+    {
+        return Boarding::whereNull('archived_at')
+            ->orderBy('start_date')
+            ->get()
+            ->map(function($item){
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'description' => $item->description,
+                    'service_type' => $item->service_type,
+                    'start_date' => $item->start_date->toDateString(),
+                    'end_date' => $item->end_date->toDateString(),
+                ];
+            });
+    }
+
+    private function activeRange(): array
+    {
+        $minStart = Boarding::whereNull('archived_at')->min('start_date');
+        $maxEnd = Boarding::whereNull('archived_at')->max('end_date');
+        $nowYear = Carbon::now()->year;
+
+        $min = $minStart ? Carbon::parse($minStart)->year : $nowYear;
+        $max = $maxEnd ? Carbon::parse($maxEnd)->year : $nowYear;
+
+        return ['min' => $min, 'max' => $max];
     }
 
     private function syncAnimal(array $data): void

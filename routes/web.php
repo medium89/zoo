@@ -38,6 +38,8 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::post('services/status', [App\Http\Controllers\ServiceController::class, 'updateStatus'])->name('services.status');
     Route::resource('galleries', App\Http\Controllers\GalleryController::class)->except(['show', 'edit', 'update']);
     Route::post('galleries/status', [App\Http\Controllers\GalleryController::class, 'updateStatus'])->name('galleries.status');
+    Route::get('images', [App\Http\Controllers\ImageManagerController::class, 'index'])->name('images.index');
+    Route::post('images/refresh', [App\Http\Controllers\ImageManagerController::class, 'refresh'])->name('images.refresh');
     Route::resource('socials', App\Http\Controllers\SocialController::class);
     Route::post('socials/status', [App\Http\Controllers\SocialController::class, 'updateStatus'])->name('socials.status');
     Route::resource('animals', App\Http\Controllers\AnimalAdminController::class)->except(['show']);

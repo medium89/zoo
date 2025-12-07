@@ -136,10 +136,12 @@
             <span>Календарь передержки</span>
             <div class="d-flex align-items-center gap-2">
                 <label class="mb-0">Год</label>
+                @php($yearOpts = range($minYear, $maxYear))
                 <select id="yearSelect" class="form-select form-select-sm" style="width:auto;">
-                    @for($y = $year-2; $y <= $year+3; $y++)
+                    <option value="all" {{ $year === 'all' ? 'selected' : '' }}>Все активные месяцы</option>
+                    @foreach($yearOpts as $y)
                         <option value="{{ $y }}" {{ $y==$year?'selected':'' }}>{{ $y }}</option>
-                    @endfor
+                    @endforeach
                 </select>
             </div>
         </div>
@@ -211,7 +213,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const entries = JSON.parse(@json($entriesJson));
-    let state = { year: {{ $year }}, entries };
+    let state = { year: @json($year), entries, minYear: {{ $minYear }}, maxYear: {{ $maxYear }} };
     const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
     const grid = document.getElementById('calendarGrid');
@@ -254,8 +256,10 @@ document.addEventListener('DOMContentLoaded', function(){
 
     function monthsToRender(list, baseYear){
         const collected = [];
-        for(let m=0; m<12; m++){
-            collected.push({ year: baseYear, month: m });
+        if(baseYear !== 'all'){
+            for(let m=0; m<12; m++){
+                collected.push({ year: parseInt(baseYear,10), month: m });
+            }
         }
         list.forEach(entry => {
             const start = new Date(entry.start_date);
@@ -348,11 +352,15 @@ document.addEventListener('DOMContentLoaded', function(){
     async function fetchYear(y){
         const res = await fetch(`{{ route('admin.boarding.data') }}?year=${y}`);
         const json = await res.json();
-        state.year = y; state.entries = json.entries; render();
+        state.year = y;
+        state.entries = json.entries;
+        if(json.minYear) state.minYear = json.minYear;
+        if(json.maxYear) state.maxYear = json.maxYear;
+        render();
     }
 
     yearSelect.addEventListener('change', (e)=>{
-        fetchYear(parseInt(e.target.value,10));
+        fetchYear(e.target.value);
     });
 
     // Добавление/редактирование записей
