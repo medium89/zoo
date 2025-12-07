@@ -232,32 +232,30 @@
         color: var(--color-primary);
     }
     .toc-nav{
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+        display: block;
     }
     .toc-nav a{
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        border-radius: 10px;
-        text-decoration: none;
-        font-weight: 600;
-        color: var(--color-primary);
-        transition: all 0.2s ease;
-        background: transparent;
+        display: block;
+        margin: 0 0 12px;
+        padding: 0;
         border: none;
-        box-shadow: none;
-        padding-left: 0;
+        background: transparent;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.97rem;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--color-primary);
+        transition: color 0.2s ease;
+    }
+    .toc-nav a:last-child{
+        margin-bottom: 0;
     }
     .toc-nav a:hover{
-        transform: translateX(2px);
         color: var(--color-secondary);
     }
     .toc-nav a.active{
         color: var(--color-secondary);
-        font-weight: 700;
     }
     .toc-nav .toc-sub{
         margin-left: 0;
