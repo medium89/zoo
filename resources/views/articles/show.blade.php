@@ -28,9 +28,8 @@
             <div class="col-lg-3 d-none d-lg-block">
                 <div class="card shadow-sm border-0 sticky-top toc-card" style="top: 110px;">
                     <div class="card-body">
-                        <div class="toc-title d-flex align-items-center gap-2 mb-3">
-                            <span class="toc-dot"></span>
-                            <h6 class="fw-bold mb-0">Содержание</h6>
+                        <div class="toc-title d-flex align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Содержание</h5>
                         </div>
                         <nav id="tocNav" class="toc-nav small">
                             <div class="text-muted">Заголовков нет</div>
@@ -228,18 +227,9 @@
         overflow: hidden;
     }
     .toc-title{
-        font-size: 0.95rem;
+        font-size: 1.05rem;
         letter-spacing: 0.3px;
         color: var(--color-primary);
-    }
-    .toc-dot{
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--color-secondary);
-        box-shadow: 0 0 0 6px rgba(123, 91, 219, 0.15);
-        display: inline-block;
-        flex-shrink: 0;
     }
     .toc-nav{
         display: flex;
@@ -256,35 +246,21 @@
         font-weight: 600;
         color: var(--color-primary);
         transition: all 0.2s ease;
-        background: linear-gradient(135deg, #f8f7ff 0%, #f1f4ff 100%);
-        border: 1px solid #ebeefe;
-        box-shadow: 0 6px 16px rgba(17, 24, 39, 0.06);
-    }
-    .toc-nav a::before{
-        content: '';
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--color-secondary);
-        box-shadow: 0 0 0 6px rgba(123, 91, 219, 0.12);
-        flex-shrink: 0;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding-left: 0;
     }
     .toc-nav a:hover{
-        transform: translateX(4px);
-        box-shadow: 0 10px 20px rgba(17, 24, 39, 0.10);
+        transform: translateX(2px);
+        color: var(--color-secondary);
     }
     .toc-nav a.active{
-        background: linear-gradient(135deg, #7b5bdb 0%, #8c67e8 100%);
-        color: #fff;
-        border-color: #7b5bdb;
-        box-shadow: 0 12px 24px rgba(123, 91, 219, 0.32);
-    }
-    .toc-nav a.active::before{
-        background: #fff;
-        box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.25);
+        color: var(--color-secondary);
+        font-weight: 700;
     }
     .toc-nav .toc-sub{
-        margin-left: 14px;
+        margin-left: 0;
     }
     .comment-tree{
         margin: 0;
