@@ -245,9 +245,9 @@
             }
             .admin-grid-row > * {
                 display: flex;
-                flex-direction: column;
+                flex-direction: row;
                 align-items: flex-start;
-                gap: 6px;
+                gap: 8px;
                 padding: 2px 0;
                 width: 100%;
             }
@@ -258,8 +258,9 @@
                 color: #6c757d;
                 font-size: 0.95rem;
                 line-height: 1.3;
-                display: block;
-                margin-bottom: 2px;
+                display: inline-block;
+                margin: 0;
+                padding-top: 3px;
             }
             .admin-grid-row > .actions {
                 justify-content: flex-start;
