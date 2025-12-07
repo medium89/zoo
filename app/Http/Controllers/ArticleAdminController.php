@@ -144,10 +144,14 @@ class ArticleAdminController extends Controller
 
     public function uploadImage(Request $request)
     {
+        // CKEditor 5 can send the file as "upload" (ckfinder/simpleUpload) or "file" (custom adapters)
+        $field = $request->file('upload') ? 'upload' : 'file';
+
         $request->validate([
-            'file' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
+            $field => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
-        $path = $request->file('file')->store('articles', 'public');
+
+        $path = $request->file($field)->store('articles', 'public');
         return response()->json([
             'uploaded' => true,
             'url' => asset('storage/'.$path),
