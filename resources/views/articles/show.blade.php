@@ -27,7 +27,7 @@
         <div class="row g-4">
             <div class="col-lg-3 d-none d-lg-block">
                 <div class="card shadow-sm border-0 sticky-top toc-card" style="top: 110px;">
-                    <div class="card-body">
+                    <div>
                         <div class="filter-card__header">
                             <span>Содержание</span>
                         </div>
@@ -268,6 +268,9 @@
     }
     .toc-nav .toc-list{
         padding: 0.3rem 1rem 0rem 0.9rem;
+    }
+    .article-content ul{
+        padding-left: 2rem;
     }
     .comment-tree{
         margin: 0;
