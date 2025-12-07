@@ -114,7 +114,8 @@ document.addEventListener('DOMContentLoaded', function(){
         'RealTimeCollaborativeComments','RealTimeCollaborativeTrackChanges',
         'RealTimeCollaborativeRevisionHistory','PresenceList','Comments','TrackChanges',
         'RevisionHistory','Pagination','WProofreader','SlashCommand','Template',
-        'DocumentOutline','FormatPainter','TableOfContents','PasteFromOfficeEnhanced','CaseChange'
+        'DocumentOutline','FormatPainter','TableOfContents','PasteFromOfficeEnhanced','CaseChange',
+        'SourceEditing','ExportPdf','ExportWord'
     ];
     if(!target || !Editor){ return; }
 
@@ -148,7 +149,6 @@ document.addEventListener('DOMContentLoaded', function(){
         },
         link: { decorators: { addTargetToExternalLinks: true } },
         mediaEmbed: { previewsInData: true },
-        licenseKey: 'GPL',
         removePlugins
     }).then(editor => {
         editor.ui.view.editable.element.style.minHeight = '420px';

@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     'RealTimeCollaborativeComments','RealTimeCollaborativeTrackChanges',
     'RealTimeCollaborativeRevisionHistory','PresenceList','Comments','TrackChanges',
     'RevisionHistory','Pagination','WProofreader','SlashCommand','Template',
-    'DocumentOutline','FormatPainter','TableOfContents','PasteFromOfficeEnhanced','CaseChange'
+    'DocumentOutline','FormatPainter','TableOfContents','PasteFromOfficeEnhanced','CaseChange',
+    'SourceEditing','ExportPdf','ExportWord'
   ];
   editors.forEach((el) => {
     if (el.dataset.ckeditorAttached || el.dataset.editorCustom === '1') return;
@@ -32,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
           { model: 'heading3', view: 'h3', title: 'Заголовок 3', class: 'ck-heading_heading3' }
         ]
       },
-      licenseKey: 'GPL',
       removePlugins
     }).then((editor) => {
       el.dataset.ckeditorAttached = '1';
