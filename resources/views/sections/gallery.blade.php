@@ -6,12 +6,12 @@
                 <div class="foot"></div>
             </div>
             <div class="gallery-content" id="gallery-content">
-                @php($initialItems = $galleries->sortBy('number'))
+                @php($initialItems = $galleries)
                 @include('partials.gallery_items', ['items' => $initialItems])
             </div>
             @if(!empty($hasMoreGalleries) && $hasMoreGalleries)
                 <div class="text-center" style="margin-top:20px;">
-                    <button id="gallery-load-more" class="btn btn-primary">загрузить еще</button>
+                    <button id="gallery-load-more" class="btn btn-primary" data-offset="{{ $galleries->count() }}" data-limit="6">загрузить еще</button>
                 </div>
             @endif
         @else
@@ -78,8 +78,8 @@
 
     const btn = document.getElementById('gallery-load-more');
     if (btn) {
-        let offset = container.querySelectorAll('.js-gallery-thumb').length;
-        const limit = 6;
+        let offset = parseInt(btn.dataset.offset || container.querySelectorAll('.js-gallery-thumb').length, 10) || 0;
+        const limit = parseInt(btn.dataset.limit || 6, 10);
         let loading = false;
         btn.addEventListener('click', async ()=>{
             if (loading) return; loading = true; btn.disabled = true; btn.textContent = 'Загрузка...';
@@ -88,12 +88,9 @@
                 const res = await fetch(url, {headers: {'X-Requested-With':'XMLHttpRequest'}});
                 const data = await res.json();
                 if (data && data.html) {
-                    const tmp = document.createElement('div');
-                    tmp.innerHTML = data.html;
-                    const children = Array.from(tmp.children);
-                    for (const el of children) container.appendChild(el);
+                    container.insertAdjacentHTML('beforeend', data.html);
                     offset += (data.count||0);
-                    if (!data.hasMore) { btn.style.display = 'none'; }
+                    if (!data.hasMore || !(data.count||0)) { btn.style.display = 'none'; }
                 }
             } catch(e) {
                 console.error(e);

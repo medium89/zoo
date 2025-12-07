@@ -150,7 +150,8 @@
     @media (max-width: 575.98px){
         .quick-contact-badge{
             left: 12px;
-            top: 12px;
+            top: calc(10vh + 16px);
+            right: 12px;
             justify-content: center;
         }
     }

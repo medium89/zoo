@@ -187,6 +187,12 @@
         line-height: 1.7;
         margin-bottom: 0;
     }
+    .article-content img{
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 1rem 0;
+    }
     .article-meta{
         font-size: 0.95rem;
     }
