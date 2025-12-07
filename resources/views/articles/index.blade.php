@@ -98,10 +98,13 @@
 
 <style>
     .article-hero{
-        padding: 1.5rem 0;
-        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 60%);
-        border-bottom: 1px solid #e9ecef;
+        padding: 2rem 0 2.5rem;
+        background: var(--color-secondary) url('/assets/img/bg.png') repeat center center;
+        background-size: 6%;
+        color: #fff;
+        box-shadow: inset 0 -1px 0 rgba(255,255,255,0.18);
     }
+    .article-hero h1{ color:#fff; text-shadow: 0 6px 18px rgba(0,0,0,0.18); }
     .article-breadcrumbs{
         padding: 0.85rem 0;
         background: #f3f5f9;
