@@ -11,7 +11,7 @@
             </div>
             @if(!empty($hasMoreGalleries) && $hasMoreGalleries)
                 <div class="text-center" style="margin-top:20px;">
-                    <button id="gallery-load-more" class="btn btn-primary" data-offset="{{ $galleries->count() }}" data-limit="6">загрузить еще</button>
+                    <button id="gallery-load-more" class="btn btn-primary" data-offset="{{ $galleries->count() }}" data-limit="8">загрузить еще</button>
                 </div>
             @endif
         @else
@@ -77,36 +77,44 @@
     nextBtn.addEventListener('click', (e)=>{ e.stopPropagation(); next(); });
 
     const btn = document.getElementById('gallery-load-more');
-    if (btn) {
+    if (btn && container) {
         let offset = parseInt(btn.dataset.offset || container.querySelectorAll('.js-gallery-thumb').length, 10) || 0;
         const limit = parseInt(btn.dataset.limit || 6, 10);
         let loading = false;
         const seenIds = new Set(Array.from(container.querySelectorAll('.gallery-content__item')).map(el => el.dataset.id));
         btn.addEventListener('click', async ()=>{
-            if (loading) return; loading = true; btn.disabled = true; btn.textContent = 'Загрузка...';
+            if (loading) return;
+            loading = true;
+            btn.disabled = true;
+            btn.textContent = 'Загрузка...';
             try {
                 const url = `/gallery/more?offset=${offset}&limit=${limit}`;
                 const res = await fetch(url, {headers: {'X-Requested-With':'XMLHttpRequest'}});
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 if (data && data.html) {
-                    const tmp = document.createElement('div');
-                    tmp.innerHTML = data.html;
-                    const items = Array.from(tmp.children);
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data.html, 'text/html');
+                    const items = Array.from(doc.body.children).filter(el => el.classList.contains('gallery-content__item'));
+                    if (!items.length) { btn.style.display = 'none'; return; }
                     items.forEach(el=>{
                         const id = el.dataset.id;
                         if (id && seenIds.has(id)) return;
                         if (id) seenIds.add(id);
                         container.appendChild(el);
                     });
-                    offset = container.querySelectorAll('.js-gallery-thumb').length;
-                    if (!data.hasMore || !(data.count||0)) { btn.style.display = 'none'; }
+                    offset += data.count || items.length;
+                    if (!data.hasMore || !(data.count||items.length)) { btn.style.display = 'none'; }
+                } else {
+                    btn.style.display = 'none';
                 }
             } catch(e) {
                 console.error(e);
                 btn.textContent = 'Ошибка, попробовать еще';
             } finally {
-                loading = false; btn.disabled = false; btn.textContent = 'загрузить еще';
+                loading = false;
+                btn.disabled = false;
+                btn.textContent = 'загрузить еще';
             }
         });
     }
