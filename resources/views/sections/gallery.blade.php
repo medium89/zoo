@@ -101,6 +101,7 @@
                         const id = el.dataset.id;
                         if (id && seenIds.has(id)) return;
                         if (id) seenIds.add(id);
+                        el.classList.add('animate-in');
                         container.appendChild(el);
                     });
                     offset += data.count || items.length;
