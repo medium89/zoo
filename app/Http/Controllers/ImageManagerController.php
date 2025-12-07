@@ -160,6 +160,13 @@ class ImageManagerController extends Controller
         $sizeKb = $sizeBytes ? round($sizeBytes / 1024, 1) : null;
         $sizeMb = $sizeBytes ? round($sizeBytes / 1024 / 1024, 2) : null;
         $backup = $this->getBackup($type, $id, $field);
+        $dims = null;
+        if (Storage::disk('public')->exists($path)) {
+            $info = @getimagesize(Storage::disk('public')->path($path));
+            if ($info && isset($info[0], $info[1])) {
+                $dims = ['w' => $info[0], 'h' => $info[1]];
+            }
+        }
 
         return [
             'type' => $type,
@@ -170,6 +177,7 @@ class ImageManagerController extends Controller
             'url' => asset('storage/'.$path),
             'size_kb' => $sizeKb,
             'size_mb' => $sizeMb,
+            'dims' => $dims,
             'backup' => $backup,
         ];
     }

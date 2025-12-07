@@ -17,7 +17,7 @@
     <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 row-cols-xxl-5">
         @forelse($images as $img)
             <div class="col">
-                <div class="card shadow-sm h-100 js-image-card" data-size-kb="{{ $img['size_kb'] ?? 0 }}">
+                <div class="card shadow-sm h-100 js-image-card" data-size-kb="{{ $img['size_kb'] ?? 0 }}" data-size-w="{{ $img['dims']['w'] ?? 0 }}" data-size-h="{{ $img['dims']['h'] ?? 0 }}">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="fw-bold">{{ $img['label'] }}</div>
@@ -28,7 +28,7 @@
                         </div>
                         <div class="small text-muted mb-1">{{ $img['path'] }}</div>
                         @if(!empty($img['size_kb']))
-                            <div class="small text-muted mb-3">Размер: {{ $img['size_kb'] }} КБ ({{ $img['size_mb'] }} МБ)</div>
+                            <div class="small text-muted mb-3">Размер: {{ $img['size_kb'] }} КБ ({{ $img['size_mb'] }} МБ) @if(!empty($img['dims'])) · {{ $img['dims']['w'] }}×{{ $img['dims']['h'] }} px @endif</div>
                         @endif
                         <form action="{{ route('admin.images.refresh') }}" method="POST" class="mt-auto js-refresh-form">
                             @csrf
@@ -76,20 +76,26 @@
 document.addEventListener('DOMContentLoaded', ()=>{
     document.querySelectorAll('.js-image-card').forEach(card=>{
         const baseKb = parseFloat(card.dataset.sizeKb || '0');
+        const baseW = parseInt(card.dataset.sizeW || '0', 10);
+        const baseH = parseInt(card.dataset.sizeH || '0', 10);
         const form = card.querySelector('.js-refresh-form');
         const scaleInput = form?.querySelector('[name="scale"]');
         const qualityInput = form?.querySelector('[name="quality"]');
         const hint = form?.querySelector('.js-size-estimate');
         const currentText = baseKb ? `Текущий: ${baseKb} КБ (${(baseKb/1024).toFixed(2)} МБ)` : '';
+        const currentDims = baseW && baseH ? ` · ${baseW}×${baseH} px` : '';
         const updateHint = ()=>{
             if(!hint || !scaleInput || !qualityInput){ return; }
             const s = Math.max(10, Math.min(100, parseInt(scaleInput.value||'100',10)));
             const q = Math.max(40, Math.min(100, parseInt(qualityInput.value||'85',10)));
-            if(!baseKb){ hint.textContent = currentText; return; }
+            if(!baseKb){ hint.textContent = currentText + currentDims; return; }
             const estimated = (baseKb * (s/100) * (q/100));
-            hint.textContent = `${currentText}${currentText ? ' · ' : ''}Ожидаемо: ${estimated.toFixed(1)} КБ (${(estimated/1024).toFixed(2)} МБ)`;
+            const estW = baseW ? Math.round(baseW * (s/100)) : null;
+            const estH = baseH ? Math.round(baseH * (s/100)) : null;
+            const estDims = estW && estH ? `${estW}×${estH} px` : '';
+            hint.textContent = `${currentText}${currentDims}${currentText || currentDims ? ' · ' : ''}Ожидаемо: ${estimated.toFixed(1)} КБ (${(estimated/1024).toFixed(2)} МБ)${estDims ? ' · '+estDims : ''}`;
         };
-        if(hint){ hint.textContent = currentText; }
+        if(hint){ hint.textContent = currentText + currentDims; }
         [scaleInput, qualityInput].forEach(inp=>inp?.addEventListener('input', updateHint));
         updateHint();
     });
