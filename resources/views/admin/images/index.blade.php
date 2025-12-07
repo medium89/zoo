@@ -36,6 +36,8 @@
                             <input type="hidden" name="id" value="{{ $img['id'] }}">
                             <input type="hidden" name="field" value="{{ $img['field'] }}">
                             <input type="hidden" name="path" value="{{ $img['path'] }}">
+                            <input type="hidden" name="crop_x" value="">
+                            <input type="hidden" name="crop_y" value="">
                             <div class="row g-2 mb-2">
                                 <div class="col-6">
                                     <label class="form-label mb-1 small">Размер (%)</label>
@@ -45,6 +47,19 @@
                                     <label class="form-label mb-1 small">Качество (%)</label>
                                     <input type="number" name="quality" class="form-control" value="85" min="40" max="100">
                                 </div>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label mb-1 small">Кадрировать W (px)</label>
+                                    <input type="number" name="crop_width" class="form-control" min="1" max="8000" placeholder="auto">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label mb-1 small">Кадрировать H (px)</label>
+                                    <input type="number" name="crop_height" class="form-control" min="1" max="8000" placeholder="auto">
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 mb-2">
+                                <button class="btn btn-outline-secondary btn-sm js-open-crop" type="button" data-url="{{ $img['url'] }}">Открыть кроп</button>
                             </div>
                             <div class="small text-muted mb-2 js-size-estimate"></div>
                             <button class="btn btn-primary w-100">Перегенерировать</button>
@@ -72,6 +87,8 @@
     </div>
 </div>
 @push('scripts')
+<link rel="stylesheet" href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css">
+<script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
     document.querySelectorAll('.js-image-card').forEach(card=>{
@@ -81,6 +98,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const form = card.querySelector('.js-refresh-form');
         const scaleInput = form?.querySelector('[name="scale"]');
         const qualityInput = form?.querySelector('[name="quality"]');
+        const cropWInput = form?.querySelector('[name="crop_width"]');
+        const cropHInput = form?.querySelector('[name="crop_height"]');
+        const cropXInput = form?.querySelector('[name="crop_x"]');
         const hint = form?.querySelector('.js-size-estimate');
         const currentText = baseKb ? `Текущий: ${baseKb} КБ (${(baseKb/1024).toFixed(2)} МБ)` : '';
         const currentDims = baseW && baseH ? ` · ${baseW}×${baseH} px` : '';
@@ -88,16 +108,98 @@ document.addEventListener('DOMContentLoaded', ()=>{
             if(!hint || !scaleInput || !qualityInput){ return; }
             const s = Math.max(10, Math.min(100, parseInt(scaleInput.value||'100',10)));
             const q = Math.max(40, Math.min(100, parseInt(qualityInput.value||'85',10)));
+            const cropW = cropWInput && cropWInput.value ? Math.max(1, parseInt(cropWInput.value,10)) : null;
+            const cropH = cropHInput && cropHInput.value ? Math.max(1, parseInt(cropHInput.value,10)) : null;
+            const baseDimW = cropW || baseW;
+            const baseDimH = cropH || baseH;
             if(!baseKb){ hint.textContent = currentText + currentDims; return; }
             const estimated = (baseKb * (s/100) * (q/100));
-            const estW = baseW ? Math.round(baseW * (s/100)) : null;
-            const estH = baseH ? Math.round(baseH * (s/100)) : null;
+            const estW = baseDimW ? Math.round(baseDimW * (s/100)) : null;
+            const estH = baseDimH ? Math.round(baseDimH * (s/100)) : null;
             const estDims = estW && estH ? `${estW}×${estH} px` : '';
             hint.textContent = `${currentText}${currentDims}${currentText || currentDims ? ' · ' : ''}Ожидаемо: ${estimated.toFixed(1)} КБ (${(estimated/1024).toFixed(2)} МБ)${estDims ? ' · '+estDims : ''}`;
         };
         if(hint){ hint.textContent = currentText + currentDims; }
-        [scaleInput, qualityInput].forEach(inp=>inp?.addEventListener('input', updateHint));
+        [scaleInput, qualityInput, cropWInput, cropHInput].forEach(inp=>inp?.addEventListener('input', updateHint));
         updateHint();
+    });
+
+    // Cropper modal
+    const modalTpl = document.createElement('div');
+    modalTpl.className = 'modal fade';
+    modalTpl.id = 'cropModal';
+    modalTpl.tabIndex = -1;
+    modalTpl.innerHTML = `
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Кадрирование</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <div class="ratio ratio-16x9 bg-light">
+            <img id="cropModalImage" src="" alt="" class="w-100 h-100" style="object-fit:contain;">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="small text-muted me-auto" id="cropInfo"></div>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="button" class="btn btn-primary" id="cropApply">Применить</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.appendChild(modalTpl);
+    const cropModalEl = document.getElementById('cropModal');
+    const cropModal = cropModalEl ? new bootstrap.Modal(cropModalEl) : null;
+    const cropImg = document.getElementById('cropModalImage');
+    const cropInfo = document.getElementById('cropInfo');
+    let cropper = null;
+    let activeForm = null;
+
+    document.querySelectorAll('.js-open-crop').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            if(!cropModal) return;
+            const form = btn.closest('form');
+            activeForm = form;
+            cropImg.src = btn.dataset.url;
+            cropModal.show();
+            cropModalEl.addEventListener('shown.bs.modal', ()=>{
+                cropper = new Cropper(cropImg, {
+                    viewMode: 1,
+                    autoCropArea: 1,
+                    movable: true,
+                    zoomable: true,
+                    scalable: false,
+                    ready(){
+                        updateInfo();
+                    },
+                    crop(){ updateInfo(); }
+                });
+            }, { once:true });
+            cropModalEl.addEventListener('hidden.bs.modal', ()=>{
+                if(cropper){ cropper.destroy(); cropper=null; }
+                activeForm = null;
+            }, { once:true });
+        });
+    });
+
+    function updateInfo(){
+        if(!cropper) return;
+        const data = cropper.getData();
+        cropInfo.textContent = `Выбрано: ${Math.round(data.width)}×${Math.round(data.height)} px`;
+    }
+
+    const applyBtn = document.getElementById('cropApply');
+    applyBtn?.addEventListener('click', ()=>{
+        if(!cropper || !activeForm) return;
+        const data = cropper.getData();
+        activeForm.querySelector('[name="crop_x"]').value = Math.round(data.x);
+        activeForm.querySelector('[name="crop_y"]').value = Math.round(data.y);
+        activeForm.querySelector('[name="crop_width"]').value = Math.round(data.width);
+        activeForm.querySelector('[name="crop_height"]').value = Math.round(data.height);
+        const evt = new Event('input');
+        activeForm.querySelectorAll('[name="crop_width"], [name="crop_height"]').forEach(inp=>inp.dispatchEvent(evt));
+        cropModal.hide();
     });
 });
 </script>

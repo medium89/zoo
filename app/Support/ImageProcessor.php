@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ImageProcessor
 {
-    public static function processAndStore(UploadedFile $uploaded, string $dir, int $scale = 100, int $quality = 85): string
+    public static function processAndStore(UploadedFile $uploaded, string $dir, int $scale = 100, int $quality = 85, ?int $cropWidth = null, ?int $cropHeight = null, ?int $cropX = null, ?int $cropY = null): string
     {
         $scale = max(10, min(100, (int)$scale));
         $quality = max(40, min(100, (int)$quality));
@@ -40,6 +40,27 @@ class ImageProcessor
 
         if (!$src) {
             return $uploaded->store($dir, 'public');
+        }
+
+        // Optional crop (custom position, defaults to center)
+        if ($cropWidth || $cropHeight) {
+            $cropW = $cropWidth ? min($cropWidth, $w) : $w;
+            $cropH = $cropHeight ? min($cropHeight, $h) : $h;
+            $srcX = $cropX !== null ? max(0, min($w - $cropW, $cropX)) : max(0, (int)(($w - $cropW) / 2));
+            $srcY = $cropY !== null ? max(0, min($h - $cropH, $cropY)) : max(0, (int)(($h - $cropH) / 2));
+            $crop = imagecreatetruecolor($cropW, $cropH);
+            if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_GIF || (defined('IMAGETYPE_WEBP') && $type === IMAGETYPE_WEBP)) {
+                imagealphablending($crop, false);
+                imagesavealpha($crop, true);
+                $transparent = imagecolorallocatealpha($crop, 0, 0, 0, 127);
+                imagefilledrectangle($crop, 0, 0, $cropW, $cropH, $transparent);
+            }
+            imagecopy($crop, $src, 0, 0, $srcX, $srcY, $cropW, $cropH);
+            imagedestroy($src);
+            $src = $crop;
+            [$w, $h] = [$cropW, $cropH];
+            $targetW = max(1, (int)round($w * $scale / 100));
+            $targetH = max(1, (int)round($h * $scale / 100));
         }
 
         $dst = imagecreatetruecolor($targetW, $targetH);
@@ -78,4 +99,3 @@ class ImageProcessor
         return $storePath;
     }
 }
-

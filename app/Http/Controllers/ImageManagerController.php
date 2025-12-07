@@ -46,6 +46,10 @@ class ImageManagerController extends Controller
             'path' => 'required|string',
             'scale' => 'required|integer|min:10|max:100',
             'quality' => 'required|integer|min:40|max:100',
+            'crop_width' => 'nullable|integer|min:1|max:8000',
+            'crop_height' => 'nullable|integer|min:1|max:8000',
+            'crop_x' => 'nullable|integer|min:0',
+            'crop_y' => 'nullable|integer|min:0',
         ]);
 
         $path = $data['path'];
@@ -65,7 +69,16 @@ class ImageManagerController extends Controller
         copy($fullPath, $tmp);
         $uploaded = new UploadedFile($tmp, basename($path), mime_content_type($fullPath) ?: null, null, true);
         $dir = trim(dirname($path), '.');
-        $newPath = ImageProcessor::processAndStore($uploaded, ltrim($dir, '/'), (int)$data['scale'], (int)$data['quality']);
+        $newPath = ImageProcessor::processAndStore(
+            $uploaded,
+            ltrim($dir, '/'),
+            (int)$data['scale'],
+            (int)$data['quality'],
+            $data['crop_width'] ?? null,
+            $data['crop_height'] ?? null,
+            $data['crop_x'] ?? null,
+            $data['crop_y'] ?? null
+        );
 
         $this->updateModelPath($target, $data['field'], $newPath);
 
