@@ -53,7 +53,7 @@
     .quick-contact-badge{
         position: fixed;
         left: 18px;
-        top: 76px;
+        top: 110px;
         background: #7b5bdb;
         color: #fff;
         border: 2px solid #fff;
