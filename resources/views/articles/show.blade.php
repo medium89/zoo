@@ -227,8 +227,8 @@
     .toc-title{
         font-size: 1.05rem;
         letter-spacing: 0.3px;
-        color: var(--color-primary);
-        background: var(--color-secondary);
+        color: #fff;
+        background: #8c4dc7;
         color: #fff;
         border-radius: 12px;
         padding: 8px 12px;

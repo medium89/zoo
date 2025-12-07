@@ -145,8 +145,8 @@
         border-radius: 12px;
     }
     .filter-card__header{
-        background: var(--color-option-hover);
-        color: var(--color-quaternary);
+        background: #8c4dc7;
+        color: #fff;
         padding: 14px 18px;
         font-weight: 700;
         letter-spacing: 0.3px;
@@ -155,13 +155,13 @@
         border-top-right-radius: 0.5rem;
     }
     .filter-card .btn-primary{
-        background: #f06c6c;
-        border-color: #f06c6c;
-        box-shadow: 0 6px 16px rgba(240,108,108,0.25);
+        background: #ff8091;
+        border-color: #ff8091;
+        box-shadow: 0 6px 16px rgba(255,128,145,0.25);
     }
     .filter-card .btn-primary:hover{
-        background: #e65d5d;
-        border-color: #e65d5d;
+        background: #ff6a7f;
+        border-color: #ff6a7f;
     }
 </style>
 @endsection
