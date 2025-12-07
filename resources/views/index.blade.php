@@ -15,6 +15,7 @@
     <div id="quickContactBadge" class="quick-contact-badge">
         <i class="fa fa-phone me-2"></i>
         <span>Связаться со мной</span>
+        <button type="button" class="qc-badge-close" aria-label="Скрыть">&times;</button>
     </div>
     <div id="quickContactModal" class="quick-contact-modal">
         <div class="qc-backdrop"></div>
@@ -52,12 +53,12 @@
     .quick-contact-badge{
         position: fixed;
         left: 18px;
-        top: 18px;
+        top: 76px;
         background: #7b5bdb;
         color: #fff;
         border: 2px solid #fff;
         border-radius: 14px;
-        padding: 12px 16px;
+        padding: 12px 46px 12px 16px;
         box-shadow: 0 12px 28px rgba(0,0,0,0.2);
         display: flex;
         align-items: center;
@@ -68,18 +69,24 @@
         transition: opacity 0.35s ease, transform 0.35s ease;
         z-index: 1045;
         font-weight: 700;
+        position: fixed;
     }
     .quick-contact-badge.shown{
         opacity: 1;
         transform: translateY(0);
     }
     .quick-contact-badge.animate{
-        animation: qc-pulse 1s ease-in-out 0s 3;
+        animation: qc-pulse 1s ease-in-out 0s 3, qc-scale 1s ease-in-out 0s 3;
     }
     @keyframes qc-pulse{
         0% { box-shadow: 0 0 0 0 rgba(123,91,219,0.5); }
         70% { box-shadow: 0 0 0 12px rgba(123,91,219,0); }
         100% { box-shadow: 0 0 0 0 rgba(123,91,219,0); }
+    }
+    @keyframes qc-scale{
+        0% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(0) scale(1.04); }
+        100% { transform: translateY(0) scale(1); }
     }
     .quick-contact-modal{
         position: fixed;
@@ -88,6 +95,27 @@
         align-items: center;
         justify-content: center;
         z-index: 1050;
+    }
+    .qc-badge-close{
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.6);
+        color: #fff;
+        border-radius: 50%;
+        width: 26px;
+        height: 26px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .qc-badge-close:hover{
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-50%) scale(1.05);
     }
     .quick-contact-modal.open{
         display: flex;
@@ -142,7 +170,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
         setTimeout(()=>badge.classList.remove('animate'), 3200);
     }, 5000);
 
-    badge.addEventListener('click', openModal);
+    badge.addEventListener('click', (e)=>{
+        if (e.target.classList.contains('qc-badge-close')) return;
+        openModal();
+    });
+    badge.querySelector('.qc-badge-close')?.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        badge.classList.remove('shown','animate');
+    });
     modal.querySelector('.qc-backdrop').addEventListener('click', closeModal);
     modal.querySelector('.qc-close').addEventListener('click', closeModal);
 });
