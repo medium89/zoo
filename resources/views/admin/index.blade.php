@@ -410,18 +410,11 @@
             }
         }
 
-        /* CKEditor высота и читаемость */
-        .ck-editor__editable_inline {
-            min-height: 280px;
-            border: 1px solid #ced4da !important;
-            border-radius: 8px !important;
-            padding: 12px 14px !important;
-            background: #fff;
-            resize: vertical;
-        }
-        .ck.ck-editor { width: 100%; }
-        textarea.wysiwyg, textarea.js-wysiwyg { min-height: 220px; resize: vertical; }
-        .ck-toolbar { border-radius: 8px 8px 0 0 !important; }
+        /* WYSIWYG базовые размеры */
+        textarea.wysiwyg,
+        textarea.js-wysiwyg,
+        textarea.wysiwyg-excerpt { min-height: 220px; resize: vertical; }
+        .tox-tinymce { width: 100%; border-radius: 8px; }
 
         /* Ползунки масштаба/качества */
         .form-range::-webkit-slider-thumb { background: #0d6efd; }

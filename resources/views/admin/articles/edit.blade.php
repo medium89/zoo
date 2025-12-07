@@ -128,52 +128,42 @@
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const target = document.querySelector('.js-wysiwyg');
-    const Editor = window.ClassicEditor || (window.CKEDITOR && window.CKEDITOR.ClassicEditor);
-    const removePlugins = [
-        'AIAssistant','CKBox','CKFinder','EasyImage',
-        'RealTimeCollaborativeComments','RealTimeCollaborativeTrackChanges',
-        'RealTimeCollaborativeRevisionHistory','PresenceList','Comments','TrackChanges',
-        'RevisionHistory','Pagination','WProofreader','SlashCommand','Template',
-        'DocumentOutline','FormatPainter','TableOfContents','PasteFromOfficeEnhanced','CaseChange',
-        'SourceEditing','ExportPdf','ExportWord'
-    ];
-    if(!target || !Editor){ return; }
+    if(!target || !window.tinymce){ return; }
 
-    Editor.create(target, {
-        toolbar: [
-            'undo','redo','|',
-            'heading','|',
-            'bold','italic','link','|',
-            'bulletedList','numberedList','|',
-            'insertTable','blockQuote','|',
-            'imageUpload','mediaEmbed','|','toggleImageCaption','imageTextAlternative'
-        ],
-        heading: {
-            options: [
-                { model: 'paragraph', title: 'Обычный', class: 'ck-heading_paragraph' },
-                { model: 'heading2', view: 'h2', title: 'Заголовок 2', class: 'ck-heading_heading2' },
-                { model: 'heading3', view: 'h3', title: 'Заголовок 3', class: 'ck-heading_heading3' }
-            ]
-        },
-        ckfinder: {
-            uploadUrl: '{{ route('admin.articles.upload') }}'
-        },
-        image: {
-            resizeUnit: '%',
-            resizeOptions: [
-                { name: 'resizeImage:original', label: '100%', value: null },
-                { name: 'resizeImage:75', label: '75%', value: '75' },
-                { name: 'resizeImage:50', label: '50%', value: '50' }
-            ],
-            toolbar: ['resizeImage','|','imageStyle:inline','imageStyle:block','imageStyle:side','|','linkImage','toggleImageCaption','imageTextAlternative']
-        },
-        link: { decorators: { addTargetToExternalLinks: true } },
-        mediaEmbed: { previewsInData: true },
-        removePlugins
-    }).then(editor => {
-        editor.ui.view.editable.element.style.minHeight = '420px';
-    }).catch(error => {
-        console.error('CKEditor init error', error);
+    const uploadUrl = '{{ route('admin.articles.upload') }}';
+    const csrf = '{{ csrf_token() }}';
+
+    tinymce.init({
+        target,
+        menubar: false,
+        branding: false,
+        height: 460,
+        plugins: 'advlist autolink lists link image media table code fullscreen',
+        toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | removeformat code fullscreen',
+        automatic_uploads: true,
+        images_upload_handler: (blobInfo, progress) => new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('file', blobInfo.blob(), blobInfo.filename());
+            fetch(uploadUrl, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf },
+                body: formData,
+            }).then(async response => {
+                if(!response.ok){ throw new Error('Upload failed'); }
+                const data = await response.json();
+                const url = data.url || data.location;
+                if(url){ resolve(url); } else { reject('Неверный ответ загрузки'); }
+            }).catch(err => reject(err && err.message ? err.message : err));
+        }),
+        file_picker_types: 'image',
+        image_title: true,
+        image_dimensions: true,
+        image_caption: true,
+        image_advtab: true,
+        convert_urls: false,
+        relative_urls: false,
+        promotion: false,
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; }'
     });
     document.querySelectorAll('.js-scale').forEach(input=>{
         input.addEventListener('input', ()=>{
