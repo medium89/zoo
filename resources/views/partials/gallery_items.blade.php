@@ -7,7 +7,7 @@
         $thumbUrl = $thumbExists ? asset('storage/' . $thumb) : ($fullExists ? asset('storage/' . $gallery->image) : $placeholder);
         $fullUrl = $fullExists ? asset('storage/' . $gallery->image) : $placeholder;
     @endphp
-    <div class="gallery-content__item">
+    <div class="gallery-content__item" data-id="{{ $gallery->id }}">
         <img src="{{ $thumbUrl }}" data-full="{{ $fullUrl }}" alt="Фото {{ $gallery->number }}" class="js-gallery-thumb">
     </div>
 @endforeach

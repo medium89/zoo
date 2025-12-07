@@ -81,6 +81,7 @@
         let offset = parseInt(btn.dataset.offset || container.querySelectorAll('.js-gallery-thumb').length, 10) || 0;
         const limit = parseInt(btn.dataset.limit || 6, 10);
         let loading = false;
+        const seenIds = new Set(Array.from(container.querySelectorAll('.gallery-content__item')).map(el => el.dataset.id));
         btn.addEventListener('click', async ()=>{
             if (loading) return; loading = true; btn.disabled = true; btn.textContent = 'Загрузка...';
             try {
@@ -89,8 +90,16 @@
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 if (data && data.html) {
-                    container.insertAdjacentHTML('beforeend', data.html);
-                    offset += (data.count||0);
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = data.html;
+                    const items = Array.from(tmp.children);
+                    items.forEach(el=>{
+                        const id = el.dataset.id;
+                        if (id && seenIds.has(id)) return;
+                        if (id) seenIds.add(id);
+                        container.appendChild(el);
+                    });
+                    offset = container.querySelectorAll('.js-gallery-thumb').length;
                     if (!data.hasMore || !(data.count||0)) { btn.style.display = 'none'; }
                 }
             } catch(e) {
