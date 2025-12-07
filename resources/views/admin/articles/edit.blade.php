@@ -97,7 +97,7 @@
             </select>
         </div>
         <div class="mb-3">
-            <label class="form-label">Текст статьи (WYSIWYG)</label>
+            <label class="form-label">Текст статьи</label>
             <textarea name="content" class="form-control js-wysiwyg" rows="12" data-editor-custom="1">{{ $article->content }}</textarea>
         </div>
         <div class="mb-3">
@@ -114,24 +114,6 @@
                 </div>
             </div>
         @endif
-        <div class="row g-3 mb-3">
-            <div class="col-md-6">
-                <label class="form-label">SEO Title</label>
-                <input type="text" name="seo_title" class="form-control" value="{{ $article->seo_title }}" placeholder="Если пусто — будет использован заголовок">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">SEO Description</label>
-                <input type="text" name="seo_description" class="form-control" value="{{ $article->seo_description }}">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Robots</label>
-                <input type="text" name="seo_robots" class="form-control" value="{{ $article->seo_robots ?? 'index, follow' }}">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Charset</label>
-                <input type="text" name="seo_charset" class="form-control" value="{{ $article->seo_charset ?? 'UTF-8' }}">
-            </div>
-        </div>
         <div class="form-check form-switch mb-4">
             <input class="form-check-input" type="checkbox" role="switch" id="active" name="active" value="1" {{ $article->active ? 'checked' : '' }}>
             <label class="form-check-label" for="active">Активно</label>
@@ -186,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function(){
         },
         link: { decorators: { addTargetToExternalLinks: true } },
         mediaEmbed: { previewsInData: true },
+        licenseKey: 'GPL',
         removePlugins
     }).then(editor => {
         editor.ui.view.editable.element.style.minHeight = '420px';

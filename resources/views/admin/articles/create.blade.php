@@ -77,7 +77,7 @@
             </select>
         </div>
         <div class="mb-3">
-            <label class="form-label">Текст статьи (WYSIWYG)</label>
+            <label class="form-label">Текст статьи</label>
             <textarea name="content" class="form-control js-wysiwyg" rows="12" data-editor-custom="1"></textarea>
         </div>
         <div class="mb-3">
@@ -146,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function(){
         },
         link: { decorators: { addTargetToExternalLinks: true } },
         mediaEmbed: { previewsInData: true },
+        licenseKey: 'GPL',
         removePlugins
     }).then(editor => {
         editor.ui.view.editable.element.style.minHeight = '420px';
