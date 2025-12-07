@@ -128,6 +128,10 @@ class ImageManagerController extends Controller
 
     private function mapItem(string $type, $id, string $field, string $path, string $label): array
     {
+        $sizeBytes = Storage::disk('public')->exists($path) ? Storage::disk('public')->size($path) : null;
+        $sizeKb = $sizeBytes ? round($sizeBytes / 1024, 1) : null;
+        $sizeMb = $sizeBytes ? round($sizeBytes / 1024 / 1024, 2) : null;
+
         return [
             'type' => $type,
             'id' => $id,
@@ -135,6 +139,8 @@ class ImageManagerController extends Controller
             'path' => $path,
             'label' => $label,
             'url' => asset('storage/'.$path),
+            'size_kb' => $sizeKb,
+            'size_mb' => $sizeMb,
         ];
     }
 

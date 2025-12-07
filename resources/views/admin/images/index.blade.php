@@ -14,9 +14,9 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <div class="row g-3">
+    <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 row-cols-xxl-5">
         @forelse($images as $img)
-            <div class="col-md-6 col-xl-4">
+            <div class="col">
                 <div class="card shadow-sm h-100">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-between mb-2">
@@ -26,7 +26,10 @@
                         <div class="ratio ratio-16x9 mb-3 bg-light rounded overflow-hidden">
                             <img src="{{ $img['url'] }}" alt="" class="w-100 h-100" style="object-fit: contain;">
                         </div>
-                        <div class="small text-muted mb-3">{{ $img['path'] }}</div>
+                        <div class="small text-muted mb-1">{{ $img['path'] }}</div>
+                        @if(!empty($img['size_kb']))
+                            <div class="small text-muted mb-3">Размер: {{ $img['size_kb'] }} КБ ({{ $img['size_mb'] }} МБ)</div>
+                        @endif
                         <form action="{{ route('admin.images.refresh') }}" method="POST" class="mt-auto">
                             @csrf
                             <input type="hidden" name="type" value="{{ $img['type'] }}">
@@ -53,8 +56,8 @@
         @endforelse
     </div>
 
-    <div class="mt-3">
-        {{ $images->links() }}
+    <div class="mt-3 d-flex justify-content-center">
+        {{ $images->onEachSide(1)->links('pagination::bootstrap-4') }}
     </div>
 </div>
 @endsection
