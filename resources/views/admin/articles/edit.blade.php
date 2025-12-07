@@ -133,8 +133,9 @@ document.addEventListener('DOMContentLoaded', function(){
                 { model: 'heading3', view: 'h3', title: 'Заголовок 3', class: 'ck-heading_heading3' }
             ]
         },
-        ckfinder: {
+        simpleUpload: {
             uploadUrl: '{{ route('admin.articles.upload') }}',
+            withCredentials: true,
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         },
         link: { decorators: { addTargetToExternalLinks: true } },
