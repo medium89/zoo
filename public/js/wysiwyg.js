@@ -6,6 +6,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const editors = document.querySelectorAll('textarea.wysiwyg, textarea.js-wysiwyg, textarea.wysiwyg-excerpt');
+  const removePlugins = [
+    'AIAssistant','CKBox','CKFinder','EasyImage',
+    'RealTimeCollaborativeComments','RealTimeCollaborativeTrackChanges',
+    'RealTimeCollaborativeRevisionHistory','PresenceList','Comments','TrackChanges',
+    'RevisionHistory','Pagination','WProofreader','SlashCommand','Template',
+    'DocumentOutline','FormatPainter','TableOfContents','PasteFromOfficeEnhanced','CaseChange'
+  ];
   editors.forEach((el) => {
     if (el.dataset.ckeditorAttached || el.dataset.editorCustom === '1') return;
     const minHeight = el.dataset.editorHeight ? parseInt(el.dataset.editorHeight, 10) : (el.classList.contains('wysiwyg-excerpt') ? 200 : 320);
@@ -24,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
           { model: 'heading2', view: 'h2', title: 'Заголовок 2', class: 'ck-heading_heading2' },
           { model: 'heading3', view: 'h3', title: 'Заголовок 3', class: 'ck-heading_heading3' }
         ]
-      }
+      },
+      removePlugins
     }).then((editor) => {
       el.dataset.ckeditorAttached = '1';
       el.classList.add('ck-initialized');

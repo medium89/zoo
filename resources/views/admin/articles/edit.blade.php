@@ -12,24 +12,53 @@
     <form action="{{ route('admin.articles.update', $article) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
-        <div class="mb-3">
-            <label class="form-label">Заголовок</label>
-            <input type="text" name="title" class="form-control" required value="{{ $article->title }}">
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <label class="form-label">Заголовок</label>
+                <input type="text" name="title" class="form-control" required value="{{ $article->title }}">
+            </div>
+            <div class="col-lg-6">
+                <label class="form-label">ЧПУ (slug)</label>
+                <input type="text" name="slug" class="form-control" value="{{ $article->slug }}" placeholder="Автоиз заголовка">
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">ЧПУ (slug)</label>
-            <input type="text" name="slug" class="form-control" value="{{ $article->slug }}" placeholder="Автоиз заголовка">
+        <div class="row g-3 mb-3">
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label">SEO Title</label>
+                <input type="text" name="seo_title" class="form-control" value="{{ $article->seo_title }}" placeholder="Если пусто — будет использован заголовок">
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label">SEO Description</label>
+                <input type="text" name="seo_description" class="form-control" value="{{ $article->seo_description }}">
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label">Robots</label>
+                <input type="text" name="seo_robots" class="form-control" value="{{ $article->seo_robots ?? 'index, follow' }}">
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label">Charset</label>
+                <input type="text" name="seo_charset" class="form-control" value="{{ $article->seo_charset ?? 'UTF-8' }}">
+            </div>
         </div>
         <div class="mb-3">
             <label class="form-label">Краткое описание</label>
             <textarea name="excerpt" class="form-control wysiwyg-excerpt" rows="3" data-editor-height="220">{{ $article->excerpt }}</textarea>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Обложка статьи</label><br>
-            @if($article->cover_path)
-                <img src="{{ asset('storage/'.$article->cover_path) }}" alt="" width="140" class="mb-2 rounded shadow-sm"><br>
-            @endif
-            <input type="file" name="cover" class="form-control">
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <label class="form-label">Обложка статьи</label><br>
+                @if($article->cover_path)
+                    <img src="{{ asset('storage/'.$article->cover_path) }}" alt="" width="140" class="mb-2 rounded shadow-sm"><br>
+                @endif
+                <input type="file" name="cover" class="form-control">
+            </div>
+            <div class="col-lg-6">
+                <label class="form-label">Фон для article-hero</label><br>
+                @if($article->hero_image_path ?? false)
+                    <img src="{{ asset('storage/'.$article->hero_image_path) }}" alt="" width="140" class="mb-2 rounded shadow-sm"><br>
+                @endif
+                <input type="file" name="hero_image" class="form-control" accept="image/*">
+            </div>
             <div class="row g-2 mt-2">
                 <div class="col-md-6">
                     <label class="form-label">Размер (в %)</label>
@@ -118,6 +147,13 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!target || !window.ClassicEditor){ return; }
 
     const Editor = window.ClassicEditor || (window.CKEDITOR && window.CKEDITOR.ClassicEditor);
+    const removePlugins = [
+        'AIAssistant','CKBox','CKFinder','EasyImage',
+        'RealTimeCollaborativeComments','RealTimeCollaborativeTrackChanges',
+        'RealTimeCollaborativeRevisionHistory','PresenceList','Comments','TrackChanges',
+        'RevisionHistory','Pagination','WProofreader','SlashCommand','Template',
+        'DocumentOutline','FormatPainter','TableOfContents','PasteFromOfficeEnhanced','CaseChange'
+    ];
     if(!Editor){ return; }
 
     Editor.create(target, {
@@ -149,7 +185,8 @@ document.addEventListener('DOMContentLoaded', function(){
             toolbar: ['resizeImage','|','imageStyle:inline','imageStyle:block','imageStyle:side','|','linkImage','toggleImageCaption','imageTextAlternative']
         },
         link: { decorators: { addTargetToExternalLinks: true } },
-        mediaEmbed: { previewsInData: true }
+        mediaEmbed: { previewsInData: true },
+        removePlugins
     }).then(editor => {
         editor.ui.view.editable.element.style.minHeight = '420px';
     }).catch(error => {

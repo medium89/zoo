@@ -38,6 +38,10 @@
             <div class="col-lg-9">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body article-content" id="articleContent">
+                        @if($article->excerpt)
+                            <p class="text-muted lead">{{ $article->excerpt }}</p>
+                            <hr>
+                        @endif
                         {!! $article->content !!}
                         <div class="article-meta text-muted mt-4">
                             Опубликовано: {{ $article->published_at? $article->published_at->format('d.m.Y') : $article->created_at->format('d.m.Y') }}
@@ -108,7 +112,7 @@
         --hero-bg: linear-gradient(135deg, #0b1f3f 0%, #0f2a52 50%, #122f5d 100%);
         position: relative;
         padding: 140px 0 120px;
-        background-image: var(--hero-bg);
+        background-image: linear-gradient(135deg, rgba(6,12,28,0.35), rgba(7,18,41,0.35)), var(--hero-bg);
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;

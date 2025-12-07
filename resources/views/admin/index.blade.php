@@ -92,7 +92,8 @@
         }
 
         .sidebar a.active { background: #2b3038; color: #fff; padding-left: 26px; }
-        .sidebar a:hover { background: #1f232a; color: #fff; padding-left: 20px; }
+        .sidebar a.active:hover { background: #2b3038; color: #fff; padding-left: 26px; }
+        .sidebar a:hover { background: #2b3038; color: #fff; padding-left: 20px; }
 
         .content {
             padding: 32px;
@@ -438,7 +439,7 @@
         <h4 class="text-center py-3 border-bottom mb-0">
             <a href="{{ route('admin.settings') }}">Админпанель</a></h4>
         <div class="sidebar-content">
-            <div class="sidebar-content__item px-3 text-uppercase text-muted small border-top pt-2 mt-2">Контент</div>
+            <div class="sidebar-content__item px-3 text-uppercase text-muted small pt-2 pb-2 mt-2">Контент</div>
             <div class="sidebar-content__item">
                 <a href="/zooadmin/sliders" class="{{ request()->is('zooadmin/sliders*') ? 'active' : '' }}"><i class="fa fa-photo-film me-2"></i>Слайдер</a>
                 <a href="/zooadmin/advantages" class="{{ request()->is('zooadmin/advantages*') ? 'active' : '' }}"><i class="fa fa-star me-2"></i>Преимущества</a>

@@ -38,6 +38,7 @@ class ArticleAdminController extends Controller
             'seo_robots' => 'nullable|string|max:255',
             'seo_charset' => 'nullable|string|max:50',
             'cover' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
+            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
             'image_scale' => 'nullable|integer|min:10|max:100',
             'image_quality' => 'nullable|integer|min:40|max:100',
             'active' => 'nullable|boolean',
@@ -60,6 +61,10 @@ class ArticleAdminController extends Controller
 
         if ($request->hasFile('cover')) {
             $article->cover_path = ImageProcessor::processAndStore($request->file('cover'), 'articles/covers', $scale, $quality);
+            $article->save();
+        }
+        if ($request->hasFile('hero_image')) {
+            $article->hero_image_path = ImageProcessor::processAndStore($request->file('hero_image'), 'articles/hero', $scale, $quality);
             $article->save();
         }
 
@@ -88,6 +93,7 @@ class ArticleAdminController extends Controller
             'seo_robots' => 'nullable|string|max:255',
             'seo_charset' => 'nullable|string|max:50',
             'cover' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
+            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
             'image_scale' => 'nullable|integer|min:10|max:100',
             'image_quality' => 'nullable|integer|min:40|max:100',
             'active' => 'nullable|boolean',
@@ -108,6 +114,13 @@ class ArticleAdminController extends Controller
                 Storage::disk('public')->delete($article->cover_path);
             }
             $article->cover_path = ImageProcessor::processAndStore($request->file('cover'), 'articles/covers', $scale, $quality);
+            $article->save();
+        }
+        if ($request->hasFile('hero_image')) {
+            if ($article->hero_image_path && Storage::disk('public')->exists($article->hero_image_path)) {
+                Storage::disk('public')->delete($article->hero_image_path);
+            }
+            $article->hero_image_path = ImageProcessor::processAndStore($request->file('hero_image'), 'articles/hero', $scale, $quality);
             $article->save();
         }
 
