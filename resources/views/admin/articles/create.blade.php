@@ -36,9 +36,15 @@
                 <input type="text" name="seo_charset" class="form-control" value="UTF-8">
             </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Краткое описание</label>
-            <textarea name="excerpt" class="form-control wysiwyg-excerpt" rows="3" data-editor-height="220"></textarea>
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <label class="form-label">Краткое описание</label>
+                <textarea name="excerpt" class="form-control wysiwyg-excerpt" rows="3" data-editor-height="220"></textarea>
+            </div>
+            <div class="col-lg-6">
+                <label class="form-label">Текст статьи</label>
+                <textarea name="content" class="form-control js-wysiwyg" rows="12" data-editor-custom="1"></textarea>
+            </div>
         </div>
         <div class="row g-3 mb-3">
             <div class="col-lg-6">
@@ -75,10 +81,6 @@
                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                 @endforeach
             </select>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Текст статьи</label>
-            <textarea name="content" class="form-control js-wysiwyg" rows="12" data-editor-custom="1"></textarea>
         </div>
         <div class="mb-3">
             <label class="form-label">Изображения (можно несколько)</label>

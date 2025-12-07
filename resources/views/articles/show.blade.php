@@ -36,9 +36,18 @@
                 </div>
             </div>
             <div class="col-lg-9">
+                @php
+                    $contentHtml = $article->content;
+                    if ($article->excerpt) {
+                        $pos = strpos($contentHtml, $article->excerpt);
+                        if ($pos === 0) {
+                            $contentHtml = substr($contentHtml, strlen($article->excerpt));
+                        }
+                    }
+                @endphp
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body article-content" id="articleContent">
-                        {!! $article->content !!}
+                        {!! $contentHtml !!}
                         <div class="article-meta text-muted mt-4">
                             Опубликовано: {{ $article->published_at? $article->published_at->format('d.m.Y') : $article->created_at->format('d.m.Y') }}
                         </div>
