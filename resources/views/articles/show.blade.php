@@ -24,63 +24,77 @@
 
 <section class="py-5 bg-light">
     <div class="container">
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body article-content">
-                {!! $article->content !!}
-                <div class="article-meta text-muted mt-4">
-                    Опубликовано: {{ $article->published_at? $article->published_at->format('d.m.Y') : $article->created_at->format('d.m.Y') }}
+        <div class="row g-4">
+            <div class="col-lg-3 d-none d-lg-block">
+                <div class="card shadow-sm border-0 sticky-top" style="top: 110px;">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Содержание</h6>
+                        <nav id="tocNav" class="toc-nav small">
+                            <div class="text-muted">Заголовков нет</div>
+                        </nav>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="card comment-card border-0 bg-transparent shadow-none">
-            <div class="p-4">
-                <h5 class="card-title">Комментарии</h5>
-                @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
-                @php
-                    $tree = [];
-                    foreach($comments as $c){ $tree[$c->parent_id ?? 0][] = $c; }
-                    $render = function($parentId, $depth) use (&$render, $tree){
-                        if(!isset($tree[$parentId])) return;
-                        echo '<ul class="comment-tree list-unstyled">';
-                        foreach($tree[$parentId] as $c){
-                            echo '<li class="mb-3">';
-                            echo '<div class="comment-item" style="--level:'.$depth.'">';
-                            echo '<div class="comment-meta d-flex justify-content-between align-items-start gap-3">';
-                            echo '<div class="comment-author">'.$c->email.'</div>';
-                            echo '<div class="comment-date text-muted">'.$c->created_at->format('d.m.Y H:i').'</div>';
-                            echo '</div>';
-                            echo '<div class="comment-text mt-2">'.nl2br(e($c->content)).'</div>';
-                            echo '<button class="btn btn-link btn-sm p-0 mt-3 comment-reply js-reply" data-id="'.$c->id.'">Ответить</button>';
-                            echo '</div>';
-                            $render($c->id, $depth+1);
-                            echo '</li>';
-                        }
-                        echo '</ul>';
-                    };
-                @endphp
-                <div id="article-comments">{!! $render(0,0) !!}</div>
-
-                <h5 class="card-title mt-4 mb-3">Оставить комментарий</h5>
-                <div class="comment-form-wrapper">
-                    <form action="{{ route('articles.comment', $article) }}" method="POST" id="commentForm" class="comment-form card border-0 shadow-sm">
-                        @csrf
-                        <input type="hidden" name="parent_id" value="">
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="email" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Текст</label>
-                                <textarea name="content" class="form-control" rows="3" required></textarea>
-                            </div>
-                            <div class="mb-2 text-muted small" id="replyInfo" style="display:none;">Ответ на комментарий #<span></span> <button type="button" class="btn btn-link btn-sm p-0" id="cancelReply">отменить</button></div>
-                            <button class="btn btn-primary">Отправить</button>
+            <div class="col-lg-9">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body article-content" id="articleContent">
+                        {!! $article->content !!}
+                        <div class="article-meta text-muted mt-4">
+                            Опубликовано: {{ $article->published_at? $article->published_at->format('d.m.Y') : $article->created_at->format('d.m.Y') }}
                         </div>
-                    </form>
+                    </div>
+                </div>
+
+                <div class="card comment-card border-0 bg-transparent shadow-none">
+                    <div class="p-4">
+                        <h5 class="card-title">Комментарии</h5>
+                        @if(session('success'))
+                            <div class="alert alert-success">{{ session('success') }}</div>
+                        @endif
+                        @php
+                            $tree = [];
+                            foreach($comments as $c){ $tree[$c->parent_id ?? 0][] = $c; }
+                            $render = function($parentId, $depth) use (&$render, $tree){
+                                if(!isset($tree[$parentId])) return;
+                                echo '<ul class="comment-tree list-unstyled">';
+                                foreach($tree[$parentId] as $c){
+                                    echo '<li class="mb-3">';
+                                    echo '<div class="comment-item" style="--level:'.$depth.'">';
+                                    echo '<div class="comment-meta d-flex justify-content-between align-items-start gap-3">';
+                                    echo '<div class="comment-author">'.$c->email.'</div>';
+                                    echo '<div class="comment-date text-muted">'.$c->created_at->format('d.m.Y H:i').'</div>';
+                                    echo '</div>';
+                                    echo '<div class="comment-text mt-2">'.nl2br(e($c->content)).'</div>';
+                                    echo '<button class="btn btn-link btn-sm p-0 mt-3 comment-reply js-reply" data-id="'.$c->id.'">Ответить</button>';
+                                    echo '</div>';
+                                    $render($c->id, $depth+1);
+                                    echo '</li>';
+                                }
+                                echo '</ul>';
+                            };
+                        @endphp
+                        <div id="article-comments">{!! $render(0,0) !!}</div>
+
+                        <h5 class="card-title mt-4 mb-3">Оставить комментарий</h5>
+                        <div class="comment-form-wrapper">
+                            <form action="{{ route('articles.comment', $article) }}" method="POST" id="commentForm" class="comment-form card border-0 shadow-sm">
+                                @csrf
+                                <input type="hidden" name="parent_id" value="">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" name="email" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Текст</label>
+                                        <textarea name="content" class="form-control" rows="3" required></textarea>
+                                    </div>
+                                    <div class="mb-2 text-muted small" id="replyInfo" style="display:none;">Ответ на комментарий #<span></span> <button type="button" class="btn btn-link btn-sm p-0" id="cancelReply">отменить</button></div>
+                                    <button class="btn btn-primary">Отправить</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -94,7 +108,7 @@
         --hero-bg: linear-gradient(135deg, #0b1f3f 0%, #0f2a52 50%, #122f5d 100%);
         position: relative;
         padding: 140px 0 120px;
-        background-image: linear-gradient(135deg, rgba(6,12,28,0.75), rgba(7,18,41,0.75)), var(--hero-bg);
+        background-image: var(--hero-bg);
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -240,6 +254,28 @@
         background: transparent;
         box-shadow: none;
     }
+    .toc-nav{
+        padding-left: 0;
+    }
+    .toc-nav .toc-list{
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .toc-item a{
+        text-decoration: none;
+        color: #1f2630;
+        font-size: 0.95rem;
+        display: inline-block;
+    }
+    .toc-item-h3 a{
+        padding-left: 12px;
+        font-size: 0.92rem;
+        color: #495057;
+    }
     @media (max-width: 991.98px){
         .comment-form-wrapper{
             max-width: 100%;
@@ -255,6 +291,14 @@
         .hero-header{
             padding: 16px 22px;
         }
+        .article-content{
+            padding: 1.5rem 1.4rem;
+        }
+    }
+    @media (min-width: 1200px){
+        .article-content{
+            padding: 3rem 3rem 3rem 3rem;
+        }
     }
 </style>
 
@@ -264,6 +308,37 @@ document.addEventListener('DOMContentLoaded', function(){
     const parentInput = form.querySelector('input[name="parent_id"]');
     const replyInfo = document.getElementById('replyInfo');
     const replyText = replyInfo.querySelector('span');
+    const tocNav = document.getElementById('tocNav');
+    const articleContent = document.getElementById('articleContent');
+
+    if (tocNav && articleContent) {
+        const headings = articleContent.querySelectorAll('h2, h3');
+        const list = document.createElement('ul');
+        list.classList.add('toc-list');
+        headings.forEach((h, idx) => {
+            if (!h.id) {
+                h.id = 'section-' + (idx + 1);
+            }
+            const li = document.createElement('li');
+            li.className = h.tagName.toLowerCase() === 'h2' ? 'toc-item toc-item-h2' : 'toc-item toc-item-h3';
+            const a = document.createElement('a');
+            a.href = '#' + h.id;
+            a.textContent = h.textContent.trim();
+            li.appendChild(a);
+            list.appendChild(li);
+        });
+        tocNav.innerHTML = '';
+        tocNav.appendChild(list);
+
+        tocNav.addEventListener('click', (e)=>{
+            if (e.target.tagName.toLowerCase() !== 'a') return;
+            e.preventDefault();
+            const id = e.target.getAttribute('href').replace('#','');
+            const target = document.getElementById(id);
+            if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
+        });
+    }
+
     document.querySelectorAll('.js-reply').forEach(btn=>{
         btn.addEventListener('click', ()=>{
             const id = btn.dataset.id;

@@ -98,16 +98,17 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     });
     const target = document.querySelector('.js-wysiwyg');
-    if(!target || !window.ClassicEditor){ return; }
+    const Editor = window.ClassicEditor || (window.CKEDITOR && window.CKEDITOR.ClassicEditor);
+    if(!target || !Editor){ return; }
 
-    ClassicEditor.create(target, {
+    Editor.create(target, {
         toolbar: [
             'undo','redo','|',
             'heading','|',
             'bold','italic','link','|',
             'bulletedList','numberedList','|',
             'insertTable','blockQuote','|',
-            'imageUpload','mediaEmbed'
+            'imageUpload','mediaEmbed','|','toggleImageCaption','imageTextAlternative'
         ],
         heading: {
             options: [
@@ -118,6 +119,15 @@ document.addEventListener('DOMContentLoaded', function(){
         },
         ckfinder: {
             uploadUrl: '{{ route('admin.articles.upload') }}'
+        },
+        image: {
+            resizeUnit: '%',
+            resizeOptions: [
+                { name: 'resizeImage:original', label: '100%', value: null },
+                { name: 'resizeImage:75', label: '75%', value: '75' },
+                { name: 'resizeImage:50', label: '50%', value: '50' }
+            ],
+            toolbar: ['resizeImage','|','imageStyle:inline','imageStyle:block','imageStyle:side','|','linkImage','toggleImageCaption','imageTextAlternative']
         },
         link: { decorators: { addTargetToExternalLinks: true } },
         mediaEmbed: { previewsInData: true }

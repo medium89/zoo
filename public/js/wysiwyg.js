@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  if (!window.ClassicEditor) {
+  const Editor = window.ClassicEditor || (window.CKEDITOR && window.CKEDITOR.ClassicEditor);
+  if (!Editor) {
     console.error('CKEditor not found on page');
     return;
   }
@@ -8,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   editors.forEach((el) => {
     if (el.dataset.ckeditorAttached || el.dataset.editorCustom === '1') return;
     const minHeight = el.dataset.editorHeight ? parseInt(el.dataset.editorHeight, 10) : (el.classList.contains('wysiwyg-excerpt') ? 200 : 320);
-    ClassicEditor.create(el, {
+    Editor.create(el, {
       toolbar: [
         'undo', 'redo', '|',
         'heading', '|',

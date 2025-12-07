@@ -53,7 +53,7 @@
     .quick-contact-badge{
         position: fixed;
         left: 18px;
-        top: 110px;
+        top: clamp(80px, 30vh, 180px);
         background: #7b5bdb;
         color: #fff;
         border: 2px solid #fff;
@@ -150,9 +150,10 @@
     @media (max-width: 575.98px){
         .quick-contact-badge{
             left: 12px;
-            top: calc(10vh + 16px);
-            right: 12px;
+            top: clamp(60px, 30vh, 200px);
+            right: auto;
             justify-content: center;
+            max-width: 320px;
         }
     }
 </style>
