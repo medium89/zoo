@@ -123,10 +123,10 @@
         position: relative;
         padding: 2.5rem 0 2.8rem;
         background-color: var(--color-secondary);
-        background-image: var(--hero-bg, url('/assets/img/bg.png'));
-        background-repeat: repeat;
-        background-position: center;
-        background-size: 6%;
+        background-image: var(--hero-bg, none), url('/assets/img/bg.png');
+        background-repeat: no-repeat, repeat;
+        background-position: center, center;
+        background-size: cover, 6%;
         color: #fff;
         box-shadow: inset 0 -1px 0 rgba(255,255,255,0.18);
         overflow: hidden;
