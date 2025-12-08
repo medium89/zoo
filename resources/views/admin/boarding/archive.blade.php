@@ -17,47 +17,43 @@
     <div class="card">
         <div class="card-body">
             @if($archived->count())
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Кличка</th>
-                                <th>Описание</th>
-                                <th>Тип услуги</th>
-                                <th>Период</th>
-                                <th>Архивировано</th>
-                                <th class="text-end">Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($archived as $row)
-                                <tr>
-                                    <td>{{ $row->id }}</td>
-                                    <td>{{ $row->name }}</td>
-                                    <td>{{ $row->description }}</td>
-                                    <td>{{ $row->service_type }}</td>
-                                    <td>{{ $row->start_date->toDateString() }} — {{ $row->end_date->toDateString() }}</td>
-                                    <td>{{ optional($row->archived_at)->format('d.m.Y H:i') }}</td>
-                                    <td class="text-end">
-                                        <div class="d-flex justify-content-end flex-wrap gap-1">
-                                            <form action="{{ route('admin.boarding.restore', $row) }}" method="POST">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-outline-success">Восстановить</button>
-                                            </form>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger js-delete-entry"
-                                                    data-url="{{ route('admin.boarding.destroy', $row) }}"
-                                                    data-id="{{ $row->id }}"
-                                                    data-name="{{ $row->name }}">
-                                                Удалить
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                <div class="admin-grid" style="--grid-cols: 60px 1.2fr 1.5fr 1fr 1.3fr 1fr 190px;">
+                    <div class="admin-grid-header">
+                        <span>#</span>
+                        <span>Кличка</span>
+                        <span>Описание</span>
+                        <span>Тип услуги</span>
+                        <span>Период</span>
+                        <span>Архивировано</span>
+                        <span class="text-end">Действия</span>
+                    </div>
+                    <div class="admin-grid-body">
+                        @foreach($archived as $row)
+                            <div class="admin-grid-row" data-id="{{ $row->id }}">
+                                <div data-label="ID">{{ $row->id }}</div>
+                                <div data-label="Кличка">{{ $row->name }}</div>
+                                <div data-label="Описание">{{ $row->description }}</div>
+                                <div data-label="Тип услуги">{{ $row->service_type }}</div>
+                                <div data-label="Период">{{ $row->start_date->toDateString() }} — {{ $row->end_date->toDateString() }}</div>
+                                <div data-label="Архивировано">{{ optional($row->archived_at)->format('d.m.Y H:i') }}</div>
+                                <div class="actions" data-label="Действия">
+                                    <div class="d-flex flex-wrap gap-1 justify-content-end w-100">
+                                        <form action="{{ route('admin.boarding.restore', $row) }}" method="POST" class="m-0">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-outline-success">Восстановить</button>
+                                        </form>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger js-delete-entry"
+                                                data-url="{{ route('admin.boarding.destroy', $row) }}"
+                                                data-id="{{ $row->id }}"
+                                                data-name="{{ $row->name }}">
+                                            Удалить
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             @else
                 <div class="text-muted">Архив пуст.</div>

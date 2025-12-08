@@ -17,34 +17,32 @@
                     {{ session('success') }}
                 </div>
             @endif
-            <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Имя</th>
-                            <th>Email</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($users as $user)
-                            <tr>
-                                <td>{{ $user->id }}</td>
-                                <td>{{ $user->name }}</td>
-                                <td>{{ $user->email }}</td>
-                                <td>
+            <div class="admin-grid" style="--grid-cols: 80px 1fr 1fr 190px;">
+                <div class="admin-grid-header">
+                    <span>ID</span>
+                    <span>Имя</span>
+                    <span>Email</span>
+                    <span>Действия</span>
+                </div>
+                <div class="admin-grid-body">
+                    @foreach ($users as $user)
+                        <div class="admin-grid-row" data-id="{{ $user->id }}">
+                            <div data-label="ID">{{ $user->id }}</div>
+                            <div data-label="Имя">{{ $user->name }}</div>
+                            <div data-label="Email">{{ $user->email }}</div>
+                            <div class="actions" data-label="Действия">
+                                <div class="d-flex gap-1 flex-wrap justify-content-end w-100">
                                     <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-primary btn-sm">Редактировать</a>
-                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="display:inline;">
+                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="m-0">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Вы уверены?')">Удалить</button>
                                     </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
