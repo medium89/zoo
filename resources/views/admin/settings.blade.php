@@ -14,6 +14,10 @@
                     <input class="form-check-input" type="checkbox" name="site_closed" id="site_closed" {{ ($settings->site_closed ?? false) ? 'checked' : '' }}>
                     <label class="form-check-label" for="site_closed">Закрыть сайт</label>
                 </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-6">
                 <div class="mb-3">
                     <label for="title" class="form-label">Meta Title</label>
                     <input type="text" class="form-control" id="title" name="title" value="{{ $settings->title ?? '' }}">
