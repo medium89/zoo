@@ -123,6 +123,20 @@ class ArticleAdminController extends Controller
             $article->hero_image_path = ImageProcessor::processAndStore($request->file('hero_image'), 'articles/hero', $scale, $quality);
             $article->save();
         }
+        if (!$request->hasFile('cover') && $request->boolean('remove_cover')) {
+            if ($article->cover_path && Storage::disk('public')->exists($article->cover_path)) {
+                Storage::disk('public')->delete($article->cover_path);
+            }
+            $article->cover_path = null;
+            $article->save();
+        }
+        if (!$request->hasFile('hero_image') && $request->boolean('remove_hero')) {
+            if ($article->hero_image_path && Storage::disk('public')->exists($article->hero_image_path)) {
+                Storage::disk('public')->delete($article->hero_image_path);
+            }
+            $article->hero_image_path = null;
+            $article->save();
+        }
 
         $this->storeImages($request, $article, $scale, $quality);
 
@@ -138,6 +152,18 @@ class ArticleAdminController extends Controller
         }
         $article->delete();
         return redirect()->route('admin.articles.index')->with('success', 'Статья удалена');
+    }
+
+    public function destroyImage(Article $article, ArticleImage $image)
+    {
+        if ($image->article_id !== $article->id) {
+            abort(404);
+        }
+        if ($image->path && Storage::disk('public')->exists($image->path)) {
+            Storage::disk('public')->delete($image->path);
+        }
+        $image->delete();
+        return back()->with('success', 'Изображение удалено');
     }
 
     private function storeImages(Request $request, Article $article, int $scale = 100, int $quality = 85): void

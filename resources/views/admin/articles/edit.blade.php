@@ -55,15 +55,29 @@
                 <label class="form-label">Обложка статьи</label><br>
                 @if($article->cover_path)
                     <img src="{{ asset('storage/'.$article->cover_path) }}" alt="" width="140" class="mb-2 rounded shadow-sm"><br>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="removeCover" name="remove_cover" value="1">
+                        <label class="form-check-label" for="removeCover">Удалить текущую обложку</label>
+                    </div>
                 @endif
-                <input type="file" name="cover" class="form-control">
+                <div class="d-flex align-items-center gap-2">
+                    <input type="file" name="cover" class="form-control" id="coverInput">
+                    <button type="button" class="btn btn-outline-secondary btn-sm js-clear-file" data-target="#coverInput">Очистить</button>
+                </div>
             </div>
             <div class="col-lg-6">
                 <label class="form-label">Фон для article-hero</label><br>
                 @if($article->hero_image_path ?? false)
                     <img src="{{ asset('storage/'.$article->hero_image_path) }}" alt="" width="140" class="mb-2 rounded shadow-sm"><br>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="removeHero" name="remove_hero" value="1">
+                        <label class="form-check-label" for="removeHero">Удалить текущий фон</label>
+                    </div>
                 @endif
-                <input type="file" name="hero_image" class="form-control" accept="image/*">
+                <div class="d-flex align-items-center gap-2">
+                    <input type="file" name="hero_image" class="form-control" id="heroInput" accept="image/*">
+                    <button type="button" class="btn btn-outline-secondary btn-sm js-clear-file" data-target="#heroInput">Очистить</button>
+                </div>
             </div>
             <div class="row g-2 mt-2">
                 <div class="col-md-6">
@@ -104,14 +118,24 @@
         </div>
         <div class="mb-3">
             <label class="form-label">Добавить изображения</label>
-            <input type="file" name="images[]" class="form-control" multiple>
+            <div class="d-flex align-items-center gap-2">
+                <input type="file" name="images[]" class="form-control" id="imagesInput" multiple>
+                <button type="button" class="btn btn-outline-secondary btn-sm js-clear-file" data-target="#imagesInput">Очистить</button>
+            </div>
         </div>
         @if($article->images->count())
             <div class="mb-3">
                 <div class="fw-bold mb-1">Текущие изображения</div>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="d-flex flex-wrap gap-3">
                     @foreach($article->images as $img)
-                        <img src="{{ asset('storage/'.$img->path) }}" alt="" style="height:90px;border-radius:6px;object-fit:cover;">
+                        <div class="d-flex flex-column align-items-center gap-1" style="width:120px;">
+                            <img src="{{ asset('storage/'.$img->path) }}" alt="" style="width:120px;height:90px;border-radius:6px;object-fit:cover;">
+                            <form action="{{ route('admin.articles.images.destroy', [$article, $img]) }}" method="POST" class="w-100">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100">Удалить</button>
+                            </form>
+                        </div>
                     @endforeach
                 </div>
             </div>
@@ -173,6 +197,13 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.js-quality').forEach(input=>{
         input.addEventListener('input', ()=>{
             input.closest('.col-md-6').querySelector('.js-quality-val').textContent = input.value;
+        });
+    });
+    document.querySelectorAll('.js-clear-file').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            const target = document.querySelector(btn.dataset.target);
+            if(!target) return;
+            target.value = '';
         });
     });
 });

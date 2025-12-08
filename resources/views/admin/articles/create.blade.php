@@ -49,11 +49,17 @@
         <div class="row g-3 mb-3">
             <div class="col-lg-6">
                 <label class="form-label">Обложка статьи</label>
-                <input type="file" name="cover" class="form-control">
+                <div class="d-flex align-items-center gap-2">
+                    <input type="file" name="cover" class="form-control" id="coverInput">
+                    <button type="button" class="btn btn-outline-secondary btn-sm js-clear-file" data-target="#coverInput">Очистить</button>
+                </div>
             </div>
             <div class="col-lg-6">
                 <label class="form-label">Фон для article-hero</label>
-                <input type="file" name="hero_image" class="form-control" accept="image/*">
+                <div class="d-flex align-items-center gap-2">
+                    <input type="file" name="hero_image" class="form-control" id="heroInput" accept="image/*">
+                    <button type="button" class="btn btn-outline-secondary btn-sm js-clear-file" data-target="#heroInput">Очистить</button>
+                </div>
             </div>
             <div class="row g-2 mt-2">
                 <div class="col-md-6">
@@ -82,10 +88,13 @@
                 @endforeach
             </select>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Изображения (можно несколько)</label>
-            <input type="file" name="images[]" class="form-control" multiple>
-        </div>
+            <div class="mb-3">
+                <label class="form-label">Изображения (можно несколько)</label>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="file" name="images[]" class="form-control" id="imagesInput" multiple>
+                    <button type="button" class="btn btn-outline-secondary btn-sm js-clear-file" data-target="#imagesInput">Очистить</button>
+                </div>
+            </div>
         <div class="form-check form-switch mb-4">
             <input class="form-check-input" type="checkbox" role="switch" id="active" name="active" value="1" checked>
             <label class="form-check-label" for="active">Активно</label>
@@ -100,6 +109,13 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.js-scale').forEach(input=>{
         input.addEventListener('input', ()=>{
             input.closest('.col-md-6').querySelector('.js-scale-val').textContent = input.value;
+        });
+    });
+    document.querySelectorAll('.js-clear-file').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            const target = document.querySelector(btn.dataset.target);
+            if(!target) return;
+            target.value = '';
         });
     });
     document.querySelectorAll('.js-quality').forEach(input=>{

@@ -60,6 +60,7 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::get('boarding/data', [App\Http\Controllers\BoardingController::class, 'data'])->name('boarding.data');
     Route::get('boarding/export', [App\Http\Controllers\BoardingController::class, 'export'])->name('boarding.export');
     Route::resource('articles', App\Http\Controllers\ArticleAdminController::class);
+    Route::delete('articles/{article}/images/{image}', [App\Http\Controllers\ArticleAdminController::class, 'destroyImage'])->name('articles.images.destroy');
     Route::post('articles/status', [App\Http\Controllers\ArticleAdminController::class, 'updateStatus'])->name('articles.status');
     Route::resource('article-comments', App\Http\Controllers\ArticleCommentAdminController::class)->only(['index','update','destroy']);
     Route::post('article-comments/status', [App\Http\Controllers\ArticleCommentAdminController::class, 'updateStatus'])->name('article-comments.status');
