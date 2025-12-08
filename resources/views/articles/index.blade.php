@@ -71,7 +71,7 @@
                                     }
                                     $placeholder = 'data:image/svg+xml;utf8,'.rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360"><rect width="600" height="360" fill="%23415366"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23ffffff" font-size="24" font-family="Arial, sans-serif">Нет изображения</text></svg>');
                                 @endphp
-                                <img src="{{ $cover ?? $placeholder }}" class="card-img-top" alt="{{ $article->title }}" style="object-fit:contain;background:#fff;">
+                                <img src="{{ $cover ?? $placeholder }}" class="card-img-top" alt="{{ $article->title }}" style="object-fit:contain;background:#fff;max-height:200px;">
                                 <div class="card-body d-flex flex-column">
                                     <h4 class="card-title fw-bold">{{ $article->title }}</h4>
                                     @if($article->excerpt)
