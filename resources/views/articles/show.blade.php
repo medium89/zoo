@@ -196,7 +196,7 @@
         object-fit: cover;
     }
     .article-content{
-        padding: 0.7rem 2rem 3rem 3rem;
+        padding: 3rem 3rem 3rem 4rem;
     }
     .article-content h1, .article-content h2, .article-content h3{
         margin-top: 1.4rem;
@@ -257,7 +257,7 @@
         text-decoration: none;
         font-size: 0.97rem;
         letter-spacing: 0.02em;
-        text-transform: none;
+        text-transform: uppercase;
         color: var(--color-primary);
         transition: color 0.2s ease;
     }
@@ -355,7 +355,7 @@
     }
     @media (min-width: 1200px){
         .article-content{
-            padding: 3rem 3rem 3rem 5rem;
+            padding: 0.7rem 2rem 3rem 3rem;
         }
     }
 </style>
