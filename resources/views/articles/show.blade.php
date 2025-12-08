@@ -3,8 +3,12 @@
 @section('content')
 @include('sections.header-lite')
 
-@php $heroImage = $article->images->first(); @endphp
-<section class="article-hero" @if($heroImage) style="--hero-bg: url('{{ asset('storage/'.$heroImage->path) }}');" @endif>
+@php 
+    $heroBackground = $article->hero_image_path 
+        ? asset('storage/'.$article->hero_image_path) 
+        : ($article->images->first() ? asset('storage/'.$article->images->first()->path) : null);
+@endphp
+<section class="article-hero" @if($heroBackground) style="--hero-bg: url('{{ $heroBackground }}');" @endif>
     <div class="container hero-container">
         <div class="hero-header text-center">
             <h1 class="fw-bold mb-0 article-title-lg">{{ $article->title }}</h1>
@@ -118,7 +122,10 @@
     .article-hero{
         position: relative;
         padding: 2.5rem 0 2.8rem;
-        background: var(--color-secondary) url('/assets/img/bg.png') repeat center center;
+        background-color: var(--color-secondary);
+        background-image: var(--hero-bg, url('/assets/img/bg.png'));
+        background-repeat: repeat;
+        background-position: center;
         background-size: 6%;
         color: #fff;
         box-shadow: inset 0 -1px 0 rgba(255,255,255,0.18);
