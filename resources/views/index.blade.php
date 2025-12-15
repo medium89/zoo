@@ -79,6 +79,9 @@
     .quick-contact-badge.dimmed{
         opacity: 0.4;
     }
+    .quick-contact-badge.dimmed:hover{
+        opacity: 1;
+    }
     .quick-contact-badge.animate{
         animation: qc-pulse 1s ease-in-out 0s 3, qc-scale 1s ease-in-out 0s 3;
     }
