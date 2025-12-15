@@ -76,6 +76,9 @@
         opacity: 1;
         transform: translateY(0);
     }
+    .quick-contact-badge.dimmed{
+        opacity: 0.4;
+    }
     .quick-contact-badge.animate{
         animation: qc-pulse 1s ease-in-out 0s 3, qc-scale 1s ease-in-out 0s 3;
     }
@@ -163,15 +166,70 @@
 document.addEventListener('DOMContentLoaded', ()=>{
     const badge = document.getElementById('quickContactBadge');
     const modal = document.getElementById('quickContactModal');
+    const gallery = document.getElementById('gallery');
     if(!badge || !modal) return;
 
     const openModal = ()=> modal.classList.add('open');
     const closeModal = ()=> modal.classList.remove('open');
 
+    let pulseTimer = null;
+    let badgeShown = false;
+    let timePassed = false;
+    let gallerySeen = false;
+
+    const runPulse = ()=>{
+        if (!badge.classList.contains('shown')) return;
+        badge.classList.remove('dimmed');
+        badge.classList.add('animate');
+        setTimeout(()=>{
+            badge.classList.remove('animate');
+            if (badge.classList.contains('shown')) {
+                badge.classList.add('dimmed');
+            }
+        }, 3200);
+    };
+
+    const tryShowBadge = ()=>{
+        if (badgeShown) return;
+        if (!timePassed || !gallerySeen) return;
+        badgeShown = true;
+        badge.classList.add('shown');
+        runPulse();
+        pulseTimer = setInterval(runPulse, 30000);
+    };
+
+    // Таймер 30 секунд после загрузки
     setTimeout(()=>{
-        badge.classList.add('shown','animate');
-        setTimeout(()=>badge.classList.remove('animate'), 3200);
-    }, 5000);
+        timePassed = true;
+        tryShowBadge();
+    }, 30000);
+
+    // Отслеживаем, когда пользователь доскроллит до секции галереи
+    if (gallery && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries, obs)=>{
+            entries.forEach(entry=>{
+                if (entry.isIntersecting) {
+                    gallerySeen = true;
+                    obs.disconnect();
+                    tryShowBadge();
+                }
+            });
+        }, {threshold: 0.15});
+        observer.observe(gallery);
+    } else if (gallery) {
+        const onScroll = ()=>{
+            const rect = gallery.getBoundingClientRect();
+            if (rect.top < window.innerHeight * 0.85) {
+                gallerySeen = true;
+                window.removeEventListener('scroll', onScroll);
+                tryShowBadge();
+            }
+        };
+        window.addEventListener('scroll', onScroll);
+    } else {
+        // если галерея по какой-то причине отсутствует, не блокируем появление
+        gallerySeen = true;
+    }
 
     badge.addEventListener('click', (e)=>{
         if (e.target.classList.contains('qc-badge-close')) return;
@@ -179,7 +237,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
     badge.querySelector('.qc-badge-close')?.addEventListener('click', (e)=>{
         e.stopPropagation();
-        badge.classList.remove('shown','animate');
+        badge.classList.remove('shown','animate','dimmed');
+        if (pulseTimer) {
+            clearInterval(pulseTimer);
+            pulseTimer = null;
+        }
     });
     modal.querySelector('.qc-backdrop').addEventListener('click', closeModal);
     modal.querySelector('.qc-close').addEventListener('click', closeModal);
