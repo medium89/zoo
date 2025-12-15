@@ -659,6 +659,7 @@ nav {
 
 .reviews-header h2 {
     margin-bottom: 1.5rem;
+    text-align: left;
 }
 
 .reviews-subtitle {
@@ -776,6 +777,27 @@ nav {
     font-size: 0.95rem;
     line-height: 1.6;
     color: var(--color-tertiary);
+    text-align: left;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.review-card__body.expanded p {
+    -webkit-line-clamp: unset;
+    display: block;
+}
+
+.review-read-more {
+    margin-top: 8px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--color-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 .reviews-arrow {
@@ -795,6 +817,7 @@ nav {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+    z-index: 2;
 }
 
 .reviews-arrow[disabled] {
@@ -805,7 +828,7 @@ nav {
 
 .reviews-arrow:hover:not([disabled]) {
     background: var(--color-secondary-hover);
-    transform: translateY(-1px);
+    transform: translateY(-50%) scale(1.03);
     box-shadow: 0 12px 24px rgba(123, 91, 219, 0.45);
 }
 

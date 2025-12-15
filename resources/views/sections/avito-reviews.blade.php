@@ -27,6 +27,7 @@
                             }
                             $name = $review->name ?: 'Гость';
                             $excerpt = Str::limit($review->text ?? '', 260);
+                            $text = $review->text ?? '';
                         @endphp
                         <div class="review-slide">
                             <article class="review-card">
@@ -46,7 +47,7 @@
                                     </div>
                                 </div>
                                 <div class="review-card__body">
-                                    <p>{{ $excerpt }}</p>
+                                    <p>{{ $text }}</p>
                                 </div>
                             </article>
                         </div>
@@ -153,6 +154,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     rebuildDots();
     goTo(0);
+
+    // Читать весь / свернуть
+    const cards = carousel.querySelectorAll('.review-card');
+    cards.forEach(card => {
+        const body = card.querySelector('.review-card__body');
+        const p = body ? body.querySelector('p') : null;
+        if (!body || !p) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'review-read-more';
+        btn.textContent = 'Читать весь';
+        btn.addEventListener('click', () => {
+            const expanded = body.classList.toggle('expanded');
+            btn.textContent = expanded ? 'Свернуть' : 'Читать весь';
+        });
+        body.appendChild(btn);
+    });
 });
 </script>
 @endif
