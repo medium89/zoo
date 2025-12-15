@@ -13,46 +13,48 @@
             <button class="reviews-arrow reviews-arrow_prev" type="button" aria-label="Предыдущий отзыв">
                 <i class="fa fa-chevron-left"></i>
             </button>
-            <div class="reviews-track">
-                @foreach($avitoReviews as $review)
-                    @php
-                        $photos = is_array($review->photos) ? $review->photos : [];
-                        $rawPhoto = $photos[0] ?? null;
-                        $photoUrl = null;
-                        if ($rawPhoto) {
-                            $photoUrl = preg_match('#^https?://#', $rawPhoto)
-                                ? $rawPhoto
-                                : asset('storage/' . ltrim($rawPhoto, '/'));
-                        }
-                        $name = $review->name ?: 'Гость';
-                        $excerpt = Str::limit($review->text ?? '', 260);
-                    @endphp
-                    <div class="review-slide">
-                        <article class="review-card">
-                            <div class="review-card__header">
-                                <div class="review-card__avatar {{ $photoUrl ? '' : 'review-card__avatar--placeholder' }}">
-                                    @if($photoUrl)
-                                        <img src="{{ $photoUrl }}" alt="Фото питомца или клиента">
-                                    @else
-                                        <span>{{ mb_substr($name, 0, 1) }}</span>
-                                    @endif
-                                </div>
-                                <div class="review-card__meta">
-                                    <div class="review-card__name">{{ $name }}</div>
-                                    @if($review->review_date)
-                                        <div class="review-card__date">{{ $review->review_date->format('d.m.Y') }}</div>
-                                    @endif
-                                    <div class="review-card__badge">
-                                        <i class="fa fa-star" aria-hidden="true"></i> Avito
+            <div class="reviews-viewport">
+                <div class="reviews-track">
+                    @foreach($avitoReviews as $review)
+                        @php
+                            $photos = is_array($review->photos) ? $review->photos : [];
+                            $rawPhoto = $photos[0] ?? null;
+                            $photoUrl = null;
+                            if ($rawPhoto) {
+                                $photoUrl = preg_match('#^https?://#', $rawPhoto)
+                                    ? $rawPhoto
+                                    : asset('storage/' . ltrim($rawPhoto, '/'));
+                            }
+                            $name = $review->name ?: 'Гость';
+                            $excerpt = Str::limit($review->text ?? '', 260);
+                        @endphp
+                        <div class="review-slide">
+                            <article class="review-card">
+                                <div class="review-card__header">
+                                    <div class="review-card__avatar {{ $photoUrl ? '' : 'review-card__avatar--placeholder' }}">
+                                        @if($photoUrl)
+                                            <img src="{{ $photoUrl }}" alt="Фото питомца или клиента">
+                                        @else
+                                            <span>{{ mb_substr($name, 0, 1) }}</span>
+                                        @endif
+                                    </div>
+                                    <div class="review-card__meta">
+                                        <div class="review-card__name">{{ $name }}</div>
+                                        @if($review->review_date)
+                                            <div class="review-card__date">{{ $review->review_date->format('d.m.Y') }}</div>
+                                        @endif
+                                        <div class="review-card__badge">
+                                            <i class="fa fa-star" aria-hidden="true"></i> Avito
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="review-card__body">
-                                <p>{{ $excerpt }}</p>
-                            </div>
-                        </article>
-                    </div>
-                @endforeach
+                                <div class="review-card__body">
+                                    <p>{{ $excerpt }}</p>
+                                </div>
+                            </article>
+                        </div>
+                    @endforeach
+                </div>
             </div>
             <button class="reviews-arrow reviews-arrow_next" type="button" aria-label="Следующий отзыв">
                 <i class="fa fa-chevron-right"></i>
@@ -82,6 +84,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const getVisible = () => window.innerWidth <= 768 ? 1 : 3;
     let visible = getVisible();
     let index = 0;
+    let slideWidth = slides[0] ? slides[0].getBoundingClientRect().width : 0;
+
+    const recalcSlideWidth = () => {
+        if (!slides.length) return;
+        slideWidth = slides[0].getBoundingClientRect().width;
+    };
 
     const syncDots = () => {
         if (!dotsContainer) return;
@@ -103,8 +111,9 @@ document.addEventListener('DOMContentLoaded', function () {
         visible = getVisible();
         const lastIndex = Math.max(0, slides.length - visible);
         index = Math.max(0, Math.min(lastIndex, i));
-        const shift = (100 / visible) * index;
-        track.style.transform = `translateX(-${shift}%)`;
+        recalcSlideWidth();
+        const shift = slideWidth * index;
+        track.style.transform = `translateX(-${shift}px)`;
 
         if (prevBtn) prevBtn.disabled = index === 0;
         if (nextBtn) nextBtn.disabled = index === lastIndex;

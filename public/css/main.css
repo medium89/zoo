@@ -674,9 +674,12 @@ nav {
     gap: 16px;
 }
 
-.reviews-track {
+.reviews-viewport {
     overflow: hidden;
     flex: 1 1 auto;
+}
+
+.reviews-track {
     display: flex;
     transition: transform 0.4s ease;
 }
