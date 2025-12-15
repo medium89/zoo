@@ -499,7 +499,7 @@ nav {
 .advantages-content__item {
     display: grid;
     align-items: center;
-    grid-template-columns: 1fr 1fr 5fr;
+    grid-template-columns: 2fr 2fr 6fr;
     padding: 20px 30px;
     word-break: break-word;
     border-bottom: 2px solid #fff;
@@ -1186,7 +1186,7 @@ footer a, footer p {
     }
     
     .advantages-content__item {
-        grid-template-columns: 1fr 1fr 5fr;
+        grid-template-columns: 2fr 2fr 6fr;
         padding: 15px 20px;
     }
     
@@ -1673,18 +1673,21 @@ footer a, footer p {
     }
 }
 
-/* Мобильные устройства: улучшенная адаптивность блока "Преимущества" */
+/* Мобильные устройства: "Преимущества" как карточки */
 @media (max-width: 768px) {
     .advantages-content__item {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 12px 16px;
+        display: block;
+        padding: 14px 16px 16px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
     }
 
     .advantages-content__item-img {
-        flex: 0 0 60px;
-        justify-content: flex-start;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 8px;
     }
 
     .advantages-content__item-img img {
@@ -1694,8 +1697,9 @@ footer a, footer p {
 
     .advantages-content__item-title {
         padding: 0;
-        margin-bottom: 4px;
-        font-size: 1rem;
+        margin-bottom: 6px;
+        font-size: 1.05rem;
+        text-align: center;
     }
 
     .advantages-content__item-text {
