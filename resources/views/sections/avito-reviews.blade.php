@@ -161,6 +161,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const body = card.querySelector('.review-card__body');
         const p = body ? body.querySelector('p') : null;
         if (!body || !p) return;
+
+        // измеряем высоту с ограничением и без, чтобы понять, обрезается ли текст
+        const clampedHeight = p.getBoundingClientRect().height;
+        body.classList.add('expanded');
+        const fullHeight = p.getBoundingClientRect().height;
+        body.classList.remove('expanded');
+
+        if (fullHeight <= clampedHeight + 1) {
+            // текст и так помещается, кнопку не показываем
+            return;
+        }
+
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'review-read-more';

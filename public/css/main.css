@@ -658,7 +658,7 @@ nav {
 }
 
 .reviews-header h2 {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     text-align: left;
 }
 
@@ -746,6 +746,8 @@ nav {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    align-items: flex-start;
+    text-align: left;
 }
 
 .review-card__name {
@@ -833,11 +835,11 @@ nav {
 }
 
 .reviews-arrow_prev {
-    left: -4px;
+    left: -24px;
 }
 
 .reviews-arrow_next {
-    right: -4px;
+    right: -24px;
 }
 
 .reviews-dots {
