@@ -66,6 +66,8 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::post('article-comments/status', [App\Http\Controllers\ArticleCommentAdminController::class, 'updateStatus'])->name('article-comments.status');
     Route::post('articles/upload-image', [App\Http\Controllers\ArticleAdminController::class, 'uploadImage'])->name('articles.upload');
     Route::get('avito-reviews', [App\Http\Controllers\AvitoReviewController::class, 'index'])->name('avito-reviews.index');
+    Route::get('avito-reviews/create', [App\Http\Controllers\AvitoReviewController::class, 'create'])->name('avito-reviews.create');
+    Route::post('avito-reviews', [App\Http\Controllers\AvitoReviewController::class, 'store'])->name('avito-reviews.store');
     Route::get('avito-reviews/{avitoReview}/edit', [App\Http\Controllers\AvitoReviewController::class, 'edit'])->name('avito-reviews.edit');
     Route::put('avito-reviews/{avitoReview}', [App\Http\Controllers\AvitoReviewController::class, 'update'])->name('avito-reviews.update');
     Route::post('avito-reviews/{avitoReview}/status', [App\Http\Controllers\AvitoReviewController::class, 'updateStatus'])->name('avito-reviews.status');

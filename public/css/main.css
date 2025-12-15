@@ -682,8 +682,8 @@ nav {
 }
 
 .review-slide {
-    min-width: 100%;
-    max-width: 100%;
+    min-width: 33.3333%;
+    max-width: 33.3333%;
     padding: 4px;
     box-sizing: border-box;
 }
@@ -843,6 +843,10 @@ nav {
     .review-card__avatar {
         width: 54px;
         height: 54px;
+    }
+    .review-slide {
+        min-width: 100%;
+        max-width: 100%;
     }
 }
 

@@ -9,10 +9,6 @@
             <h2>Отзывы клиентов</h2>
             <div class="foot"></div>
         </div>
-        <div class="reviews-subtitle">
-            Реальные впечатления клиентов с Avito
-        </div>
-
         <div class="reviews-carousel" id="reviews-carousel">
             <button class="reviews-arrow reviews-arrow_prev" type="button" aria-label="Предыдущий отзыв">
                 <i class="fa fa-chevron-left"></i>
@@ -83,40 +79,73 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    const getVisible = () => window.innerWidth <= 768 ? 1 : 3;
+    let visible = getVisible();
     let index = 0;
-    const lastIndex = slides.length - 1;
 
-    const goTo = (i) => {
-        index = Math.max(0, Math.min(lastIndex, i));
-        track.style.transform = `translateX(-${index * 100}%)`;
-        if (dotsContainer) {
-            dotsContainer.querySelectorAll('button').forEach((dot, idx) => {
-                dot.classList.toggle('active', idx === index);
-            });
-        }
-        if (prevBtn) prevBtn.disabled = index === 0;
-        if (nextBtn) nextBtn.disabled = index === lastIndex;
+    const syncDots = () => {
+        if (!dotsContainer) return;
+        const dots = dotsContainer.querySelectorAll('button');
+        const page = Math.floor(index / visible);
+        dots.forEach((dot, idx) => {
+            dot.classList.toggle('active', idx === page);
+        });
     };
 
-    if (dotsContainer && slides.length > 1) {
-        slides.forEach((_, i) => {
+    const updateControlsVisibility = () => {
+        const enoughSlides = slides.length > visible;
+        if (prevBtn) prevBtn.style.display = enoughSlides ? 'inline-flex' : 'none';
+        if (nextBtn) nextBtn.style.display = enoughSlides ? 'inline-flex' : 'none';
+        if (dotsContainer) dotsContainer.style.display = enoughSlides ? 'flex' : 'none';
+    };
+
+    const goTo = (i) => {
+        visible = getVisible();
+        const lastIndex = Math.max(0, slides.length - visible);
+        index = Math.max(0, Math.min(lastIndex, i));
+        const shift = (100 / visible) * index;
+        track.style.transform = `translateX(-${shift}%)`;
+
+        if (prevBtn) prevBtn.disabled = index === 0;
+        if (nextBtn) nextBtn.disabled = index === lastIndex;
+        updateControlsVisibility();
+        syncDots();
+    };
+
+    const rebuildDots = () => {
+        if (!dotsContainer) return;
+        dotsContainer.innerHTML = '';
+        visible = getVisible();
+        const pages = Math.max(1, Math.ceil(slides.length / visible));
+        if (pages <= 1) {
+            dotsContainer.style.display = 'none';
+            return;
+        }
+        for (let p = 0; p < pages; p++) {
             const dot = document.createElement('button');
             dot.type = 'button';
             dot.className = 'reviews-dot';
-            dot.addEventListener('click', () => goTo(i));
+            dot.addEventListener('click', () => goTo(p * visible));
             dotsContainer.appendChild(dot);
-        });
-    }
+        }
+        syncDots();
+    };
 
     if (prevBtn) prevBtn.addEventListener('click', () => goTo(index - 1));
     if (nextBtn) nextBtn.addEventListener('click', () => goTo(index + 1));
 
-    if (slides.length <= 1) {
-        if (prevBtn) prevBtn.style.display = 'none';
-        if (nextBtn) nextBtn.style.display = 'none';
-        if (dotsContainer) dotsContainer.style.display = 'none';
-    }
+    window.addEventListener('resize', () => {
+        const oldVisible = visible;
+        visible = getVisible();
+        if (oldVisible !== visible) {
+            rebuildDots();
+            goTo(index);
+        } else {
+            goTo(index);
+        }
+    });
 
+    rebuildDots();
     goTo(0);
 });
 </script>

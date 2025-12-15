@@ -16,6 +16,14 @@ class AvitoReviewController extends Controller
         return view('admin.avito_reviews.index', compact('reviews'));
     }
 
+    public function create()
+    {
+        $review = new AvitoReview([
+            'status' => 'published',
+        ]);
+        return view('admin.avito_reviews.create', compact('review'));
+    }
+
     public function edit(AvitoReview $avitoReview)
     {
         return view('admin.avito_reviews.edit', ['review' => $avitoReview]);
@@ -66,6 +74,62 @@ class AvitoReviewController extends Controller
         return redirect()
             ->route('admin.avito-reviews.index')
             ->with('success', 'Отзыв обновлен');
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'review_date' => 'nullable|date',
+            'text' => 'nullable|string',
+            'status' => 'required|string|max:50',
+            'photos_raw' => 'nullable|string',
+            'photos_upload' => 'nullable|array',
+            'photos_upload.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
+        ]);
+
+        $photos = [];
+        if (!empty($data['photos_raw'])) {
+            foreach (preg_split('/\r\n|\r|\n/', $data['photos_raw']) as $line) {
+                $url = trim($line);
+                if ($url !== '') {
+                    $photos[] = $url;
+                }
+            }
+        }
+
+        if ($request->hasFile('photos_upload')) {
+            foreach ($request->file('photos_upload') as $file) {
+                if (!$file) {
+                    continue;
+                }
+                $path = $file->store('avito_reviews', 'public');
+                if ($path && !in_array($path, $photos, true)) {
+                    $photos[] = $path;
+                }
+            }
+        }
+
+        $hashBase = mb_strtolower(
+            trim(($data['name'] ?? '') . '|' . ($data['review_date'] ?? '') . '|' . ($data['text'] ?? ''))
+        );
+        if ($hashBase === '') {
+            $hashBase = 'manual|' . microtime(true);
+        }
+        $sourceHash = hash('sha256', $hashBase);
+
+        AvitoReview::create([
+            'name' => $data['name'] ?? null,
+            'review_date' => $data['review_date'] ?? null,
+            'text' => $data['text'] ?? null,
+            'status' => $data['status'],
+            'photos' => $photos ?: null,
+            'source_hash' => $sourceHash,
+        ]);
+
+        return redirect()
+            ->route('admin.avito-reviews.index')
+            ->with('success', 'Отзыв создан');
     }
 
     public function destroy(AvitoReview $avitoReview)
