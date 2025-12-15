@@ -499,7 +499,7 @@ nav {
 .advantages-content__item {
     display: grid;
     align-items: center;
-    grid-template-columns: 2fr 2fr 6fr;
+    grid-template-columns: 1fr 3fr 6fr;
     padding: 20px 30px;
     word-break: break-word;
     border-bottom: 2px solid #fff;
@@ -1186,7 +1186,7 @@ footer a, footer p {
     }
     
     .advantages-content__item {
-        grid-template-columns: 2fr 2fr 6fr;
+        grid-template-columns: 1fr 3fr 6fr;
         padding: 15px 20px;
     }
     
