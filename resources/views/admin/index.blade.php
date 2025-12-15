@@ -446,6 +446,7 @@
                 <a href="{{ route('admin.animals.index') }}" class="{{ request()->is('zooadmin/animals*') ? 'active' : '' }}"><i class="fa fa-paw me-2"></i>Питомцы</a>
                 <a href="{{ route('admin.categories.index') }}" class="{{ request()->is('zooadmin/categories*') ? 'active' : '' }}"><i class="fa fa-tags me-2"></i>Категории животных</a>
                 <a href="{{ route('admin.feedbacks.index') }}" class="{{ request()->is('zooadmin/feedbacks*') ? 'active' : '' }}"><i class="fa fa-envelope me-2"></i>Обратная связь</a>
+                <a href="{{ route('admin.avito-reviews.index') }}" class="{{ request()->is('zooadmin/avito-reviews*') ? 'active' : '' }}"><i class="fa fa-star-half-stroke me-2"></i>Отзывы Avito</a>
                 <a href="{{ route('admin.boarding.index') }}" class="{{ request()->is('zooadmin/boarding*') ? 'active' : '' }}"><i class="fa fa-calendar-check me-2"></i>Передержка</a>
             </div>
             <div class="sidebar-content__item px-3 text-uppercase text-muted small border-top pt-2 mt-2">Статьи</div>
