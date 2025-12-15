@@ -4,12 +4,21 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Отзывы Avito</h1>
-        <form action="{{ route('admin.avito-reviews.refresh') }}" method="POST" class="mb-0">
-            @csrf
-            <button type="submit" class="btn btn-primary">
-                <i class="fa fa-rotate"></i> Обновить
-            </button>
-        </form>
+        <div class="d-flex gap-2">
+            <form action="{{ route('admin.avito-reviews.refresh') }}" method="POST" class="mb-0">
+                @csrf
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-rotate"></i> Обновить с сайта
+                </button>
+            </form>
+            <form action="{{ route('admin.avito-reviews.import') }}" method="POST" enctype="multipart/form-data" class="mb-0 d-flex align-items-center gap-2">
+                @csrf
+                <input type="file" name="html_file" accept=".html,.htm,.txt" class="form-control form-control-sm" required>
+                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    Импорт из файла
+                </button>
+            </form>
+        </div>
     </div>
 
     @if (session('success'))
@@ -61,7 +70,7 @@
             @empty
                 <div class="admin-grid-row">
                     <div class="text-muted" style="grid-column: 1 / -1;">
-                        Отзывов пока нет. Нажмите «Обновить», чтобы загрузить их с Avito.
+                        Отзывов пока нет. Нажмите «Обновить с сайта» или загрузите сохранённый HTML-файл страницы Avito.
                     </div>
                 </div>
             @endforelse
@@ -73,4 +82,3 @@
     </div>
 </div>
 @endsection
-

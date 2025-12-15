@@ -70,6 +70,7 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::put('avito-reviews/{avitoReview}', [App\Http\Controllers\AvitoReviewController::class, 'update'])->name('avito-reviews.update');
     Route::delete('avito-reviews/{avitoReview}', [App\Http\Controllers\AvitoReviewController::class, 'destroy'])->name('avito-reviews.destroy');
     Route::post('avito-reviews/refresh', [App\Http\Controllers\AvitoReviewController::class, 'refresh'])->name('avito-reviews.refresh');
+    Route::post('avito-reviews/import', [App\Http\Controllers\AvitoReviewController::class, 'import'])->name('avito-reviews.import');
 });
 
 // Main page

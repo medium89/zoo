@@ -93,12 +93,29 @@ class AvitoReviewController extends Controller
         }
 
         $html = $response->body();
+
+        return $this->importFromHtml($html, 'Страница Avito');
+    }
+
+    public function import(Request $request)
+    {
+        $data = $request->validate([
+            'html_file' => 'required|file|mimes:html,htm,txt',
+        ]);
+
+        $html = file_get_contents($request->file('html_file')->getRealPath());
+
+        return $this->importFromHtml($html, 'Загруженный файл');
+    }
+
+    private function importFromHtml(string $html, string $sourceLabel)
+    {
         $parsed = $this->parseReviewsFromHtml($html);
 
         if (empty($parsed)) {
             return redirect()
                 ->route('admin.avito-reviews.index')
-                ->with('error', 'Не удалось найти отзывы на странице Avito. Проверьте структуру страницы.');
+                ->with('error', $sourceLabel . ': не удалось найти отзывы. Проверьте, что загружена правильная страница объявлений.');
         }
 
         $added = 0;
@@ -136,12 +153,12 @@ class AvitoReviewController extends Controller
         if ($added === 0) {
             return redirect()
                 ->route('admin.avito-reviews.index')
-                ->with('success', 'Новых отзывов не найдено');
+                ->with('success', $sourceLabel . ': новых отзывов не найдено');
         }
 
         return redirect()
             ->route('admin.avito-reviews.index')
-            ->with('success', 'Добавлено новых отзывов: ' . $added);
+            ->with('success', $sourceLabel . ': добавлено новых отзывов: ' . $added);
     }
 
     private function parseReviewsFromHtml(string $html): array
