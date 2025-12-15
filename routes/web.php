@@ -74,6 +74,7 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::delete('avito-reviews/{avitoReview}', [App\Http\Controllers\AvitoReviewController::class, 'destroy'])->name('avito-reviews.destroy');
     Route::post('avito-reviews/refresh', [App\Http\Controllers\AvitoReviewController::class, 'refresh'])->name('avito-reviews.refresh');
     Route::post('avito-reviews/import', [App\Http\Controllers\AvitoReviewController::class, 'import'])->name('avito-reviews.import');
+    Route::post('avito-reviews/reorder', [App\Http\Controllers\AvitoReviewController::class, 'reorder'])->name('avito-reviews.reorder');
     Route::get('nav-links', [App\Http\Controllers\NavLinkController::class, 'index'])->name('nav-links.index');
     Route::post('nav-links/status', [App\Http\Controllers\NavLinkController::class, 'updateStatus'])->name('nav-links.status');
 });

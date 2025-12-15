@@ -15,6 +15,7 @@ class AvitoReview extends Model
         'text',
         'photos',
         'status',
+        'order',
         'source_hash',
     ];
 
@@ -23,4 +24,3 @@ class AvitoReview extends Model
         'photos' => 'array',
     ];
 }
-

@@ -11,7 +11,7 @@ class AvitoReviewController extends Controller
 {
     public function index()
     {
-        $reviews = AvitoReview::orderByDesc('review_date')->latest()->paginate(15);
+        $reviews = AvitoReview::orderBy('order')->orderBy('id')->paginate(50);
 
         return view('admin.avito_reviews.index', compact('reviews'));
     }
@@ -118,6 +118,8 @@ class AvitoReviewController extends Controller
         }
         $sourceHash = hash('sha256', $hashBase);
 
+        $order = (int)AvitoReview::max('order') + 1;
+
         AvitoReview::create([
             'name' => $data['name'] ?? null,
             'review_date' => $data['review_date'] ?? null,
@@ -125,6 +127,7 @@ class AvitoReviewController extends Controller
             'status' => $data['status'],
             'photos' => $photos ?: null,
             'source_hash' => $sourceHash,
+            'order' => $order,
         ]);
 
         return redirect()
@@ -151,6 +154,18 @@ class AvitoReviewController extends Controller
         $avitoReview->save();
 
         return back()->with('success', 'Статус отзыва обновлен');
+    }
+
+    public function reorder(Request $request)
+    {
+        foreach ($request->input('orders', []) as $id => $order) {
+            if ($model = AvitoReview::find($id)) {
+                $model->order = (int)$order;
+                $model->save();
+            }
+        }
+
+        return back()->with('success', 'Порядок отзывов обновлен');
     }
 
     public function refresh()
@@ -227,6 +242,7 @@ class AvitoReviewController extends Controller
             if (!is_array($photos)) {
                 $photos = [];
             }
+            $order = (int)AvitoReview::max('order') + 1;
 
             AvitoReview::create([
                 'name' => $item['name'] ?? null,
@@ -235,6 +251,7 @@ class AvitoReviewController extends Controller
                 'photos' => $photos ?: null,
                 'status' => 'new',
                 'source_hash' => $hash,
+                'order' => $order,
             ]);
 
             $added++;

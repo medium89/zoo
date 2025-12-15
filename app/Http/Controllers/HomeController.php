@@ -25,15 +25,15 @@ class HomeController extends Controller
 
         $sliders = Slider::where('active', true)->orderBy('order')->get();
         $about = About::first();
-        $advantages = Advantage::where('active', true)->get();
-        $services = Service::where('active', true)->get();
+        $advantages = Advantage::where('active', true)->orderBy('order')->orderBy('id')->get();
+        $services = Service::where('active', true)->orderBy('order')->orderBy('id')->get();
         $galleries = Gallery::where('active', true)->orderBy('number')->orderBy('id')->take(12)->get();
         $totalGalleries = Gallery::where('active', true)->count();
         $hasMoreGalleries = $totalGalleries > $galleries->count();
         $socials = Social::where('active', true)->orderBy('order')->get();
         $avitoReviews = AvitoReview::where('status', 'published')
-            ->orderByDesc('review_date')
-            ->orderByDesc('created_at')
+            ->orderBy('order')
+            ->orderBy('id')
             ->take(10)
             ->get();
 

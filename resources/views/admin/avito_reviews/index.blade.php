@@ -35,8 +35,9 @@
         </div>
     @endif
 
-    <div class="admin-grid" style="--grid-cols: 1fr 140px 2fr 120px 120px 140px;">
+    <div class="admin-grid" style="--grid-cols: 100px 1fr 140px 2fr 120px 120px 140px;">
         <div class="admin-grid-header">
+            <div>Порядок</div>
             <div>Имя</div>
             <div>Дата</div>
             <div>Текст</div>
@@ -44,9 +45,13 @@
             <div>Статус</div>
             <div class="text-end">Действия</div>
         </div>
-        <div class="admin-grid-body">
+        <form id="avito-reviews-form" action="{{ route('admin.avito-reviews.reorder') }}" method="POST">@csrf</form>
+        <div class="admin-grid-body js-sortable" id="avitoReviewsSort" data-custom-sort="1">
             @forelse ($reviews as $review)
-                <div class="admin-grid-row">
+                <div class="admin-grid-row" data-id="{{ $review->id }}">
+                    <div class="js-order-label text-muted" style="cursor:grab;">
+                        <i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}
+                    </div>
                     <div>{{ $review->name ?? 'Без имени' }}</div>
                     <div>{{ $review->review_date ? $review->review_date->format('d.m.Y') : 'Не указана' }}</div>
                     <div class="text-clip">{{ \Illuminate\Support\Str::limit($review->text, 180) }}</div>
@@ -64,6 +69,7 @@
                                 <option value="hidden" {{ $currentStatus === 'hidden' ? 'selected' : '' }}>Скрыто</option>
                             </select>
                         </form>
+                        <input type="hidden" name="orders[{{ $review->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="avito-reviews-form">
                     </div>
                     <div class="actions">
                         <div class="d-flex justify-content-end gap-2">
@@ -94,4 +100,32 @@
         {{ $reviews->links('pagination::bootstrap-4') }}
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+    const renumber = ()=>{
+        document.querySelectorAll('#avitoReviewsSort .admin-grid-row').forEach((row, idx)=>{
+            const label = row.querySelector('.js-order-label');
+            if (label) {
+                label.innerHTML = `<i class="fa fa-grip-vertical me-1"></i>${idx+1}`;
+            }
+            const orderInput = row.querySelector('.js-order-input');
+            if (orderInput) orderInput.value = idx+1;
+        });
+    };
+    renumber();
+
+    const form = document.getElementById('avito-reviews-form');
+
+    if (window.Sortable) {
+        Sortable.create(document.getElementById('avitoReviewsSort'), {
+            animation:150,
+            handle: '.js-order-label',
+            onEnd: ()=>{
+                renumber();
+                form.submit();
+            }
+        });
+    }
+});
+</script>
 @endsection
