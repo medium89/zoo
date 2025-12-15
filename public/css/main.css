@@ -654,6 +654,7 @@ nav {
 
 .reviews-container {
     max-width: 1100px;
+    text-align: left;
 }
 
 .reviews-header h2 {
@@ -791,6 +792,9 @@ nav {
     cursor: pointer;
     transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
     flex-shrink: 0;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .reviews-arrow[disabled] {
@@ -806,11 +810,11 @@ nav {
 }
 
 .reviews-arrow_prev {
-    margin-right: 4px;
+    left: -4px;
 }
 
 .reviews-arrow_next {
-    margin-left: 4px;
+    right: -4px;
 }
 
 .reviews-dots {

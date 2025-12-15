@@ -43,9 +43,6 @@
                                         @if($review->review_date)
                                             <div class="review-card__date">{{ $review->review_date->format('d.m.Y') }}</div>
                                         @endif
-                                        <div class="review-card__badge">
-                                            <i class="fa fa-star" aria-hidden="true"></i> Avito
-                                        </div>
                                     </div>
                                 </div>
                                 <div class="review-card__body">
