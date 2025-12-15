@@ -51,7 +51,17 @@
                         @php $count = is_array($review->photos) ? count($review->photos) : 0; @endphp
                         {{ $count > 0 ? $count . ' шт.' : 'Нет' }}
                     </div>
-                    <div>{{ $review->status }}</div>
+                    <div>
+                        <form action="{{ route('admin.avito-reviews.status', $review->id) }}" method="POST" class="mb-0">
+                            @csrf
+                            @php $currentStatus = $review->status; @endphp
+                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="new" {{ $currentStatus === 'new' ? 'selected' : '' }}>Новое</option>
+                                <option value="published" {{ $currentStatus === 'published' ? 'selected' : '' }}>Опубликовано</option>
+                                <option value="hidden" {{ $currentStatus === 'hidden' ? 'selected' : '' }}>Скрыто</option>
+                            </select>
+                        </form>
+                    </div>
                     <div class="actions">
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{{ route('admin.avito-reviews.edit', $review->id) }}" class="btn btn-sm btn-primary text-white">

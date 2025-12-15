@@ -7,6 +7,7 @@
     @include('sections.advantages')
     @include('sections.services')
     @include('sections.gallery')
+    @include('sections.avito-reviews')
     @include('sections.contacts')
     @include('sections.footer')
 

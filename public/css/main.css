@@ -647,6 +647,205 @@ nav {
     border: 3px solid var(--color-quaternary);
 }
 
+/* ===== ОТЗЫВЫ AVITO ===== */
+#reviews {
+    background: linear-gradient(to bottom, #ffffff 0%, #f5efff 55%, #f0e8ff 100%);
+}
+
+.reviews-container {
+    max-width: 1100px;
+}
+
+.reviews-header h2 {
+    margin-bottom: 1.5rem;
+}
+
+.reviews-subtitle {
+    margin-top: -1.5rem;
+    margin-bottom: 2.5rem;
+    color: #666;
+    font-size: 0.98rem;
+}
+
+.reviews-carousel {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+}
+
+.reviews-track {
+    overflow: hidden;
+    flex: 1 1 auto;
+    display: flex;
+    transition: transform 0.4s ease;
+}
+
+.review-slide {
+    min-width: 100%;
+    max-width: 100%;
+    padding: 4px;
+    box-sizing: border-box;
+}
+
+.review-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px 24px;
+    box-shadow: 0 12px 30px rgba(32, 0, 72, 0.08);
+    border: 1px solid rgba(123, 91, 219, 0.18);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.review-card__header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.review-card__avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(123, 91, 219, 0.4);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    flex-shrink: 0;
+    background: #f3edff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.review-card__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.review-card__avatar--placeholder {
+    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f3edff 40%, #dfcff8 100%);
+    color: var(--color-secondary);
+    font-weight: 700;
+    font-size: 1.6rem;
+}
+
+.review-card__avatar--placeholder span {
+    transform: translateY(1px);
+}
+
+.review-card__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.review-card__name {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--color-primary);
+}
+
+.review-card__date {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.review-card__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(123, 91, 219, 0.08);
+    color: var(--color-secondary);
+    margin-top: 4px;
+    text-transform: none;
+}
+
+.review-card__body p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-tertiary);
+}
+
+.reviews-arrow {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: var(--color-secondary);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(123, 91, 219, 0.35);
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.reviews-arrow[disabled] {
+    opacity: 0.4;
+    cursor: default;
+    box-shadow: none;
+}
+
+.reviews-arrow:hover:not([disabled]) {
+    background: var(--color-secondary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(123, 91, 219, 0.45);
+}
+
+.reviews-arrow_prev {
+    margin-right: 4px;
+}
+
+.reviews-arrow_next {
+    margin-left: 4px;
+}
+
+.reviews-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.reviews-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(56, 56, 56, 0.22);
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.reviews-dot.active {
+    background: var(--color-secondary);
+    transform: scale(1.15);
+}
+
+@media (max-width: 768px) {
+    .reviews-carousel {
+        gap: 8px;
+    }
+    .review-card {
+        padding: 18px 16px;
+    }
+    .review-card__avatar {
+        width: 54px;
+        height: 54px;
+    }
+}
+
 /* ===== Ð¡Ð•ÐšÐ¦Ð˜Ð¯ "ÐšÐžÐÐ¢ÐÐšÐ¢Ð«" ===== */
 #contacts {
     background: var(--color-secondary) url(../assets/img/bg.png) repeat center center;

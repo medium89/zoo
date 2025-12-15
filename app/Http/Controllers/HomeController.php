@@ -9,6 +9,7 @@ use App\Models\Service;
 use App\Models\Gallery;
 use App\Models\Social;
 use App\Models\SiteSetting;
+use App\Models\AvitoReview;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -30,8 +31,13 @@ class HomeController extends Controller
         $totalGalleries = Gallery::where('active', true)->count();
         $hasMoreGalleries = $totalGalleries > $galleries->count();
         $socials = Social::where('active', true)->orderBy('order')->get();
+        $avitoReviews = AvitoReview::where('status', 'published')
+            ->orderByDesc('review_date')
+            ->orderByDesc('created_at')
+            ->take(10)
+            ->get();
 
-        return view('index', compact('sliders', 'about', 'advantages', 'services', 'galleries', 'socials', 'hasMoreGalleries'));
+        return view('index', compact('sliders', 'about', 'advantages', 'services', 'galleries', 'socials', 'hasMoreGalleries', 'avitoReviews'));
     }
 
     public function galleryMore(Request $request)

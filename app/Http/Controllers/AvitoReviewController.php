@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AvitoReview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class AvitoReviewController extends Controller
 {
@@ -29,6 +29,8 @@ class AvitoReviewController extends Controller
             'text' => 'nullable|string',
             'status' => 'required|string|max:50',
             'photos_raw' => 'nullable|string',
+            'photos_upload' => 'nullable|array',
+            'photos_upload.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
 
         $photos = [];
@@ -37,6 +39,18 @@ class AvitoReviewController extends Controller
                 $url = trim($line);
                 if ($url !== '') {
                     $photos[] = $url;
+                }
+            }
+        }
+
+        if ($request->hasFile('photos_upload')) {
+            foreach ($request->file('photos_upload') as $file) {
+                if (!$file) {
+                    continue;
+                }
+                $path = $file->store('avito_reviews', 'public');
+                if ($path && !in_array($path, $photos, true)) {
+                    $photos[] = $path;
                 }
             }
         }
@@ -61,6 +75,18 @@ class AvitoReviewController extends Controller
         return redirect()
             ->route('admin.avito-reviews.index')
             ->with('success', 'Отзыв удален');
+    }
+
+    public function updateStatus(Request $request, AvitoReview $avitoReview)
+    {
+        $data = $request->validate([
+            'status' => 'required|string|max:50',
+        ]);
+
+        $avitoReview->status = $data['status'];
+        $avitoReview->save();
+
+        return back()->with('success', 'Статус отзыва обновлен');
     }
 
     public function refresh()

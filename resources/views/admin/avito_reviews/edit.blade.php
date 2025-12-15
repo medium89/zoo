@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid">
     <h1 class="mb-4">Редактировать отзыв Avito</h1>
-    <form action="{{ route('admin.avito-reviews.update', $review->id) }}" method="POST">
+    <form action="{{ route('admin.avito-reviews.update', $review->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="row">
@@ -46,7 +46,36 @@
                         $photos = is_array($review->photos) ? $review->photos : [];
                         echo old('photos_raw', implode("\n", $photos));
                     @endphp</textarea>
+                    <small class="text-muted">Здесь можно указать ссылки на изображения (в том числе локальные пути из хранилища).</small>
                 </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Загрузить фото на сервер</label>
+                    <input type="file" name="photos_upload[]" class="form-control" multiple accept="image/*">
+                    <small class="text-muted">Новые изображения добавятся к списку выше.</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                @php $photos = is_array($review->photos) ? $review->photos : []; @endphp
+                @if(count($photos))
+                    <div class="mb-3">
+                        <label class="form-label">Текущие фото</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach($photos as $photo)
+                                @php
+                                    $src = preg_match('#^https?://#', $photo) ? $photo : asset('storage/' . ltrim($photo, '/'));
+                                @endphp
+                                <div style="width:70px;height:70px;border-radius:8px;overflow:hidden;border:1px solid #ddd;">
+                                    <img src="{{ $src }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -57,4 +86,3 @@
     </form>
 </div>
 @endsection
-
