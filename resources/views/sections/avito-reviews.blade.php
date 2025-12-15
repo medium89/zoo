@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const slides = Array.from(carousel.querySelectorAll('.review-slide'));
     const prevBtn = carousel.querySelector('.reviews-arrow_prev');
     const nextBtn = carousel.querySelector('.reviews-arrow_next');
+    const viewport = carousel.querySelector('.reviews-viewport') || carousel;
     const dotsContainer = document.getElementById('reviews-dots');
 
     if (!slides.length) {
@@ -113,10 +114,28 @@ document.addEventListener('DOMContentLoaded', function () {
         const shift = slideWidth * index;
         track.style.transform = `translateX(-${shift}px)`;
 
-        if (prevBtn) prevBtn.disabled = index === 0;
-        if (nextBtn) nextBtn.disabled = index === lastIndex;
         updateControlsVisibility();
         syncDots();
+    };
+
+    const next = () => {
+        visible = getVisible();
+        const lastIndex = Math.max(0, slides.length - visible);
+        if (index >= lastIndex) {
+            goTo(0);
+        } else {
+            goTo(index + 1);
+        }
+    };
+
+    const prev = () => {
+        visible = getVisible();
+        const lastIndex = Math.max(0, slides.length - visible);
+        if (index <= 0) {
+            goTo(lastIndex);
+        } else {
+            goTo(index - 1);
+        }
     };
 
     const rebuildDots = () => {
@@ -138,8 +157,8 @@ document.addEventListener('DOMContentLoaded', function () {
         syncDots();
     };
 
-    if (prevBtn) prevBtn.addEventListener('click', () => goTo(index - 1));
-    if (nextBtn) nextBtn.addEventListener('click', () => goTo(index + 1));
+    if (prevBtn) prevBtn.addEventListener('click', prev);
+    if (nextBtn) nextBtn.addEventListener('click', next);
 
     window.addEventListener('resize', () => {
         const oldVisible = visible;
@@ -154,6 +173,40 @@ document.addEventListener('DOMContentLoaded', function () {
 
     rebuildDots();
     goTo(0);
+
+    // Свайп пальцем на мобильных
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchActive = false;
+
+    const touchStart = (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        const t = e.touches[0];
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+        touchActive = true;
+    };
+
+    const touchEnd = (e) => {
+        if (!touchActive) return;
+        touchActive = false;
+        if (!e.changedTouches || !e.changedTouches.length) return;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - touchStartX;
+        const dy = t.clientY - touchStartY;
+        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+        if (dx < 0) {
+            next();
+        } else {
+            prev();
+        }
+    };
+
+    if (viewport && 'ontouchstart' in window) {
+        viewport.addEventListener('touchstart', touchStart, {passive: true});
+        viewport.addEventListener('touchend', touchEnd, {passive: true});
+        viewport.addEventListener('touchcancel', () => { touchActive = false; }, {passive: true});
+    }
 
     // Читать весь / свернуть
     const cards = carousel.querySelectorAll('.review-card');
