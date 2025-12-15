@@ -72,11 +72,24 @@ class AvitoReviewController extends Controller
                 ->with('error', 'URL страницы Avito не задан');
         }
 
-        $response = Http::get($url);
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                    . 'AppleWebKit/537.36 (KHTML, like Gecko) '
+                    . 'Chrome/120.0.0.0 Safari/537.36',
+                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language' => 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+            ])->get($url);
+        } catch (\Throwable $e) {
+            return redirect()
+                ->route('admin.avito-reviews.index')
+                ->with('error', 'Ошибка соединения с Avito: ' . $e->getMessage());
+        }
+
         if (!$response->ok()) {
             return redirect()
                 ->route('admin.avito-reviews.index')
-                ->with('error', 'Не удалось загрузить страницу Avito');
+                ->with('error', 'Не удалось загрузить страницу Avito (HTTP ' . $response->status() . ')');
         }
 
         $html = $response->body();
