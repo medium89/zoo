@@ -457,6 +457,7 @@
             <div class="sidebar-content__item px-3 text-uppercase text-muted small">Настройки</div>
             <div class="sidebar-content__item">
                 <a href="{{ route('admin.settings') }}" class="{{ request()->is('zooadmin/settings*') ? 'active' : '' }}"><i class="fa fa-gear me-2"></i>Настройки</a>
+                <a href="{{ route('admin.nav-links.index') }}" class="{{ request()->is('zooadmin/nav-links*') ? 'active' : '' }}"><i class="fa fa-list me-2"></i>Меню сайта</a>
                 <a href="{{ route('admin.users.index') }}" class="{{ request()->is('zooadmin/users*') ? 'active' : '' }}"><i class="fa fa-users me-2"></i>Пользователи</a>
             </div>
             <div class="sidebar-content__item border-top mt-auto pt-3">

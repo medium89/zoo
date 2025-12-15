@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Schema;
+use App\Models\NavLink;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if (Schema::hasTable('nav_links')) {
+            View::composer('sections.header', function ($view) {
+                $links = NavLink::orderBy('order')->get();
+                $view->with('navLinks', $links);
+            });
+        }
     }
 }
