@@ -280,9 +280,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== Обработка формы контактов =====
 document.addEventListener('DOMContentLoaded', function() {
-    const contactForms = document.querySelectorAll('.contact-form');
-    if (!contactForms.length) return;
-
     const consentModal = document.getElementById('personalDataConsentModal');
     const openConsentModal = () => {
         if (!consentModal) return;
@@ -297,23 +294,31 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = '';
     };
 
-    document.querySelectorAll('[data-consent-open]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
+    document.addEventListener('click', (e) => {
+        const openBtn = e.target.closest('[data-consent-open]');
+        if (openBtn) {
             e.preventDefault();
             openConsentModal();
-        });
+            return;
+        }
+
+        const closeBtn = e.target.closest('[data-consent-close]');
+        if (closeBtn) {
+            e.preventDefault();
+            closeConsentModal();
+        }
     });
 
     if (consentModal) {
-        consentModal.querySelectorAll('[data-consent-close]').forEach((el) => {
-            el.addEventListener('click', closeConsentModal);
-        });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && consentModal.classList.contains('open')) {
                 closeConsentModal();
             }
         });
     }
+
+    const contactForms = document.querySelectorAll('.contact-form');
+    if (!contactForms.length) return;
 
     contactForms.forEach((contactForm) => {
         const phoneInput = contactForm.querySelector('input[name="phone"]');
