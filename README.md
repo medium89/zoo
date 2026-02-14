@@ -64,3 +64,18 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Deploy via git-ftp
+
+1. Install `git-ftp` on your machine.
+2. Create deploy config:
+   - `cp .env.deploy.example .env.deploy`
+   - Fill FTP values in `.env.deploy`
+3. First deploy (remote has no `.git-ftp.log`):
+   - set `GIT_FTP_INIT=1` in `.env.deploy`
+   - run `./scripts/deploy-git-ftp.sh`
+4. Next deploys:
+   - set `GIT_FTP_INIT=0`
+   - run `./scripts/deploy-git-ftp.sh`
+
+By default the script runs `npm ci && npm run build` before upload.
