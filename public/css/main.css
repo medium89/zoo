@@ -1099,29 +1099,53 @@ nav {
     background: #b4a3cb;
 }
 
-.consent-group {
-    gap: 8px;
+.consent-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.consent-layout__captcha {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.consent-layout__consent {
+    width: 100%;
+    text-align: left;
 }
 
 .consent-check {
-    display: flex;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    align-items: start;
+    column-gap: 10px;
+    row-gap: 0;
     font-size: 0.95rem;
     line-height: 1.5;
+    text-align: left;
 }
 
 .consent-check input[type="checkbox"] {
     margin-top: 3px;
     width: 18px;
     height: 18px;
-    flex-shrink: 0;
+}
+
+.consent-check__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    text-align: left;
 }
 
 .consent-check label {
     margin: 0;
-    flex: 1 1 320px;
+    text-align: left;
 }
 
 .consent-doc-link {
@@ -1132,10 +1156,64 @@ nav {
     cursor: pointer;
     padding: 0;
     font-size: 0.95rem;
+    text-align: left;
 }
 
 .consent-doc-link:hover {
     color: var(--color-secondary-hover);
+}
+
+@media (min-width: 992px) {
+    .consent-layout {
+        grid-template-columns: minmax(304px, max-content) minmax(0, 1fr);
+        gap: 18px 22px;
+    }
+
+    .consent-layout--no-captcha {
+        grid-template-columns: 1fr;
+    }
+
+    .consent-layout__captcha {
+        justify-self: start;
+    }
+
+    .consent-layout__consent {
+        justify-self: stretch;
+        width: 100%;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .consent-layout {
+        grid-template-columns: 1fr;
+        gap: 10px 0;
+    }
+
+    .consent-layout__captcha,
+    .consent-layout__consent {
+        width: 100%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .consent-check {
+        grid-template-columns: 22px minmax(0, 1fr);
+        column-gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .consent-check input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+    }
+
+    .consent-check__body {
+        gap: 4px;
+    }
+
+    .consent-doc-link {
+        font-size: 0.9rem;
+    }
 }
 
 .consent-modal {

@@ -33,25 +33,30 @@
                             <div class="form-group">
                                 <textarea name="message" placeholder="Опишите необходимую услугу, животное, даты и адрес" rows="3" required></textarea>
                             </div>
-                            @if($recaptchaKey)
-                                <div class="form-group d-flex justify-content-center" style="margin-top:10px;">
-                                    <div class="g-recaptcha" data-sitekey="{{ $recaptchaKey }}"></div>
-                                </div>
-                                @if($errors->has('g-recaptcha-response'))
-                                    <div class="text-danger small mt-1 text-center">{{ $errors->first('g-recaptcha-response') }}</div>
-                                @endif
-                            @else
+                            @if(!$recaptchaKey)
                                 <div class="alert alert-warning">reCAPTCHA не настроена. Добавьте ключи в .env</div>
                             @endif
-                            <div class="form-group consent-group">
-                                <div class="consent-check">
-                                    <input type="checkbox" id="contactConsentMain" name="personal_data_consent" value="1">
-                                    <label for="contactConsentMain">Нажимая кнопку, я даю согласие на обработку персональных данных.</label>
-                                    <button type="button" class="consent-doc-link" data-consent-open>Ознакомиться с документом</button>
-                                </div>
-                                @if($errors->has('personal_data_consent'))
-                                    <div class="text-danger small mt-1">{{ $errors->first('personal_data_consent') }}</div>
+                            <div class="form-group consent-layout {{ $recaptchaKey ? '' : 'consent-layout--no-captcha' }}">
+                                @if($recaptchaKey)
+                                    <div class="consent-layout__captcha">
+                                        <div class="g-recaptcha" data-sitekey="{{ $recaptchaKey }}"></div>
+                                        @if($errors->has('g-recaptcha-response'))
+                                            <div class="text-danger small mt-1">{{ $errors->first('g-recaptcha-response') }}</div>
+                                        @endif
+                                    </div>
                                 @endif
+                                <div class="consent-layout__consent">
+                                    <div class="consent-check">
+                                        <input type="checkbox" id="contactConsentMain" name="personal_data_consent" value="1">
+                                        <div class="consent-check__body">
+                                            <label for="contactConsentMain">Нажимая кнопку, я даю согласие на обработку персональных данных.</label>
+                                            <button type="button" class="consent-doc-link" data-consent-open>Ознакомиться с документом</button>
+                                        </div>
+                                    </div>
+                                    @if($errors->has('personal_data_consent'))
+                                        <div class="text-danger small mt-1">{{ $errors->first('personal_data_consent') }}</div>
+                                    @endif
+                                </div>
                             </div>
                             <div class="form-group">
                                 <button type="submit" class="submit-btn" disabled>

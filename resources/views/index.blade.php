@@ -34,16 +34,20 @@
                 <div class="form-group">
                     <textarea name="message" placeholder="Опишите необходимую услугу, животное, даты и адрес" rows="3" required></textarea>
                 </div>
-                @if($recaptchaKey)
-                    <div class="form-group d-flex justify-content-center" style="margin-top:10px;">
-                        <div class="g-recaptcha" data-sitekey="{{ $recaptchaKey }}"></div>
-                    </div>
-                @endif
-                <div class="form-group consent-group">
-                    <div class="consent-check">
-                        <input type="checkbox" id="contactConsentQuick" name="personal_data_consent" value="1">
-                        <label for="contactConsentQuick">Нажимая кнопку, я даю согласие на обработку персональных данных.</label>
-                        <button type="button" class="consent-doc-link" data-consent-open>Ознакомиться с документом</button>
+                <div class="form-group consent-layout {{ $recaptchaKey ? '' : 'consent-layout--no-captcha' }}">
+                    @if($recaptchaKey)
+                        <div class="consent-layout__captcha">
+                            <div class="g-recaptcha" data-sitekey="{{ $recaptchaKey }}"></div>
+                        </div>
+                    @endif
+                    <div class="consent-layout__consent">
+                        <div class="consent-check">
+                            <input type="checkbox" id="contactConsentQuick" name="personal_data_consent" value="1">
+                            <div class="consent-check__body">
+                                <label for="contactConsentQuick">Нажимая кнопку, я даю согласие на обработку персональных данных.</label>
+                                <button type="button" class="consent-doc-link" data-consent-open>Ознакомиться с документом</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
@@ -163,6 +167,12 @@
         width: 90%;
         box-shadow: 0 18px 38px rgba(0,0,0,0.22);
         z-index: 1;
+    }
+    @media (min-width: 992px){
+        .qc-dialog{
+            max-width: 800px;
+            width: min(800px, 92vw);
+        }
     }
     .qc-close{
         position: absolute;
