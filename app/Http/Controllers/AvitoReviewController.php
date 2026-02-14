@@ -218,6 +218,12 @@ class AvitoReviewController extends Controller
         $parsed = $this->parseReviewsFromHtml($html);
 
         if (empty($parsed)) {
+            if ($this->looksLikeAvitoAccessBlocked($html)) {
+                return redirect()
+                    ->route('admin.avito-reviews.index')
+                    ->with('error', $sourceLabel . ': Avito ограничил доступ к странице (капча/антибот). Попробуйте позже или импортируйте сохранённый HTML вручную.');
+            }
+
             return redirect()
                 ->route('admin.avito-reviews.index')
                 ->with('error', $sourceLabel . ': не удалось найти отзывы. Проверьте, что загружена правильная страница объявлений.');
@@ -270,10 +276,8 @@ class AvitoReviewController extends Controller
 
     private function parseReviewsFromHtml(string $html): array
     {
-        $result = [];
-
         if (trim($html) === '') {
-            return $result;
+            return [];
         }
 
         $dom = new \DOMDocument();
@@ -282,16 +286,25 @@ class AvitoReviewController extends Controller
         libxml_clear_errors();
 
         if (!$loaded) {
-            return $result;
+            return [];
         }
 
         $xpath = new \DOMXPath($dom);
+        $parsed = array_merge(
+            $this->parseReviewsFromMicrodata($xpath),
+            $this->parseReviewsFromDataMarkers($xpath)
+        );
 
+        return $this->deduplicateParsedReviews($parsed);
+    }
+
+    private function parseReviewsFromMicrodata(\DOMXPath $xpath): array
+    {
+        $result = [];
         $reviewNodes = $xpath->query('//*[@itemprop="review" or @itemtype="http://schema.org/Review" or @itemtype="https://schema.org/Review"]');
         if (!$reviewNodes || $reviewNodes->length === 0) {
             return $result;
         }
-
         foreach ($reviewNodes as $node) {
             // Имя автора
             $name = null;
@@ -361,6 +374,196 @@ class AvitoReviewController extends Controller
         }
 
         return $result;
+    }
+
+    private function parseReviewsFromDataMarkers(\DOMXPath $xpath): array
+    {
+        $groups = [];
+        $markerNodes = $xpath->query('//*[@data-marker]');
+        if (!$markerNodes || $markerNodes->length === 0) {
+            return [];
+        }
+
+        foreach ($markerNodes as $node) {
+            $markerAttr = $node->attributes?->getNamedItem('data-marker');
+            if (!$markerAttr) {
+                continue;
+            }
+            $marker = trim($markerAttr->nodeValue);
+            if ($marker === '') {
+                continue;
+            }
+
+            if ($prefix = $this->extractMarkerPrefix($marker, '/text-section/text')) {
+                $text = trim($node->textContent);
+                if ($text !== '') {
+                    $groups[$prefix]['text'] = $text;
+                }
+            }
+
+            if (
+                ($prefix = $this->extractMarkerPrefix($marker, '/header/title'))
+                || ($prefix = $this->extractMarkerPrefix($marker, '/author/name'))
+                || ($prefix = $this->extractMarkerPrefix($marker, '/user/name'))
+                || ($prefix = $this->extractMarkerPrefix($marker, '/name'))
+            ) {
+                $name = trim($node->textContent);
+                if ($name !== '') {
+                    $groups[$prefix]['name'] = $name;
+                }
+            }
+
+            if (
+                ($prefix = $this->extractMarkerPrefix($marker, '/header/subtitle'))
+                || ($prefix = $this->extractMarkerPrefix($marker, '/header/date'))
+                || ($prefix = $this->extractMarkerPrefix($marker, '/date'))
+            ) {
+                $rawDate = trim($node->textContent);
+                if ($rawDate !== '') {
+                    $parsedDate = $this->parseAvitoDateString($rawDate);
+                    $groups[$prefix]['date'] = $parsedDate ?? $rawDate;
+                }
+            }
+
+            if (strtolower($node->nodeName) === 'img' && preg_match('~^(.*?)/image\(\d+\)/image(?:/.*)?$~', $marker, $m)) {
+                $prefix = trim($m[1]);
+                if ($prefix !== '') {
+                    $url = $this->extractImageUrl($node);
+                    if ($url !== null) {
+                        $groups[$prefix]['photos'][] = $url;
+                    }
+                }
+            }
+        }
+
+        $result = [];
+        foreach ($groups as $group) {
+            $name = $group['name'] ?? null;
+            $date = $group['date'] ?? null;
+            $text = $group['text'] ?? null;
+            $photos = $group['photos'] ?? [];
+
+            if (!$text) {
+                continue;
+            }
+
+            if (!is_array($photos)) {
+                $photos = [];
+            }
+            $photos = array_values(array_unique(array_filter($photos, fn ($url) => is_string($url) && trim($url) !== '')));
+
+            $result[] = [
+                'name' => $name,
+                'date' => $date,
+                'text' => $text,
+                'photos' => $photos,
+            ];
+        }
+
+        return $result;
+    }
+
+    private function deduplicateParsedReviews(array $parsed): array
+    {
+        $unique = [];
+
+        foreach ($parsed as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $name = isset($item['name']) ? trim((string)$item['name']) : '';
+            $date = isset($item['date']) ? trim((string)$item['date']) : '';
+            $text = isset($item['text']) ? trim((string)$item['text']) : '';
+            $photos = $item['photos'] ?? [];
+            if (!is_array($photos)) {
+                $photos = [];
+            }
+            $photos = array_values(array_unique(array_filter($photos, fn ($url) => is_string($url) && trim($url) !== '')));
+
+            if ($name === '' && $date === '' && $text === '') {
+                continue;
+            }
+
+            $hashBase = mb_strtolower($name . '|' . $date . '|' . $text);
+            $hash = hash('sha256', $hashBase);
+
+            if (!isset($unique[$hash])) {
+                $unique[$hash] = [
+                    'name' => $name !== '' ? $name : null,
+                    'date' => $date !== '' ? $date : null,
+                    'text' => $text !== '' ? $text : null,
+                    'photos' => $photos,
+                ];
+                continue;
+            }
+
+            if (!empty($photos)) {
+                $merged = array_merge($unique[$hash]['photos'] ?? [], $photos);
+                $unique[$hash]['photos'] = array_values(array_unique($merged));
+            }
+        }
+
+        return array_values($unique);
+    }
+
+    private function extractMarkerPrefix(string $marker, string $suffix): ?string
+    {
+        $pos = strpos($marker, $suffix);
+        if ($pos === false || $pos === 0) {
+            return null;
+        }
+
+        $prefix = trim(substr($marker, 0, $pos), '/');
+        return $prefix !== '' ? $prefix : null;
+    }
+
+    private function extractImageUrl(\DOMNode $node): ?string
+    {
+        if (!$node->attributes) {
+            return null;
+        }
+
+        $src = $node->attributes->getNamedItem('src')?->nodeValue;
+        $dataSrc = $node->attributes->getNamedItem('data-src')?->nodeValue;
+        $srcset = $node->attributes->getNamedItem('srcset')?->nodeValue;
+
+        foreach ([$src, $dataSrc] as $candidate) {
+            $url = is_string($candidate) ? trim($candidate) : '';
+            if ($url !== '') {
+                return $url;
+            }
+        }
+
+        if (is_string($srcset) && trim($srcset) !== '') {
+            $first = trim(explode(',', $srcset)[0]);
+            $url = trim(explode(' ', $first)[0]);
+            if ($url !== '') {
+                return $url;
+            }
+        }
+
+        return null;
+    }
+
+    private function looksLikeAvitoAccessBlocked(string $html): bool
+    {
+        $haystack = mb_strtolower($html, 'UTF-8');
+
+        foreach ([
+            'captcha',
+            '/captcha',
+            'доступ ограничен',
+            'подозрительная активность',
+            'введите символы с картинки',
+            'проверьте, что вы не робот',
+        ] as $needle) {
+            if (str_contains($haystack, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function parseAvitoDateString(string $subtitle): ?string
