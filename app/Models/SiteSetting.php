@@ -19,5 +19,6 @@ class SiteSetting extends Model
         'og_description',
         'og_image',
         'og_url',
+        'personal_data_consent_text',
     ];
 }

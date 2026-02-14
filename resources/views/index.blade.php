@@ -39,13 +39,34 @@
                         <div class="g-recaptcha" data-sitekey="{{ $recaptchaKey }}"></div>
                     </div>
                 @endif
+                <div class="form-group consent-group">
+                    <div class="consent-check">
+                        <input type="checkbox" id="contactConsentQuick" name="personal_data_consent" value="1">
+                        <label for="contactConsentQuick">Нажимая кнопку, я даю согласие на обработку персональных данных.</label>
+                        <button type="button" class="consent-doc-link" data-consent-open>Ознакомиться с документом</button>
+                    </div>
+                </div>
                 <div class="form-group">
-                    <button type="submit" class="submit-btn w-100">
+                    <button type="submit" class="submit-btn w-100" disabled>
                         <i class="fas fa-paper-plane"></i>
                         Отправить заявку
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+    <div id="personalDataConsentModal" class="consent-modal" aria-hidden="true">
+        <div class="consent-modal__backdrop" data-consent-close></div>
+        <div class="consent-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="consentModalTitle">
+            <button type="button" class="consent-modal__close" aria-label="Закрыть" data-consent-close>&times;</button>
+            <h4 id="consentModalTitle">Согласие на обработку персональных данных</h4>
+            <div class="consent-modal__content">
+                @if(!empty(trim(strip_tags((string)$personalDataConsentText))))
+                    {!! $personalDataConsentText !!}
+                @else
+                    <p>Текст согласия временно недоступен.</p>
+                @endif
+            </div>
         </div>
     </div>
 @endsection 

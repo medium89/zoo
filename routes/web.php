@@ -28,6 +28,8 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
     Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('index');
     Route::get('settings', [App\Http\Controllers\AdminController::class, 'settings'])->name('settings');
     Route::post('settings/site', [App\Http\Controllers\AdminController::class, 'saveSiteStatus'])->name('settings.site');
+    Route::get('personal-data-consent', [App\Http\Controllers\PersonalDataConsentController::class, 'edit'])->name('personal-data-consent.edit');
+    Route::post('personal-data-consent', [App\Http\Controllers\PersonalDataConsentController::class, 'update'])->name('personal-data-consent.update');
     Route::resource('sliders', App\Http\Controllers\SliderController::class);
     Route::post('sliders/status', [App\Http\Controllers\SliderController::class, 'updateStatus'])->name('sliders.status');
     Route::get('about', [App\Http\Controllers\AboutController::class, 'edit'])->name('about.edit');

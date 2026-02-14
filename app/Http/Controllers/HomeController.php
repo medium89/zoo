@@ -17,8 +17,8 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $setting = SiteSetting::first();
-        $closed = $setting?->site_closed;
+        $siteSettings = SiteSetting::first();
+        $closed = $siteSettings?->site_closed;
         if ($closed && !Auth::check()) {
             return view('closed');
         }
@@ -36,8 +36,19 @@ class HomeController extends Controller
             ->orderBy('id')
             ->take(10)
             ->get();
+        $personalDataConsentText = $siteSettings?->personal_data_consent_text;
 
-        return view('index', compact('sliders', 'about', 'advantages', 'services', 'galleries', 'socials', 'hasMoreGalleries', 'avitoReviews'));
+        return view('index', compact(
+            'sliders',
+            'about',
+            'advantages',
+            'services',
+            'galleries',
+            'socials',
+            'hasMoreGalleries',
+            'avitoReviews',
+            'personalDataConsentText'
+        ));
     }
 
     public function galleryMore(Request $request)

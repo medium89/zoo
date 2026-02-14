@@ -15,5 +15,14 @@ class Feedback extends Model
         'message',
         'status',
         'order',
+        'personal_data_consent',
+        'personal_data_consent_at',
+        'personal_data_consent_text',
+        'personal_data_consent_hash',
+    ];
+
+    protected $casts = [
+        'personal_data_consent' => 'boolean',
+        'personal_data_consent_at' => 'datetime',
     ];
 }

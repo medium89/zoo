@@ -1085,6 +1085,117 @@ nav {
     font-size: 1rem;
 }
 
+.submit-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    background: #b4a3cb;
+}
+
+.submit-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+    background: #b4a3cb;
+}
+
+.consent-group {
+    gap: 8px;
+}
+
+.consent-check {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.consent-check input[type="checkbox"] {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.consent-check label {
+    margin: 0;
+    flex: 1 1 320px;
+}
+
+.consent-doc-link {
+    background: transparent;
+    border: 0;
+    color: var(--color-secondary);
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.95rem;
+}
+
+.consent-doc-link:hover {
+    color: var(--color-secondary-hover);
+}
+
+.consent-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1070;
+}
+
+.consent-modal.open {
+    display: flex;
+}
+
+.consent-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.consent-modal__dialog {
+    position: relative;
+    z-index: 1;
+    width: min(920px, 92vw);
+    max-height: 88vh;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+    padding: 24px 24px 20px;
+}
+
+.consent-modal__dialog h4 {
+    font-size: 1.4rem;
+    margin-bottom: 14px;
+}
+
+.consent-modal__content {
+    max-height: calc(88vh - 96px);
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.consent-modal__close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: transparent;
+    border: 0;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.consent-modal__close:hover {
+    color: #333;
+}
+
 /* ===== FOOTER ===== */
 footer {
     background: var(--color-secondary);

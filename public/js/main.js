@@ -280,12 +280,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== Обработка формы контактов =====
 document.addEventListener('DOMContentLoaded', function() {
-    const contactForm = document.querySelector('.contact-form');
-    if (!contactForm) return;
+    const contactForms = document.querySelectorAll('.contact-form');
+    if (!contactForms.length) return;
 
-    const phoneInput = contactForm.querySelector('input[name="phone"]');
-    if (phoneInput) {
+    const consentModal = document.getElementById('personalDataConsentModal');
+    const openConsentModal = () => {
+        if (!consentModal) return;
+        consentModal.classList.add('open');
+        consentModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    };
+    const closeConsentModal = () => {
+        if (!consentModal) return;
+        consentModal.classList.remove('open');
+        consentModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    };
+
+    document.querySelectorAll('[data-consent-open]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openConsentModal();
+        });
+    });
+
+    if (consentModal) {
+        consentModal.querySelectorAll('[data-consent-close]').forEach((el) => {
+            el.addEventListener('click', closeConsentModal);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && consentModal.classList.contains('open')) {
+                closeConsentModal();
+            }
+        });
+    }
+
+    contactForms.forEach((contactForm) => {
+        const phoneInput = contactForm.querySelector('input[name="phone"]');
+        const submitBtn = contactForm.querySelector('.submit-btn');
+        const consentCheckbox = contactForm.querySelector('input[name="personal_data_consent"]');
+
         const maskPhone = () => {
+            if (!phoneInput) return;
             let digits = phoneInput.value.replace(/\D/g, '');
             if (digits.startsWith('7')) {
                 digits = digits.substring(1);
@@ -304,62 +340,91 @@ document.addEventListener('DOMContentLoaded', function() {
             if (digits.length >= 8) result += '-' + digits.substring(8, 10);
             phoneInput.value = result;
         };
-        phoneInput.addEventListener('input', maskPhone);
-        phoneInput.addEventListener('focus', maskPhone);
-    }
 
-    contactForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+        const syncSubmitState = () => {
+            if (!submitBtn) return;
+            submitBtn.disabled = !(consentCheckbox && consentCheckbox.checked);
+        };
 
-        const formData = new FormData(this);
-        const name = formData.get('name').trim();
-        const phone = formData.get('phone').trim();
-        const message = formData.get('message').trim();
-
-        if (!name || !phone || !message) {
-            showNotification('Пожалуйста, заполните обязательные поля', 'error');
-            return;
+        if (phoneInput) {
+            phoneInput.addEventListener('input', maskPhone);
+            phoneInput.addEventListener('focus', maskPhone);
         }
 
-        const phoneRegex = /^\+7\(\d{3}\)\d{3}-\d{2}-\d{2}$/;
-        if (!phoneRegex.test(phone)) {
-            showNotification('Пожалуйста, введите корректный номер телефона', 'error');
-            return;
+        if (consentCheckbox) {
+            consentCheckbox.addEventListener('change', syncSubmitState);
         }
+        syncSubmitState();
 
-        const submitBtn = this.querySelector('.submit-btn');
-        const originalText = submitBtn.innerHTML;
+        contactForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
-        submitBtn.disabled = true;
+            const formData = new FormData(contactForm);
+            const name = String(formData.get('name') || '').trim();
+            const phone = String(formData.get('phone') || '').trim();
+            const message = String(formData.get('message') || '').trim();
+            const hasConsent = formData.get('personal_data_consent') === '1';
 
-        try {
-            const response = await fetch(this.action, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': formData.get('_token'),
-                    'Accept': 'application/json'
-                },
-                body: formData
-            });
-
-            if (response.ok) {
-                showNotification('Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.', 'success');
-                this.reset();
-            } else if (response.status === 422) {
-                const data = await response.json();
-                const errors = Object.values(data.errors).flat().join(' ');
-                showNotification(errors, 'error');
-            } else {
-                showNotification('Произошла ошибка отправки. Попробуйте позже.', 'error');
+            if (!name || !phone || !message) {
+                showNotification('Пожалуйста, заполните обязательные поля', 'error');
+                return;
             }
-        } catch (error) {
-            showNotification('Произошла ошибка отправки. Попробуйте позже.', 'error');
-        } finally {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
+
+            const phoneRegex = /^\+7\(\d{3}\)\d{3}-\d{2}-\d{2}$/;
+            if (!phoneRegex.test(phone)) {
+                showNotification('Пожалуйста, введите корректный номер телефона', 'error');
+                return;
+            }
+
+            if (!hasConsent) {
+                showNotification('Для отправки заявки необходимо согласие на обработку персональных данных.', 'error');
+                syncSubmitState();
+                return;
+            }
+
+            if (!submitBtn) {
+                return;
+            }
+
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(contactForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': formData.get('_token'),
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    showNotification('Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.', 'success');
+                    contactForm.reset();
+                    if (window.grecaptcha) {
+                        document.querySelectorAll('.g-recaptcha').forEach((_, idx) => {
+                            try {
+                                window.grecaptcha.reset(idx);
+                            } catch (e) {}
+                        });
+                    }
+                } else if (response.status === 422) {
+                    const data = await response.json();
+                    const errors = Object.values(data.errors || {}).flat().join(' ');
+                    showNotification(errors || 'Проверьте корректность заполнения формы.', 'error');
+                } else {
+                    showNotification('Произошла ошибка отправки. Попробуйте позже.', 'error');
+                }
+            } catch (error) {
+                showNotification('Произошла ошибка отправки. Попробуйте позже.', 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                syncSubmitState();
+            }
+        });
     });
     
     // Функция для показа уведомлений

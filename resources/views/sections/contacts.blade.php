@@ -1,5 +1,6 @@
 <section id="contacts">
     <div class="contacts-container container">
+        @php($recaptchaKey = config('services.recaptcha.site_key'))
         @if($socials->where('active', true)->count() > 0)
         <div class="contacts-header">
             <h2 class="white">Контакты</h2>
@@ -15,7 +16,6 @@
                         <h3>Оставить заявку</h3>
                     </div>
                     <div class="contacts-content__item-description">
-                        @php($recaptchaKey = config('services.recaptcha.site_key'))
                         <form class="contact-form" action="{{ route('feedback.store') }}" method="POST">
                             @csrf
                             @if(session('success'))
@@ -43,8 +43,18 @@
                             @else
                                 <div class="alert alert-warning">reCAPTCHA не настроена. Добавьте ключи в .env</div>
                             @endif
+                            <div class="form-group consent-group">
+                                <div class="consent-check">
+                                    <input type="checkbox" id="contactConsentMain" name="personal_data_consent" value="1">
+                                    <label for="contactConsentMain">Нажимая кнопку, я даю согласие на обработку персональных данных.</label>
+                                    <button type="button" class="consent-doc-link" data-consent-open>Ознакомиться с документом</button>
+                                </div>
+                                @if($errors->has('personal_data_consent'))
+                                    <div class="text-danger small mt-1">{{ $errors->first('personal_data_consent') }}</div>
+                                @endif
+                            </div>
                             <div class="form-group">
-                                <button type="submit" class="submit-btn">
+                                <button type="submit" class="submit-btn" disabled>
                                     <i class="fas fa-paper-plane"></i>
                                     Отправить заявку
                                 </button>
