@@ -9,7 +9,7 @@
     @if($errors->any())
         <div class="alert alert-danger">{{ $errors->first() }}</div>
     @endif
-    <form action="{{ route('admin.articles.update', $article) }}" method="POST" enctype="multipart/form-data">
+    <form id="article-edit-form" action="{{ route('admin.articles.update', $article) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="row g-3 mb-3">
@@ -130,11 +130,13 @@
                     @foreach($article->images as $img)
                         <div class="d-flex flex-column align-items-center gap-1" style="width:120px;">
                             <img src="{{ asset('storage/'.$img->path) }}" alt="" style="width:120px;height:90px;border-radius:6px;object-fit:cover;">
-                            <form action="{{ route('admin.articles.images.destroy', [$article, $img]) }}" method="POST" class="w-100">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger btn-sm w-100">Удалить</button>
-                            </form>
+                            <button
+                                type="button"
+                                class="btn btn-outline-danger btn-sm w-100 js-delete-image"
+                                data-action="{{ route('admin.articles.images.destroy', [$article, $img]) }}"
+                            >
+                                Удалить
+                            </button>
                         </div>
                     @endforeach
                 </div>
@@ -144,13 +146,45 @@
             <input class="form-check-input" type="checkbox" role="switch" id="active" name="active" value="1" {{ $article->active ? 'checked' : '' }}>
             <label class="form-check-label" for="active">Активно</label>
         </div>
-        <button class="btn btn-success">Сохранить</button>
+        <button type="submit" class="btn btn-success">Сохранить</button>
     </form>
 </div>
+<form id="delete-article-image-form" method="POST" class="d-none">
+    @csrf
+    @method('DELETE')
+</form>
 @include('admin.partials.wysiwyg-scripts')
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.js-scale').forEach(input=>{
+        input.addEventListener('input', ()=>{
+            input.closest('.col-md-6').querySelector('.js-scale-val').textContent = input.value;
+        });
+    });
+    document.querySelectorAll('.js-quality').forEach(input=>{
+        input.addEventListener('input', ()=>{
+            input.closest('.col-md-6').querySelector('.js-quality-val').textContent = input.value;
+        });
+    });
+    document.querySelectorAll('.js-clear-file').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            const target = document.querySelector(btn.dataset.target);
+            if(!target) return;
+            target.value = '';
+        });
+    });
+
+    const deleteImageForm = document.getElementById('delete-article-image-form');
+    document.querySelectorAll('.js-delete-image').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            if (!deleteImageForm) return;
+            if (!confirm('Удалить изображение?')) return;
+            deleteImageForm.setAttribute('action', btn.dataset.action);
+            deleteImageForm.submit();
+        });
+    });
+
     const target = document.querySelector('.js-wysiwyg');
     if(!target || !window.tinymce){ return; }
 
@@ -188,23 +222,6 @@ document.addEventListener('DOMContentLoaded', function(){
         relative_urls: false,
         promotion: false,
         content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; }'
-    });
-    document.querySelectorAll('.js-scale').forEach(input=>{
-        input.addEventListener('input', ()=>{
-            input.closest('.col-md-6').querySelector('.js-scale-val').textContent = input.value;
-        });
-    });
-    document.querySelectorAll('.js-quality').forEach(input=>{
-        input.addEventListener('input', ()=>{
-            input.closest('.col-md-6').querySelector('.js-quality-val').textContent = input.value;
-        });
-    });
-    document.querySelectorAll('.js-clear-file').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-            const target = document.querySelector(btn.dataset.target);
-            if(!target) return;
-            target.value = '';
-        });
     });
 });
 </script>

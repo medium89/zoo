@@ -99,7 +99,7 @@
             <input class="form-check-input" type="checkbox" role="switch" id="active" name="active" value="1" checked>
             <label class="form-check-label" for="active">Активно</label>
         </div>
-        <button class="btn btn-success">Сохранить</button>
+        <button type="submit" class="btn btn-success">Сохранить</button>
     </form>
 </div>
 @include('admin.partials.wysiwyg-scripts')
