@@ -14,6 +14,12 @@
                     <i class="fa fa-rotate"></i> Обновить с сайта
                 </button>
             </form>
+            <form action="{{ route('admin.avito-reviews.sort-by-date') }}" method="POST" class="mb-0">
+                @csrf
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fa fa-arrow-up-wide-short"></i> Сортировка по дате
+                </button>
+            </form>
             <form action="{{ route('admin.avito-reviews.import') }}" method="POST" enctype="multipart/form-data" class="mb-0 d-flex align-items-center gap-2">
                 @csrf
                 <input type="file" name="html_file" accept=".html,.htm,.txt" class="form-control form-control-sm" required>

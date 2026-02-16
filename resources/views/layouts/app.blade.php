@@ -25,6 +25,9 @@
 </head>
 <body class="{{ request()->is('/') ? 'landing' : '' }}">
     @yield('content')
+    <a href="#" class="to-top" aria-label="Наверх">
+        <i class="fas fa-arrow-up"></i>
+    </a>
     <script src="/js/main.js"></script>
 </body>
 </html> 

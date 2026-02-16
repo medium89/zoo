@@ -1,6 +1,6 @@
 <header id="index">
     <div class="header-content container">
-        <a href="#" class="logo">
+        <a href="{{ url('/') }}" class="logo">
             <img src="{{ asset('assets/img/logo.png') }}" alt="Логотип">
         </a>
         <nav class="nav">

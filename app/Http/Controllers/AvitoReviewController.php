@@ -6,6 +6,7 @@ use App\Models\AvitoReview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class AvitoReviewController extends Controller
 {
@@ -154,6 +155,26 @@ class AvitoReviewController extends Controller
         $avitoReview->save();
 
         return back()->with('success', 'Статус отзыва обновлен');
+    }
+
+    public function sortByDate()
+    {
+        $reviews = AvitoReview::query()
+            ->orderByRaw('review_date IS NULL')
+            ->orderBy('review_date')
+            ->orderBy('id')
+            ->get();
+
+        DB::transaction(function () use ($reviews) {
+            foreach ($reviews as $index => $review) {
+                $review->order = $index + 1;
+                $review->save();
+            }
+        });
+
+        return redirect()
+            ->route('admin.avito-reviews.index')
+            ->with('success', 'Отзывы отсортированы по дате: от старых к новым');
     }
 
     public function reorder(Request $request)

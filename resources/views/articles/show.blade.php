@@ -257,7 +257,7 @@
         text-decoration: none;
         font-size: 0.97rem;
         letter-spacing: 0.02em;
-        text-transform: uppercase;
+        text-transform: none;
         color: var(--color-primary);
         transition: color 0.2s ease;
     }

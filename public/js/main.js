@@ -135,8 +135,10 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     const logo = document.querySelector('.logo');
     if (!logo) return;
+    const isLandingPage = document.body.classList.contains('landing');
 
     logo.addEventListener('click', function(e) {
+        if (!isLandingPage) return;
         e.preventDefault();
         
         // Плавная прокрутка в самый верх страницы

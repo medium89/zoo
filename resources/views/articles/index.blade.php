@@ -71,9 +71,13 @@
                                     }
                                     $placeholder = 'data:image/svg+xml;utf8,'.rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360"><rect width="600" height="360" fill="%23415366"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23ffffff" font-size="24" font-family="Arial, sans-serif">Нет изображения</text></svg>');
                                 @endphp
-                                <img src="{{ $cover ?? $placeholder }}" class="card-img-top" alt="{{ $article->title }}" style="object-fit:contain;background:#fff;max-height:200px;">
+                                <a href="{{ route('articles.show', $article) }}" class="article-card__cover-link">
+                                    <img src="{{ $cover ?? $placeholder }}" class="card-img-top" alt="{{ $article->title }}" style="object-fit:contain;background:#fff;max-height:200px;">
+                                </a>
                                 <div class="card-body d-flex flex-column">
-                                    <h4 class="card-title fw-bold">{{ $article->title }}</h4>
+                                    <h4 class="card-title fw-bold mb-3">
+                                        <a href="{{ route('articles.show', $article) }}" class="article-card__title-link">{{ $article->title }}</a>
+                                    </h4>
                                     @if($article->excerpt)
                                         <p class="card-text text-muted">{{ \Illuminate\Support\Str::limit(strip_tags($article->excerpt), 160) }}</p>
                                     @endif
@@ -143,6 +147,16 @@
     }
     .article-card{
         border-radius: 12px;
+    }
+    .article-card__cover-link{
+        display: block;
+    }
+    .article-card__title-link{
+        color: inherit;
+        text-decoration: none;
+    }
+    .article-card__title-link:hover{
+        text-decoration: underline;
     }
     .filter-card__header{
         background: #8c4dc7;

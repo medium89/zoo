@@ -101,6 +101,36 @@
             width: 100%;
         }
 
+        .admin-to-top {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #1f232a;
+            color: #fff;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+            z-index: 1200;
+        }
+
+        .admin-to-top.is-visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .admin-to-top:hover {
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
         .sidebar-backdrop {
             display: none;
         }
@@ -435,6 +465,7 @@
             <div class="sidebar-content__item px-3 text-uppercase text-muted small pt-2 pb-2 mt-2">Контент</div>
             <div class="sidebar-content__item">
                 <a href="/zooadmin/sliders" class="{{ request()->is('zooadmin/sliders*') ? 'active' : '' }}"><i class="fa fa-photo-film me-2"></i>Слайдер</a>
+                <a href="{{ route('admin.about.edit') }}" class="{{ request()->is('zooadmin/about*') ? 'active' : '' }}"><i class="fa fa-user me-2"></i>Обо мне</a>
                 <a href="/zooadmin/advantages" class="{{ request()->is('zooadmin/advantages*') ? 'active' : '' }}"><i class="fa fa-star me-2"></i>Преимущества</a>
                 <a href="/zooadmin/services" class="{{ request()->is('zooadmin/services*') ? 'active' : '' }}"><i class="fa fa-briefcase me-2"></i>Услуги</a>
                 <a href="/zooadmin/galleries" class="{{ request()->is('zooadmin/galleries*') ? 'active' : '' }}"><i class="fa fa-image me-2"></i>Фотоальбом</a>
@@ -475,6 +506,9 @@
         @yield('content')
     </div>
 </div>
+<a href="#" class="admin-to-top" id="adminToTop" aria-label="Наверх">
+    <i class="fas fa-arrow-up"></i>
+</a>
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -640,6 +674,21 @@
                 deleteForm = null;
             }
         });
+
+        const toTop = document.getElementById('adminToTop');
+        const updateToTopState = () => {
+            if (!toTop) return;
+            const shouldShow = (window.pageYOffset || document.documentElement.scrollTop) > 320;
+            toTop.classList.toggle('is-visible', shouldShow);
+        };
+
+        toTop?.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        window.addEventListener('scroll', updateToTopState);
+        updateToTopState();
     });
 </script>
 @yield('scripts')
