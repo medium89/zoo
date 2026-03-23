@@ -83,11 +83,17 @@ class BoardingController extends Controller
 
     public function publicCalendar()
     {
-        $year = Carbon::now()->year;
+        $now = Carbon::now();
+        $year = $now->year;
+        $currentMonthStart = $now->copy()->startOfMonth();
+        $entries = $this->entriesForYear($year)
+            ->filter(fn (array $entry): bool => Carbon::parse($entry['end_date'])->greaterThanOrEqualTo($currentMonthStart))
+            ->values();
 
         return view('calendar.index', [
             'year' => $year,
-            'entries' => $this->entriesForYear($year)->values(),
+            'entries' => $entries,
+            'currentMonth' => $now->month - 1,
         ]);
     }
 
