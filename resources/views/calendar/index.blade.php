@@ -413,6 +413,11 @@
             border-radius: 22px;
             padding: 16px;
         }
+
+        .cal-month {
+            padding: 18px 16px;
+        }
+
         .sidebar-entry__head,
         .calendar-tooltip__entry-head {
             flex-direction: column;
