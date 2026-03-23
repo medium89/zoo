@@ -1479,11 +1479,6 @@ footer a, footer p {
         font-size: 1.5rem;
     }
     
-    section:not(#slider, #contacts) {
-        margin-bottom: 2rem;
-        padding: 2rem 1rem;
-    }
-    
     /* Header */
     header {
         padding: 18px 0;

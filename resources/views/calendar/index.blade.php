@@ -45,7 +45,7 @@
 <style>
     .public-calendar-page {
         min-height: 100vh;
-        background: linear-gradient(180deg, #f3f4f6 0%, #eef0f3 100%);
+        background: linear-gradient(180deg, #f7f8fa 0%, #f1f3f6 100%);
     }
 
     .calendar-shell {
@@ -190,7 +190,7 @@
         min-width: 0;
         height: 100%;
         min-height: 300px;
-        padding: 14px;
+        padding: 25px 30px;
         border-radius: 20px;
         background: #ffffff;
         border: 1px solid #d7dbe1;
@@ -209,6 +209,7 @@
         display: grid;
         grid-template-columns: repeat(7, minmax(0, 1fr));
         gap: 4px;
+        padding-bottom: 10px;
     }
 
     .cal-weekday {
