@@ -57,16 +57,6 @@
 
             <main class="calendar-content">
                 <section class="calendar-panel">
-                    <div class="calendar-panel__head">
-                        <div>
-                            <span class="calendar-panel__eyebrow">Годовая сетка</span>
-                            <h2 class="calendar-panel__title">Календарь с текущего месяца</h2>
-                        </div>
-                        <p class="calendar-panel__note mb-0">
-                            Нажмите на занятую дату, чтобы увидеть кто записан и какой тип услуги назначен на этот день.
-                        </p>
-                    </div>
-
                     <div id="publicCalendarGrid" class="calendar-grid"></div>
                 </section>
             </main>
@@ -108,8 +98,7 @@
     }
 
     .calendar-eyebrow,
-    .calendar-sidebar__eyebrow,
-    .calendar-panel__eyebrow {
+    .calendar-sidebar__eyebrow {
         display: inline-flex;
         align-items: center;
         padding: 7px 12px;
@@ -286,40 +275,20 @@
 
     .calendar-panel {
         border-radius: 24px;
-        padding: 18px;
-    }
-
-    .calendar-panel__head {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 16px;
-        align-items: end;
-        margin-bottom: 18px;
-    }
-
-    .calendar-panel__title {
-        margin: 12px 0 0;
-        color: #28170b;
-        font-size: 20px;
-        font-weight: 800;
-        line-height: 1.15;
-    }
-
-    .calendar-panel__note {
-        max-width: 420px;
-        color: #715d50;
-        font-size: 13px;
-        line-height: 1.6;
-        text-align: right;
+        padding: 26px;
     }
 
     .calendar-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 14px;
+        align-items: stretch;
     }
 
     .cal-month {
+        width: 100%;
+        min-width: 0;
+        height: 100%;
         padding: 14px;
         border-radius: 20px;
         background: linear-gradient(180deg, #fffdf9 0%, #f6efe7 100%);
@@ -513,13 +482,8 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        .calendar-panel__head {
-            grid-template-columns: 1fr;
-        }
-
-        .calendar-panel__note {
-            max-width: none;
-            text-align: left;
+        .calendar-panel {
+            padding: 22px;
         }
     }
 
