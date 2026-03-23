@@ -3,35 +3,11 @@
 @section('content')
 <div class="public-calendar-page">
     <div class="calendar-shell">
-        <header class="calendar-hero">
-            <span class="calendar-eyebrow">Календарь занятости</span>
-            <div class="calendar-hero-row">
-                <div class="calendar-hero-copy">
-                    <h1 class="calendar-title">Занятые даты на {{ $year }} год</h1>
-                    <p class="calendar-subtitle mb-0">
-                        Показаны только текущий месяц и будущие месяцы этого года. Все записи вынесены в левую колонку, а по клику на занятую дату откроется информация по этому дню.
-                    </p>
-                </div>
-                <div class="calendar-legend" aria-label="Легенда календаря">
-                    <span class="legend-item">
-                        <span class="legend-dot legend-dot--busy"></span>
-                        занято
-                    </span>
-                    <span class="legend-item">
-                        <span class="legend-dot legend-dot--conflict"></span>
-                        несколько записей
-                    </span>
-                </div>
-            </div>
-        </header>
-
         <div class="calendar-layout">
             <aside class="calendar-sidebar" aria-label="Список активных записей">
                 <div class="calendar-sidebar__inner">
                     <div class="calendar-sidebar__head">
-                        <span class="calendar-sidebar__eyebrow">Активные записи</span>
-                        <h2 class="calendar-sidebar__title">Записи с текущего месяца</h2>
-                        <p class="calendar-sidebar__meta mb-0">{{ $entries->count() }} активных записей до конца {{ $year }} года</p>
+                        <p class="calendar-sidebar__meta mb-0"><span class="calendar-sidebar__meta-count">{{ $entries->count() }}</span> активных записей до конца {{ $year }} года</p>
                     </div>
 
                     <div class="calendar-sidebar__list">
@@ -69,10 +45,7 @@
 <style>
     .public-calendar-page {
         min-height: 100vh;
-        background:
-            radial-gradient(circle at top right, rgba(255, 214, 177, 0.42), transparent 28%),
-            radial-gradient(circle at bottom left, rgba(255, 240, 216, 0.8), transparent 30%),
-            linear-gradient(180deg, #faf4ec 0%, #f6efe7 100%);
+        background: linear-gradient(180deg, #f3f4f6 0%, #eef0f3 100%);
     }
 
     .calendar-shell {
@@ -81,95 +54,10 @@
         padding: 30px 0 40px;
     }
 
-    .calendar-hero,
     .calendar-sidebar__inner,
-    .calendar-panel,
     .calendar-tooltip {
-        border: 1px solid rgba(70, 44, 23, 0.08);
         background: rgba(255, 255, 255, 0.88);
-        box-shadow: 0 20px 60px rgba(92, 63, 40, 0.08);
         backdrop-filter: blur(14px);
-    }
-
-    .calendar-hero {
-        padding: 22px 26px;
-        margin-bottom: 22px;
-        border-radius: 28px;
-    }
-
-    .calendar-eyebrow,
-    .calendar-sidebar__eyebrow {
-        display: inline-flex;
-        align-items: center;
-        padding: 7px 12px;
-        border-radius: 999px;
-        background: #fff0de;
-        color: #8d5122;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-    }
-
-    .calendar-hero-row {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 20px;
-        align-items: end;
-    }
-
-    .calendar-hero-copy {
-        min-width: 0;
-    }
-
-    .calendar-title {
-        margin: 16px 0 10px;
-        color: #28170b;
-        font-size: clamp(18px, 2.2vw, 24px);
-        line-height: 1.12;
-        font-weight: 800;
-    }
-
-    .calendar-subtitle {
-        max-width: 760px;
-        color: #715d50;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    .calendar-legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        justify-content: flex-end;
-        align-items: center;
-    }
-
-    .legend-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 9px 14px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.9);
-        color: #554236;
-        font-size: 13px;
-        font-weight: 600;
-        box-shadow: inset 0 0 0 1px rgba(85, 66, 54, 0.08);
-    }
-
-    .legend-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 999px;
-    }
-
-    .legend-dot--busy {
-        background: #6fd99c;
-    }
-
-    .legend-dot--conflict {
-        background: #ffbb5d;
     }
 
     .calendar-layout {
@@ -185,6 +73,8 @@
     }
 
     .calendar-sidebar__inner {
+        border: 1px solid #d7dbe1;
+        box-shadow: 0 8px 20px rgba(39, 44, 52, 0.06);
         border-radius: 24px;
         padding: 18px;
     }
@@ -204,9 +94,14 @@
     }
 
     .calendar-sidebar__meta {
-        color: #776356;
+        color: #4f5b68;
         font-size: 14px;
         line-height: 1.6;
+    }
+
+    .calendar-sidebar__meta-count {
+        font-weight: 800;
+        color: #27313b;
     }
 
     .calendar-sidebar__list {
@@ -217,8 +112,9 @@
     .sidebar-entry {
         padding: 14px;
         border-radius: 18px;
-        background: linear-gradient(180deg, #fffdfa 0%, #f9f2e9 100%);
-        border: 1px solid rgba(85, 66, 54, 0.08);
+        background: #ffffff;
+        border: 1px solid #d7dbe1;
+        box-shadow: 0 8px 20px rgba(39, 44, 52, 0.06);
     }
 
     .sidebar-entry__head {
@@ -243,8 +139,9 @@
         align-items: center;
         padding: 6px 10px;
         border-radius: 999px;
-        background: #eef6ff;
-        color: #2d638f;
+        background: #f5f7fa;
+        border: 1px solid #d5dbe3;
+        color: #556577;
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
@@ -274,8 +171,11 @@
     }
 
     .calendar-panel {
-        border-radius: 24px;
-        padding: 26px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        border-radius: 0;
     }
 
     .calendar-grid {
@@ -289,10 +189,12 @@
         width: 100%;
         min-width: 0;
         height: 100%;
+        min-height: 300px;
         padding: 14px;
         border-radius: 20px;
-        background: linear-gradient(180deg, #fffdf9 0%, #f6efe7 100%);
-        border: 1px solid rgba(96, 68, 45, 0.08);
+        background: #ffffff;
+        border: 1px solid #d7dbe1;
+        box-shadow: 0 10px 24px rgba(39, 44, 52, 0.06);
     }
 
     .cal-month-title {
@@ -329,10 +231,10 @@
         justify-content: center;
         min-height: 38px;
         padding: 0;
-        border: 0;
+        border: 1px solid #d8dde4;
         border-radius: 12px;
-        background: transparent;
-        color: #7b6659;
+        background: #f4f5f7;
+        color: #746b63;
         font-size: 13px;
         font-weight: 600;
         transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
@@ -343,23 +245,26 @@
     }
 
     .cal-cell--busy {
-        background: #e9faf1;
+        border-color: #9fd7b2;
+        background: #d5f5df;
         color: #21583c;
-        box-shadow: inset 0 0 0 1px rgba(58, 151, 95, 0.24);
+        box-shadow: inset 0 0 0 1px rgba(58, 151, 95, 0.18);
     }
 
     .cal-cell--busy:hover {
         transform: translateY(-1px);
-        box-shadow: inset 0 0 0 1px rgba(58, 151, 95, 0.28), 0 10px 22px rgba(58, 151, 95, 0.12);
+        box-shadow: inset 0 0 0 1px rgba(58, 151, 95, 0.22), 0 10px 22px rgba(58, 151, 95, 0.12);
     }
 
     .cal-cell--conflict {
+        border-color: #f0c488;
         background: #fff3e0;
         color: #90520d;
         box-shadow: inset 0 0 0 1px rgba(255, 171, 64, 0.26);
     }
 
     .cal-cell--selected {
+        border-color: transparent;
         background: linear-gradient(135deg, #34231a 0%, #4f3a2b 100%);
         color: #fff;
         box-shadow: 0 12px 28px rgba(52, 35, 26, 0.2);
@@ -386,6 +291,8 @@
         position: fixed;
         z-index: 1000;
         width: min(320px, calc(100vw - 24px));
+        border: 1px solid #d7dbe1;
+        box-shadow: 0 16px 36px rgba(39, 44, 52, 0.12);
         padding: 16px;
         border-radius: 20px;
     }
@@ -468,6 +375,12 @@
         }
     }
 
+    @media (max-width: 1439px) {
+        .calendar-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
     @media (max-width: 1199px) {
         .calendar-layout {
             grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
@@ -477,13 +390,11 @@
             position: static;
             max-height: none;
         }
+    }
 
+    @media (max-width: 1099px) {
         .calendar-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .calendar-panel {
-            padding: 22px;
+            grid-template-columns: 1fr;
         }
     }
 
@@ -497,22 +408,10 @@
             grid-template-columns: 1fr;
         }
 
-        .calendar-hero,
-        .calendar-sidebar__inner,
-        .calendar-panel {
+        .calendar-sidebar__inner {
             border-radius: 22px;
             padding: 16px;
         }
-
-        .calendar-hero-row {
-            grid-template-columns: 1fr;
-            align-items: start;
-        }
-
-        .calendar-grid {
-            grid-template-columns: 1fr;
-        }
-
         .sidebar-entry__head,
         .calendar-tooltip__entry-head {
             flex-direction: column;

@@ -1481,7 +1481,7 @@ footer a, footer p {
     
     section:not(#slider, #contacts) {
         margin-bottom: 2rem;
-        padding: 2rem 0;
+        padding: 2rem 1rem;
     }
     
     /* Header */
