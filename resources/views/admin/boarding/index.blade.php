@@ -45,11 +45,11 @@
                 </div>
                 <div class="col-md-2 col-lg-2">
                     <label class="form-label">Начало</label>
-                    <input type="text" name="start_date" class="form-control js-date" autocomplete="off" required placeholder="ГГГГ-ММ-ДД">
+                    <input type="text" name="start_date" class="form-control js-date" autocomplete="off" inputmode="numeric" maxlength="10" required placeholder="YYYY-MM-DD">
                 </div>
                 <div class="col-md-2 col-lg-2">
                     <label class="form-label">Окончание</label>
-                    <input type="text" name="end_date" class="form-control js-date" autocomplete="off" required placeholder="ГГГГ-ММ-ДД">
+                    <input type="text" name="end_date" class="form-control js-date" autocomplete="off" inputmode="numeric" maxlength="10" required placeholder="YYYY-MM-DD">
                 </div>
                 <div class="col-12 text-end">
                     <div class="d-flex justify-content-end gap-2 flex-wrap">
@@ -162,11 +162,17 @@
     .cal-cell.day.busy { background:#e9f8ef; border:1px solid #6cc17b; }
     .cal-cell.day.conflict { background:#fff3e0; border:1px solid #f0a500; }
     .tooltip-box { position:absolute; z-index:20; background:#fff; border:1px solid #ddd; box-shadow:0 10px 30px rgba(0,0,0,0.15); padding:10px; border-radius:8px; font-size:12px; min-width:200px; white-space:pre-line; }
-    .dp-popover { position:absolute; background:#fff; border-radius:10px; padding:12px; width:320px; max-width:calc(100vw - 32px); box-shadow:0 10px 40px rgba(0,0,0,0.18); border:1px solid #e5e7eb; z-index:2000; }
+    .dp-popover { position:absolute; background:#fff; border-radius:10px; padding:12px; width:320px; max-width:calc(100vw - 32px); box-shadow:0 10px 40px rgba(0,0,0,0.18); border:1px solid #e5e7eb; z-index:2000; user-select:none; }
     .dp-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px; }
+    .dp-nav { min-width:40px; font-size:18px; line-height:1; }
+    .dp-nav:hover { background:#eef2f7; }
+    .dp-grid-wrap { touch-action:pan-y; border-radius:8px; }
+    .dp-grid-wrap.is-swiping { cursor:grabbing; }
     .dp-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:13px; }
-    .dp-day { text-align:center; padding:8px 0; border-radius:6px; cursor:pointer; }
+    .dp-day { text-align:center; padding:8px 0; border-radius:6px; cursor:pointer; border:1px solid transparent; }
     .dp-day:hover { background:#f3f4f6; }
+    .dp-day.is-selected { background:#e9f8ef; border-color:#6cc17b; font-weight:600; }
+    .dp-hint { margin-top:8px; font-size:11px; color:#6b7280; text-align:center; }
 </style>
 
 <div class="modal fade" id="archiveModal" tabindex="-1" aria-hidden="true">
@@ -232,13 +238,74 @@ document.addEventListener('DOMContentLoaded', function(){
         end: form.querySelector('[name="end_date"]'),
     };
 
+    function parseIsoDate(value){
+        if(!value) return null;
+        const [year, month, day] = value.split('-').map(Number);
+        if(!year || !month || !day) return null;
+        return new Date(Date.UTC(year, month - 1, day));
+    }
+
+    function buildUtcDate(year, month, day = 1){
+        return new Date(Date.UTC(year, month, day));
+    }
+
+    function formatIsoDate(date){
+        return [
+            date.getUTCFullYear(),
+            String(date.getUTCMonth() + 1).padStart(2, '0'),
+            String(date.getUTCDate()).padStart(2, '0'),
+        ].join('-');
+    }
+
+    function changeUtcMonth(year, month, delta){
+        const date = buildUtcDate(year, month, 1);
+        date.setUTCMonth(date.getUTCMonth() + delta);
+        return {
+            year: date.getUTCFullYear(),
+            month: date.getUTCMonth(),
+        };
+    }
+
+    function formatDateInputValue(value){
+        const digits = String(value || '').replace(/\D/g, '').slice(0, 8);
+        if(digits.length <= 4) return digits;
+        if(digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+        return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+    }
+
+    function caretFromDigitsCount(value, digitsCount){
+        if(digitsCount <= 0) return 0;
+        let seen = 0;
+        for(let i = 0; i < value.length; i++){
+            if(/\d/.test(value[i])) seen += 1;
+            if(seen >= digitsCount) return i + 1;
+        }
+        return value.length;
+    }
+
+    function bindDateMask(input){
+        input.addEventListener('input', ()=>{
+            const selectionStart = input.selectionStart ?? input.value.length;
+            const digitsBeforeCaret = input.value.slice(0, selectionStart).replace(/\D/g, '').length;
+            const formatted = formatDateInputValue(input.value);
+            input.value = formatted;
+            const caret = caretFromDigitsCount(formatted, digitsBeforeCaret);
+            input.setSelectionRange(caret, caret);
+        });
+
+        input.addEventListener('blur', ()=>{
+            input.value = formatDateInputValue(input.value);
+        });
+    }
+
     function rangeDays(start, end){
         const res = [];
-        let cur = new Date(start);
-        const endDate = new Date(end);
+        let cur = parseIsoDate(start);
+        const endDate = parseIsoDate(end);
+        if(!cur || !endDate) return res;
         while(cur <= endDate){
-            res.push(cur.toISOString().slice(0,10));
-            cur.setDate(cur.getDate()+1);
+            res.push(formatIsoDate(cur));
+            cur.setUTCDate(cur.getUTCDate() + 1);
         }
         return res;
     }
@@ -262,13 +329,14 @@ document.addEventListener('DOMContentLoaded', function(){
             }
         }
         list.forEach(entry => {
-            const start = new Date(entry.start_date);
-            const end = new Date(entry.end_date);
-            let cur = new Date(start.getFullYear(), start.getMonth(), 1);
-            const last = new Date(end.getFullYear(), end.getMonth(), 1);
+            const start = parseIsoDate(entry.start_date);
+            const end = parseIsoDate(entry.end_date);
+            if(!start || !end) return;
+            let cur = buildUtcDate(start.getUTCFullYear(), start.getUTCMonth(), 1);
+            const last = buildUtcDate(end.getUTCFullYear(), end.getUTCMonth(), 1);
             while(cur <= last){
-                collected.push({ year: cur.getFullYear(), month: cur.getMonth() });
-                cur.setMonth(cur.getMonth()+1);
+                collected.push({ year: cur.getUTCFullYear(), month: cur.getUTCMonth() });
+                cur.setUTCMonth(cur.getUTCMonth() + 1);
             }
         });
         const seen = new Set();
@@ -279,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function(){
             seen.add(key);
             uniq.push(item);
         });
-        uniq.sort((a,b)=> new Date(a.year, a.month, 1) - new Date(b.year, b.month, 1));
+        uniq.sort((a,b)=> buildUtcDate(a.year, a.month, 1) - buildUtcDate(b.year, b.month, 1));
         return uniq;
     }
 
@@ -288,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function(){
         const months = monthsToRender(state.entries, state.year);
         grid.innerHTML='';
         months.forEach(({year, month})=>{
-            const first = new Date(year, month, 1);
+            const first = buildUtcDate(year, month, 1);
             const wrap = document.createElement('div');
             wrap.className='cal-month';
             wrap.innerHTML = `<h5>${MONTHS[month]} ${year}</h5>`;
@@ -300,14 +368,14 @@ document.addEventListener('DOMContentLoaded', function(){
             wrap.appendChild(header);
 
             const body = document.createElement('div'); body.className='cal-row';
-            const startIdx = (first.getDay()+6)%7; // Monday start
+            const startIdx = (first.getUTCDay()+6)%7; // Monday start
             for(let i=0;i<startIdx;i++){ body.appendChild(document.createElement('div')); }
-            const daysInMonth = new Date(year, month+1, 0).getDate();
+            const daysInMonth = buildUtcDate(year, month + 1, 0).getUTCDate();
             for(let d=1; d<=daysInMonth; d++){
                 const cell = document.createElement('div');
                 cell.className = 'cal-cell day';
                 cell.textContent = d;
-                const dateStr = new Date(year, month, d).toISOString().slice(0,10);
+                const dateStr = formatIsoDate(buildUtcDate(year, month, d));
                 const list = map[dateStr] || [];
                 if(list.length>0){
                     cell.classList.add(list.length>1 ? 'conflict' : 'busy');
@@ -450,6 +518,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     // Кастомный datepicker около поля
     const dateInputs = Array.from(document.querySelectorAll('.js-date'));
+    dateInputs.forEach(bindDateMask);
     let activePicker = null;
     const outsideHandler = (e) => {
         if (!activePicker) return;
@@ -464,11 +533,18 @@ document.addEventListener('DOMContentLoaded', function(){
         input.addEventListener('click', (e)=>{ e.stopPropagation(); openPicker(input); });
     });
 
+    form.addEventListener('submit', ()=>{
+        dateInputs.forEach(input => {
+            input.value = formatDateInputValue(input.value);
+        });
+    });
+
     function openPicker(input){
         closePicker();
-        const now = input.value ? new Date(input.value) : new Date();
-        let curYear = now.getFullYear();
-        let curMonth = now.getMonth();
+        const selectedDate = parseIsoDate(input.value);
+        const now = new Date();
+        let curYear = selectedDate ? selectedDate.getUTCFullYear() : now.getFullYear();
+        let curMonth = selectedDate ? selectedDate.getUTCMonth() : now.getMonth();
 
         const pop = document.createElement('div');
         pop.className='dp-popover';
@@ -476,8 +552,8 @@ document.addEventListener('DOMContentLoaded', function(){
         pop.addEventListener('click', (e)=>e.stopPropagation());
 
         const header = document.createElement('div'); header.className='dp-header';
-        const prev = document.createElement('button'); prev.type='button'; prev.className='btn btn-light btn-sm'; prev.textContent='‹';
-        const next = document.createElement('button'); next.type='button'; next.className='btn btn-light btn-sm'; next.textContent='›';
+        const prev = document.createElement('button'); prev.type='button'; prev.className='btn btn-light btn-sm dp-nav'; prev.textContent='‹'; prev.setAttribute('aria-label', 'Предыдущий месяц');
+        const next = document.createElement('button'); next.type='button'; next.className='btn btn-light btn-sm dp-nav'; next.textContent='›'; next.setAttribute('aria-label', 'Следующий месяц');
         const titleWrap = document.createElement('div'); titleWrap.className='d-flex align-items-center gap-2 flex-grow-1';
         const titleText = document.createElement('div'); titleText.className='fw-semibold';
         const yearSelectDp = document.createElement('select'); yearSelectDp.className='form-select form-select-sm'; yearSelectDp.style.width='auto';
@@ -485,29 +561,59 @@ document.addEventListener('DOMContentLoaded', function(){
         header.appendChild(prev); header.appendChild(titleWrap); header.appendChild(next);
         pop.appendChild(header);
 
+        const gridWrap = document.createElement('div');
+        gridWrap.className = 'dp-grid-wrap';
         const gridDp = document.createElement('div'); gridDp.className='dp-grid';
-        pop.appendChild(gridDp);
+        gridWrap.appendChild(gridDp);
+        pop.appendChild(gridWrap);
+
+        const hint = document.createElement('div');
+        hint.className = 'dp-hint';
+        hint.textContent = 'Свайп влево/вправо переключает месяц';
+        pop.appendChild(hint);
+
+        let suppressClicksUntil = 0;
+        let swipeState = null;
+
+        function changeMonth(delta){
+            const nextMonth = changeUtcMonth(curYear, curMonth, delta);
+            curYear = nextMonth.year;
+            curMonth = nextMonth.month;
+            renderDp();
+        }
+
+        function resetSwipeState(){
+            swipeState = null;
+            gridWrap.classList.remove('is-swiping');
+        }
 
         function renderDp(){
             gridDp.innerHTML='';
             yearSelectDp.innerHTML='';
+            const selectedValue = formatDateInputValue(input.value);
             for(let y=curYear-2; y<=curYear+5; y++){
                 const opt=document.createElement('option'); opt.value=y; opt.textContent=y;
                 if(y===curYear) opt.selected=true; yearSelectDp.appendChild(opt);
             }
-            const first = new Date(curYear, curMonth, 1);
-            const startIdx = (first.getDay()+6)%7;
+            const first = buildUtcDate(curYear, curMonth, 1);
+            const startIdx = (first.getUTCDay()+6)%7;
             ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d=>{
                 const c=document.createElement('div'); c.textContent=d; c.style.fontWeight='600'; c.style.fontSize='12px'; gridDp.appendChild(c);
             });
             for(let i=0;i<startIdx;i++){ const e=document.createElement('div'); gridDp.appendChild(e); }
-            const dim = new Date(curYear, curMonth+1,0).getDate();
+            const dim = buildUtcDate(curYear, curMonth + 1, 0).getUTCDate();
             for(let d=1; d<=dim; d++){
                 const c=document.createElement('div'); c.className='dp-day'; c.textContent=d;
+                const dateValue = formatIsoDate(buildUtcDate(curYear, curMonth, d));
+                if(dateValue === selectedValue){
+                    c.classList.add('is-selected');
+                }
                 c.addEventListener('click', ()=>{
+                    if(Date.now() < suppressClicksUntil) return;
                     const mm = String(curMonth+1).padStart(2,'0');
                     const dd = String(d).padStart(2,'0');
                     input.value = `${curYear}-${mm}-${dd}`;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
                     closePicker();
                 });
                 gridDp.appendChild(c);
@@ -517,9 +623,54 @@ document.addEventListener('DOMContentLoaded', function(){
         }
         renderDp();
 
-        prev.addEventListener('click', ()=>{ curMonth--; if(curMonth<0){ curMonth=11; curYear--; } renderDp(); });
-        next.addEventListener('click', ()=>{ curMonth++; if(curMonth>11){ curMonth=0; curYear++; } renderDp(); });
+        [prev, next].forEach(button => {
+            button.addEventListener('pointerdown', (e)=>e.stopPropagation());
+            button.addEventListener('click', (e)=>{
+                e.preventDefault();
+                e.stopPropagation();
+                changeMonth(button === prev ? -1 : 1);
+            });
+        });
         yearSelectDp.addEventListener('change', (e)=>{ curYear=parseInt(e.target.value,10); renderDp(); });
+
+        gridWrap.addEventListener('click', (e)=>{
+            if(Date.now() < suppressClicksUntil){
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, true);
+
+        gridWrap.addEventListener('pointerdown', (e)=>{
+            if(e.pointerType === 'mouse' && e.button !== 0) return;
+            swipeState = {
+                pointerId: e.pointerId,
+                startX: e.clientX,
+                startY: e.clientY,
+            };
+        });
+
+        gridWrap.addEventListener('pointermove', (e)=>{
+            if(!swipeState || e.pointerId !== swipeState.pointerId) return;
+            const dx = e.clientX - swipeState.startX;
+            const dy = e.clientY - swipeState.startY;
+            if(Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)){
+                gridWrap.classList.add('is-swiping');
+            }
+        });
+
+        const handleSwipeEnd = (e)=>{
+            if(!swipeState || e.pointerId !== swipeState.pointerId) return;
+            const dx = e.clientX - swipeState.startX;
+            const dy = e.clientY - swipeState.startY;
+            const shouldNavigate = Math.abs(dx) >= 48 && Math.abs(dx) > Math.abs(dy);
+            resetSwipeState();
+            if(!shouldNavigate) return;
+            suppressClicksUntil = Date.now() + 250;
+            changeMonth(dx < 0 ? 1 : -1);
+        };
+
+        gridWrap.addEventListener('pointerup', handleSwipeEnd);
+        gridWrap.addEventListener('pointercancel', resetSwipeState);
 
         document.body.appendChild(pop);
         positionPicker(pop, input);
