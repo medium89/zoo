@@ -84,6 +84,7 @@ Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function 
 
 // Main page
 Route::get('/', [HomeController::class, 'index']);
+Route::get('/calendar', [App\Http\Controllers\BoardingController::class, 'publicCalendar'])->name('calendar.index');
 Route::get('/gallery/more', [HomeController::class, 'galleryMore'])->name('gallery.more');
 Route::get('/articles', [App\Http\Controllers\ArticlePublicController::class, 'index'])->name('articles.index');
 Route::get('/articles/{article:slug}', [App\Http\Controllers\ArticlePublicController::class, 'show'])->name('articles.show');

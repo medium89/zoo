@@ -81,6 +81,16 @@ class BoardingController extends Controller
         ]);
     }
 
+    public function publicCalendar()
+    {
+        $year = Carbon::now()->year;
+
+        return view('calendar.index', [
+            'year' => $year,
+            'entries' => $this->entriesForYear($year)->values(),
+        ]);
+    }
+
     public function archive(Boarding $boarding)
     {
         $boarding->archived_at = now();
