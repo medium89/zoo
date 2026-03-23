@@ -108,11 +108,6 @@ p {
     line-height: 1.7rem;
 }
 
-section:not(#slider, #contacts) {
-    /* margin-bottom: 4rem; */
-    padding: 4rem 0;
-}
-
 .white {
     color: var(--color-quaternary) !important;
 }
