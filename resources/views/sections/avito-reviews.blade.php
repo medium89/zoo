@@ -31,6 +31,13 @@
                         @endphp
                         <div class="review-slide">
                             <article class="review-card">
+                                <div class="review-card__rating" aria-label="Рейтинг 5 из 5">
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                </div>
                                 <div class="review-card__header">
                                     <div class="review-card__avatar {{ $photoUrl ? '' : 'review-card__avatar--placeholder' }}">
                                         @if($photoUrl)

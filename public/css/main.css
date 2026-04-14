@@ -711,6 +711,19 @@ nav {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    position: relative;
+}
+
+.review-card__rating {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: #ffb400;
+    font-size: 0.85rem;
+    line-height: 1;
 }
 
 .review-card__header {
