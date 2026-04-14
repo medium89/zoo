@@ -15,19 +15,13 @@
     @endif
 
     <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Запись</span>
-            <span class="badge bg-secondary" id="boardingMode">добавление</span>
-        </div>
+        <div class="card-header">Запись</div>
         <div class="card-body">
             <form action="{{ route('admin.boarding.store') }}"
                   method="POST"
                   class="row g-3 align-items-end"
-                  id="boardingForm"
-                  data-store-action="{{ route('admin.boarding.store') }}"
-                  data-update-template="{{ route('admin.boarding.update', ['boarding' => '__ID__']) }}">
+                  id="boardingForm">
                 @csrf
-                <input type="hidden" name="_method" value="PUT" id="boardingMethod" disabled>
                 <div class="col-md-4">
                     <label class="form-label">Кличка</label>
                     <input type="text" name="name" class="form-control" required list="animalHints" autocomplete="off" placeholder="Выберите или введите">
@@ -41,6 +35,7 @@
                     <select name="service_type" class="form-select" required>
                         <option value="передержка">передержка</option>
                         <option value="выгул">выгул</option>
+                        <option value="уход">уход</option>
                     </select>
                 </div>
                 <div class="col-md-2 col-lg-2">
@@ -52,10 +47,7 @@
                     <input type="text" name="end_date" class="form-control js-date" autocomplete="off" inputmode="numeric" maxlength="10" required placeholder="YYYY-MM-DD">
                 </div>
                 <div class="col-12 text-end">
-                    <div class="d-flex justify-content-end gap-2 flex-wrap">
-                        <button type="button" class="btn btn-outline-secondary d-none" id="boardingCancel">Отмена</button>
-                        <button type="submit" class="btn btn-success" id="boardingSubmit">Добавить</button>
-                    </div>
+                    <button type="submit" class="btn btn-success">Добавить</button>
                 </div>
             </form>
             <datalist id="animalHints">
@@ -151,6 +143,54 @@
     </div>
 </div>
 
+<div class="modal fade" id="editBoardingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <form method="POST"
+              class="modal-content"
+              id="editBoardingForm"
+              data-update-template="{{ route('admin.boarding.update', ['boarding' => '__ID__']) }}">
+            @csrf
+            @method('PUT')
+            <div class="modal-header">
+                <h5 class="modal-title">Редактировать запись</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Кличка</label>
+                        <input type="text" name="name" class="form-control" required list="animalHints" autocomplete="off" placeholder="Выберите или введите">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Описание</label>
+                        <input type="text" name="description" class="form-control" placeholder="Напр. особенности, контакт" maxlength="255">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Тип услуги</label>
+                        <select name="service_type" class="form-select" required>
+                            <option value="передержка">передержка</option>
+                            <option value="выгул">выгул</option>
+                            <option value="уход">уход</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Начало</label>
+                        <input type="text" name="start_date" class="form-control js-date" autocomplete="off" inputmode="numeric" maxlength="10" required placeholder="YYYY-MM-DD">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Окончание</label>
+                        <input type="text" name="end_date" class="form-control js-date" autocomplete="off" inputmode="numeric" maxlength="10" required placeholder="YYYY-MM-DD">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <style>
     .calendar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
     .cal-month { border:1px solid #e5e7eb; border-radius:8px; padding:10px; box-shadow:0 4px 10px rgba(0,0,0,0.04); }
@@ -224,18 +264,25 @@ document.addEventListener('DOMContentLoaded', function(){
 
     const grid = document.getElementById('calendarGrid');
     const yearSelect = document.getElementById('yearSelect');
-    const form = document.getElementById('boardingForm');
-    const methodInput = document.getElementById('boardingMethod');
-    const submitBtn = document.getElementById('boardingSubmit');
-    const cancelBtn = document.getElementById('boardingCancel');
-    const modeBadge = document.getElementById('boardingMode');
+    const createForm = document.getElementById('boardingForm');
+    const editModalEl = document.getElementById('editBoardingModal');
+    const editForm = document.getElementById('editBoardingForm');
+    const editModal = editModalEl ? new bootstrap.Modal(editModalEl) : null;
 
-    const formFields = {
-        name: form.querySelector('[name="name"]'),
-        description: form.querySelector('[name="description"]'),
-        service: form.querySelector('[name="service_type"]'),
-        start: form.querySelector('[name="start_date"]'),
-        end: form.querySelector('[name="end_date"]'),
+    const createFields = {
+        name: createForm.querySelector('[name="name"]'),
+        description: createForm.querySelector('[name="description"]'),
+        service: createForm.querySelector('[name="service_type"]'),
+        start: createForm.querySelector('[name="start_date"]'),
+        end: createForm.querySelector('[name="end_date"]'),
+    };
+
+    const editFields = {
+        name: editForm.querySelector('[name="name"]'),
+        description: editForm.querySelector('[name="description"]'),
+        service: editForm.querySelector('[name="service_type"]'),
+        start: editForm.querySelector('[name="start_date"]'),
+        end: editForm.querySelector('[name="end_date"]'),
     };
 
     function parseIsoDate(value){
@@ -431,52 +478,33 @@ document.addEventListener('DOMContentLoaded', function(){
         fetchYear(e.target.value);
     });
 
-    // Добавление/редактирование записей
-    function setCreateMode(){
-        methodInput.disabled = true;
-        methodInput.value = 'PUT';
-        form.action = form.dataset.storeAction;
-        submitBtn.textContent = 'Добавить';
-        modeBadge.textContent = 'добавление';
-        modeBadge.classList.remove('bg-warning');
-        modeBadge.classList.add('bg-secondary');
-        cancelBtn.classList.add('d-none');
-        form.reset();
+    function openEditModal(payload){
+        if(!editModal) return;
+
+        editForm.action = editForm.dataset.updateTemplate.replace('__ID__', payload.id);
+        editFields.name.value = payload.name || '';
+        editFields.description.value = payload.description || '';
+        editFields.service.value = payload.service_type || 'передержка';
+        editFields.start.value = payload.start || '';
+        editFields.end.value = payload.end || '';
+        editModal.show();
     }
 
-    function setEditMode(payload){
-        methodInput.disabled = false;
-        methodInput.value = 'PUT';
-        form.action = form.dataset.updateTemplate.replace('__ID__', payload.id);
-        formFields.name.value = payload.name || '';
-        formFields.description.value = payload.description || '';
-        formFields.service.value = payload.service_type || 'передержка';
-        formFields.start.value = payload.start || '';
-        formFields.end.value = payload.end || '';
-        submitBtn.textContent = 'Сохранить';
-        modeBadge.textContent = `редактирование #${payload.id}`;
-        modeBadge.classList.remove('bg-secondary');
-        modeBadge.classList.add('bg-warning');
-        cancelBtn.classList.remove('d-none');
-        form.scrollIntoView({ behavior:'smooth', block:'start' });
-    }
-
-    function bindNameHints(){
+    function bindNameHints(fields){
         const options = Array.from(document.querySelectorAll('#animalHints option'));
         const maybeFill = () => {
-            const found = options.find(opt => opt.value === formFields.name.value);
-            if(found && !formFields.description.value){
-                formFields.description.value = found.dataset.description || '';
+            const found = options.find(opt => opt.value === fields.name.value);
+            if(found && !fields.description.value){
+                fields.description.value = found.dataset.description || '';
             }
         };
-        formFields.name.addEventListener('change', maybeFill);
-        formFields.name.addEventListener('blur', maybeFill);
+        fields.name.addEventListener('change', maybeFill);
+        fields.name.addEventListener('blur', maybeFill);
     }
 
-    cancelBtn.addEventListener('click', (e)=>{ e.preventDefault(); setCreateMode(); });
     document.querySelectorAll('.js-edit-entry').forEach(btn=>{
         btn.addEventListener('click', ()=>{
-            setEditMode({
+            openEditModal({
                 id: btn.dataset.id,
                 name: btn.dataset.name,
                 description: btn.dataset.description,
@@ -485,6 +513,11 @@ document.addEventListener('DOMContentLoaded', function(){
                 end: btn.dataset.end,
             });
         });
+    });
+
+    editModalEl?.addEventListener('hidden.bs.modal', ()=>{
+        editForm.reset();
+        editForm.action = '';
     });
 
     const archiveModalEl = document.getElementById('archiveModal');
@@ -513,8 +546,8 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     });
 
-    bindNameHints();
-    setCreateMode();
+    bindNameHints(createFields);
+    bindNameHints(editFields);
 
     // Кастомный datepicker около поля
     const dateInputs = Array.from(document.querySelectorAll('.js-date'));
@@ -533,11 +566,11 @@ document.addEventListener('DOMContentLoaded', function(){
         input.addEventListener('click', (e)=>{ e.stopPropagation(); openPicker(input); });
     });
 
-    form.addEventListener('submit', ()=>{
+    [createForm, editForm].forEach(currentForm => currentForm.addEventListener('submit', ()=>{
         dateInputs.forEach(input => {
             input.value = formatDateInputValue(input.value);
         });
-    });
+    }));
 
     function openPicker(input){
         closePicker();

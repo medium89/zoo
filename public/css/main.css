@@ -123,6 +123,7 @@ p {
 
 .container h2, .slider-content__empty-message h2 {
     display: inline-block;
+    margin-top: 3rem;
     margin-bottom: 4rem;
     font-weight: 500;
     text-transform: uppercase;
@@ -487,7 +488,10 @@ nav {
 
 /* ===== Ð¡Ð•ÐšÐ¦Ð˜Ð¯ "ÐŸÐ Ð•Ð˜ÐœÐ£Ð©Ð•Ð¡Ð¢Ð’Ð" ===== */
 #advantages {
-    background: var(--color-secondary) url(../assets/img/bg.png) repeat center center;
+    background-color: var(--color-secondary);
+    background-image: url(../assets/img/bg.png);
+    background-repeat: repeat;
+    background-position: center center;
     background-size: 5%;
 }
 
@@ -1855,19 +1859,41 @@ footer a, footer p {
 
 /* Мобильные устройства: "Преимущества" как карточки */
 @media (max-width: 768px) {
+    #advantages {
+        background-color: var(--color-secondary);
+        background-image: url(../assets/img/bg.png);
+        background-repeat: repeat;
+        background-position: center center;
+        background-size: 14%;
+    }
+
     .advantages-content__item {
-        display: block;
-        padding: 14px 16px 16px;
-        margin-bottom: 12px;
-        border-radius: 10px;
-        background: #fff;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr);
+        gap: 8px 14px;
+        align-items: center;
+        padding: 16px 0;
+        margin-bottom: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .advantages-content__item:last-child {
+        border-bottom: none;
     }
 
     .advantages-content__item-img {
         display: flex;
         justify-content: center;
-        margin-bottom: 8px;
+        align-items: center;
+        width: 72px;
+        min-width: 72px;
+        height: 72px;
+        min-height: 72px;
+        margin-bottom: 0;
+        grid-row: 1 / span 2;
     }
 
     .advantages-content__item-img img {
@@ -1877,9 +1903,9 @@ footer a, footer p {
 
     .advantages-content__item-title {
         padding: 0;
-        margin-bottom: 6px;
+        margin-bottom: 0;
         font-size: 1.05rem;
-        text-align: center;
+        text-align: left;
     }
 
     .advantages-content__item-text {

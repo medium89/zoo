@@ -35,7 +35,7 @@ class BoardingController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
-            'service_type' => 'required|string|in:передержка,выгул',
+            'service_type' => 'required|string|in:передержка,выгул,уход',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
@@ -51,7 +51,7 @@ class BoardingController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
-            'service_type' => 'required|string|in:передержка,выгул',
+            'service_type' => 'required|string|in:передержка,выгул,уход',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);

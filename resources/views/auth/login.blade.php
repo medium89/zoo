@@ -15,6 +15,18 @@
                     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
                 ">
                     <h2 style="text-align: center; padding: 20px 15px; font-size: 20px; font-weight: bold;">Авторизация</h2>
+                    @if (session('status'))
+                        <div class="alert alert-success mx-3">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
+                    @if ($errors->has('session'))
+                        <div class="alert alert-warning mx-3">
+                            {{ $errors->first('session') }}
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 

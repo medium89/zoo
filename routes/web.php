@@ -24,7 +24,7 @@ Auth::routes(['register' => false]);
 Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 
 // Admin Routes
-Route::middleware(['auth'])->prefix('zooadmin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'no.cache'])->prefix('zooadmin')->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('index');
     Route::get('settings', [App\Http\Controllers\AdminController::class, 'settings'])->name('settings');
     Route::post('settings/site', [App\Http\Controllers\AdminController::class, 'saveSiteStatus'])->name('settings.site');
