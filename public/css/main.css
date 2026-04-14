@@ -716,7 +716,7 @@ nav {
 
 .review-card__rating {
     position: absolute;
-    top: 18px;
+    top: 22px;
     right: 20px;
     display: inline-flex;
     align-items: center;
@@ -891,6 +891,11 @@ nav {
     .reviews-carousel {
         gap: 8px;
     }
+
+    .reviews-arrow {
+        display: none !important;
+    }
+
     .review-card {
         padding: 18px 16px;
     }
