@@ -32,8 +32,10 @@ class HomeController extends Controller
         $hasMoreGalleries = $totalGalleries > $galleries->count();
         $socials = Social::where('active', true)->orderBy('order')->get();
         $avitoReviews = AvitoReview::where('status', 'published')
-            ->orderBy('order')
-            ->orderBy('id')
+            ->orderByRaw('review_date IS NULL')
+            ->orderByDesc('review_date')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->get();
         $personalDataConsentText = $siteSettings?->personal_data_consent_text;
 
