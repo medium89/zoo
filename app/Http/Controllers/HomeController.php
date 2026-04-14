@@ -34,7 +34,6 @@ class HomeController extends Controller
         $avitoReviews = AvitoReview::where('status', 'published')
             ->orderBy('order')
             ->orderBy('id')
-            ->take(10)
             ->get();
         $personalDataConsentText = $siteSettings?->personal_data_consent_text;
 
