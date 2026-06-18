@@ -206,13 +206,18 @@
     .dp-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px; }
     .dp-nav { min-width:40px; font-size:18px; line-height:1; }
     .dp-nav:hover { background:#eef2f7; }
-    .dp-grid-wrap { touch-action:pan-y; border-radius:8px; }
+    .dp-grid-wrap { touch-action:none; overscroll-behavior:contain; border-radius:8px; }
     .dp-grid-wrap.is-swiping { cursor:grabbing; }
     .dp-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:13px; }
     .dp-day { text-align:center; padding:8px 0; border-radius:6px; cursor:pointer; border:1px solid transparent; }
     .dp-day:hover { background:#f3f4f6; }
     .dp-day.is-selected { background:#e9f8ef; border-color:#6cc17b; font-weight:600; }
     .dp-hint { margin-top:8px; font-size:11px; color:#6b7280; text-align:center; }
+    body.date-picker-open .admin-to-top {
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+    }
 </style>
 
 <div class="modal fade" id="archiveModal" tabindex="-1" aria-hidden="true">
@@ -709,6 +714,7 @@ document.addEventListener('DOMContentLoaded', function(){
         positionPicker(pop, input);
 
         activePicker = { pop, input };
+        document.body.classList.add('date-picker-open');
         document.addEventListener('click', outsideHandler);
         document.addEventListener('keydown', escHandler);
         window.addEventListener('resize', scrollHandler, true);
@@ -733,6 +739,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     function closePicker(){
+        document.body.classList.remove('date-picker-open');
         if(!activePicker) return;
         activePicker.pop.remove();
         activePicker = null;
