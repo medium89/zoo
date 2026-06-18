@@ -1,7 +1,7 @@
 @extends('admin.index')
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid boarding-calendar-page">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Передержка: календарь приёма</h1>
         <div class="d-flex gap-2">
@@ -192,12 +192,13 @@
 </div>
 
 <style>
-    .calendar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-    .cal-month { border:1px solid #e5e7eb; border-radius:8px; padding:10px; box-shadow:0 4px 10px rgba(0,0,0,0.04); }
+    .boarding-calendar-page { min-width:0; overflow-x:hidden; }
+    .calendar-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap:16px; min-width:0; }
+    .cal-month { min-width:0; border:1px solid #e5e7eb; border-radius:8px; padding:10px; box-shadow:0 4px 10px rgba(0,0,0,0.04); }
     .cal-month h5 { font-size:16px; margin-bottom:8px; }
     .cal-header, .cal-row { display:grid; grid-template-columns: repeat(7, 1fr); text-align:center; font-size:12px; }
     .cal-cell { padding:6px 0; border-radius:6px; position:relative; }
-    .cal-cell.day { cursor:pointer; }
+    .cal-cell.day { cursor:pointer; touch-action:manipulation; }
     .cal-cell.day:hover { background:#f3f4f6; }
     .cal-cell.day.busy { background:#e9f8ef; border:1px solid #6cc17b; }
     .cal-cell.day.conflict { background:#fff3e0; border:1px solid #f0a500; }
@@ -217,6 +218,23 @@
         opacity:0;
         visibility:hidden;
         pointer-events:none;
+    }
+    body.boarding-calendar-active .admin-to-top {
+        display:none;
+    }
+    @media (hover:none), (pointer:coarse) {
+        .tooltip-box {
+            position:fixed;
+            right:12px;
+            bottom:12px;
+            left:12px;
+            z-index:2100;
+            min-width:0;
+            max-width:none;
+            max-height:45vh;
+            overflow-y:auto;
+            font-size:14px;
+        }
     }
 </style>
 
@@ -263,6 +281,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
+    document.body.classList.add('boarding-calendar-active');
     const entries = JSON.parse(@json($entriesJson));
     let state = { year: @json($year), entries, minYear: {{ $minYear }}, maxYear: {{ $maxYear }} };
     const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
@@ -441,33 +460,59 @@ document.addEventListener('DOMContentLoaded', function(){
         bindTooltips();
     }
 
+    let calendarTooltip = null;
+    const usesTouchCalendar = window.matchMedia('(hover:none), (pointer:coarse)').matches;
+
+    function removeCalendarTooltip(){
+        if(!calendarTooltip) return;
+        calendarTooltip.remove();
+        calendarTooltip = null;
+    }
+
+    function showCalendarTooltip(cell){
+        removeCalendarTooltip();
+        calendarTooltip = document.createElement('div');
+        calendarTooltip.className='tooltip-box';
+        calendarTooltip.textContent = cell.dataset.tooltip;
+        document.body.appendChild(calendarTooltip);
+
+        if(usesTouchCalendar) return;
+
+        const rect = cell.getBoundingClientRect();
+        calendarTooltip.style.left = (rect.left + window.scrollX) + 'px';
+        calendarTooltip.style.top = (rect.bottom + 6 + window.scrollY) + 'px';
+        const tRect = calendarTooltip.getBoundingClientRect();
+        const maxLeft = window.innerWidth - tRect.width - 12;
+        if (tRect.right > window.innerWidth - 12) {
+            calendarTooltip.style.left = (Math.max(12, maxLeft) + window.scrollX) + 'px';
+        }
+        if (tRect.bottom > window.innerHeight - 12) {
+            calendarTooltip.style.top = (rect.top + window.scrollY - tRect.height - 8) + 'px';
+        }
+    }
+
     function bindTooltips(){
-        let tooltip;
+        removeCalendarTooltip();
         grid.querySelectorAll('.cal-cell.day').forEach(cell=>{
             cell.addEventListener('mouseenter', ()=>{
-                if(!cell.dataset.tooltip) return;
-                tooltip = document.createElement('div');
-                tooltip.className='tooltip-box';
-                tooltip.textContent = cell.dataset.tooltip;
-                document.body.appendChild(tooltip);
-                const rect = cell.getBoundingClientRect();
-                tooltip.style.left = (rect.left + window.scrollX) + 'px';
-                tooltip.style.top = (rect.bottom + 6 + window.scrollY) + 'px';
-                // keep tooltip within viewport
-                const tRect = tooltip.getBoundingClientRect();
-                const maxLeft = window.innerWidth - tRect.width - 12;
-                if (tRect.right > window.innerWidth - 12) {
-                    tooltip.style.left = Math.max(12, maxLeft) + window.scrollX + 'px';
-                }
-                if (tRect.bottom > window.innerHeight - 12) {
-                    tooltip.style.top = (rect.top + window.scrollY - tRect.height - 8) + 'px';
-                }
+                if(usesTouchCalendar || !cell.dataset.tooltip) return;
+                showCalendarTooltip(cell);
             });
             cell.addEventListener('mouseleave', ()=>{
-                if(tooltip){ tooltip.remove(); tooltip=null; }
+                if(!usesTouchCalendar) removeCalendarTooltip();
+            });
+            cell.addEventListener('click', (event)=>{
+                if(!usesTouchCalendar || !cell.dataset.tooltip) return;
+                event.preventDefault();
+                event.stopPropagation();
+                showCalendarTooltip(cell);
             });
         });
     }
+
+    document.addEventListener('click', ()=>{
+        if(usesTouchCalendar) removeCalendarTooltip();
+    });
 
     async function fetchYear(y){
         const res = await fetch(`{{ route('admin.boarding.data') }}?year=${y}`);
