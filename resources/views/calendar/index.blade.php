@@ -8,9 +8,19 @@
                 <div class="calendar-sidebar__inner">
                     <div class="calendar-sidebar__head">
                         <p class="calendar-sidebar__meta mb-0"><span class="calendar-sidebar__meta-count">{{ $entries->count() }}</span> активных записей до конца {{ $year }} года</p>
+                        @if($entries->isNotEmpty())
+                            <button
+                                type="button"
+                                class="calendar-sidebar__toggle"
+                                aria-expanded="false"
+                                aria-controls="calendarSidebarList"
+                            >
+                                Подробнее
+                            </button>
+                        @endif
                     </div>
 
-                    <div class="calendar-sidebar__list">
+                    <div id="calendarSidebarList" class="calendar-sidebar__list is-collapsed-mobile">
                         @forelse($entries as $entry)
                             <article class="sidebar-entry">
                                 <div class="sidebar-entry__head">
@@ -102,6 +112,21 @@
     .calendar-sidebar__meta-count {
         font-weight: 800;
         color: #27313b;
+    }
+
+    .calendar-sidebar__toggle {
+        display: none;
+        margin-top: 10px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #6f4425;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        cursor: pointer;
     }
 
     .calendar-sidebar__list {
@@ -414,6 +439,14 @@
             padding: 16px;
         }
 
+        .calendar-sidebar__toggle {
+            display: inline-flex;
+        }
+
+        .calendar-sidebar__list.is-collapsed-mobile {
+            display: none;
+        }
+
         .cal-month {
             padding: 18px 16px;
         }
@@ -441,9 +474,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const grid = document.getElementById('publicCalendarGrid');
     const tooltip = document.getElementById('calendarTooltip');
+    const sidebarToggle = document.querySelector('.calendar-sidebar__toggle');
+    const sidebarList = document.getElementById('calendarSidebarList');
 
     let activeDate = null;
     let activeButton = null;
+
+    sidebarToggle?.addEventListener('click', function () {
+        const isExpanded = sidebarToggle.getAttribute('aria-expanded') === 'true';
+        sidebarToggle.setAttribute('aria-expanded', String(!isExpanded));
+        sidebarToggle.textContent = isExpanded ? 'Подробнее' : 'Свернуть';
+        sidebarList?.classList.toggle('is-collapsed-mobile', isExpanded);
+    });
 
     function parseIsoDate(value) {
         if (!value) {
