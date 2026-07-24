@@ -84,6 +84,7 @@ Route::middleware(['auth', 'no.cache'])->prefix('zooadmin')->name('admin.')->gro
 
 // Main page
 Route::get('/', [HomeController::class, 'index']);
+Route::get('/v2', [HomeController::class, 'v2'])->name('v2');
 Route::get('/calendar', [App\Http\Controllers\BoardingController::class, 'publicCalendar'])->name('calendar.index');
 Route::get('/gallery/more', [HomeController::class, 'galleryMore'])->name('gallery.more');
 Route::get('/articles', [App\Http\Controllers\ArticlePublicController::class, 'index'])->name('articles.index');

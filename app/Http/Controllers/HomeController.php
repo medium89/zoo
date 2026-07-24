@@ -67,4 +67,42 @@ class HomeController extends Controller
         $html = view('partials.gallery_items', ['items' => $items])->render();
         return response()->json(['html' => $html, 'count' => $items->count(), 'hasMore' => $hasMore]);
     }
+
+    /**
+     * Experimental public redesign. It intentionally uses the same content as
+     * the main page so editors do not need to duplicate anything in the admin.
+     */
+    public function v2()
+    {
+        $siteSettings = SiteSetting::first();
+        $closed = $siteSettings?->site_closed;
+        if ($closed && !Auth::check()) {
+            return view('closed');
+        }
+
+        $sliders = Slider::where('active', true)->orderBy('order')->get();
+        $about = About::first();
+        $advantages = Advantage::where('active', true)->orderBy('order')->orderBy('id')->get();
+        $services = Service::where('active', true)->orderBy('order')->orderBy('id')->get();
+        $galleries = Gallery::where('active', true)->orderBy('number')->orderBy('id')->take(12)->get();
+        $socials = Social::where('active', true)->orderBy('order')->get();
+        $avitoReviews = AvitoReview::where('status', 'published')
+            ->orderByRaw('review_date IS NULL')
+            ->orderByDesc('review_date')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+        $personalDataConsentText = $siteSettings?->personal_data_consent_text;
+
+        return view('v2', compact(
+            'sliders',
+            'about',
+            'advantages',
+            'services',
+            'galleries',
+            'socials',
+            'avitoReviews',
+            'personalDataConsentText'
+        ));
+    }
 }
