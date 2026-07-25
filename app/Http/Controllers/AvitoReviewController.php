@@ -213,6 +213,12 @@ class AvitoReviewController extends Controller
         }
 
         if (!$response->ok()) {
+            if ($response->status() === 429) {
+                return redirect()
+                    ->route('admin.avito-reviews.index')
+                    ->with('error', 'Avito ограничил автоматическое обновление (HTTP 429). Откройте страницу Avito в браузере, дождитесь загрузки отзывов, сохраните страницу как HTML и загрузите её через «Импорт из файла».');
+            }
+
             return redirect()
                 ->route('admin.avito-reviews.index')
                 ->with('error', 'Не удалось загрузить страницу Avito (HTTP ' . $response->status() . ')');
