@@ -90,6 +90,35 @@ HTML;
         $this->assertTrue($isBlocked);
     }
 
+    public function test_it_parses_reviews_from_json_ld_when_the_page_has_no_data_markers(): void
+    {
+        $html = <<<'HTML'
+<!doctype html>
+<html>
+<body>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "review": [{
+                "@type": "Review",
+                "author": {"@type": "Person", "name": "Мария"},
+                "datePublished": "2026-06-15",
+                "reviewBody": "Спасибо, всё прошло отлично!"
+            }]
+        }
+    </script>
+</body>
+</html>
+HTML;
+
+        $parsed = $this->parseReviewsFromHtml($html);
+
+        $this->assertCount(1, $parsed);
+        $this->assertSame('Мария', $parsed[0]['name']);
+        $this->assertSame('2026-06-15', $parsed[0]['date']);
+        $this->assertSame('Спасибо, всё прошло отлично!', $parsed[0]['text']);
+    }
+
     private function parseReviewsFromHtml(string $html): array
     {
         $controller = new AvitoReviewController();

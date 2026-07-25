@@ -40,6 +40,11 @@
             {{ session('error') }}
         </div>
     @endif
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            {{ $errors->first() }}
+        </div>
+    @endif
 
     <div class="admin-grid" style="--grid-cols: 100px 1fr 140px 2fr 120px 120px 140px;">
         <div class="admin-grid-header">

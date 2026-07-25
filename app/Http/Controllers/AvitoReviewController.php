@@ -226,12 +226,21 @@ class AvitoReviewController extends Controller
     public function import(Request $request)
     {
         $data = $request->validate([
-            'html_file' => 'required|file|mimes:html,htm,txt',
+            // Browsers often save an HTML page with the generic
+            // application/octet-stream MIME type. Checking the MIME type here
+            // made a perfectly valid saved Avito page fail validation before
+            // it reached the parser.
+            'html_file' => 'required|file|max:20480',
         ]);
 
-        $html = file_get_contents($request->file('html_file')->getRealPath());
+        $html = file_get_contents($data['html_file']->getRealPath());
+        if ($html === false || trim($html) === '') {
+            return back()
+                ->withInput()
+                ->with('error', 'Не удалось прочитать загруженный файл. Загрузите сохранённую HTML-страницу Avito.');
+        }
 
-        return $this->importFromHtml($html, 'Загруженный файл');
+        return $this->importFromHtml($this->normalizeHtmlEncoding($html), 'Загруженный файл');
     }
 
     private function importFromHtml(string $html, string $sourceLabel)
@@ -303,7 +312,7 @@ class AvitoReviewController extends Controller
 
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
-        $loaded = $dom->loadHTML($html);
+        $loaded = $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
         libxml_clear_errors();
 
         if (!$loaded) {
@@ -313,7 +322,8 @@ class AvitoReviewController extends Controller
         $xpath = new \DOMXPath($dom);
         $parsed = array_merge(
             $this->parseReviewsFromMicrodata($xpath),
-            $this->parseReviewsFromDataMarkers($xpath)
+            $this->parseReviewsFromDataMarkers($xpath),
+            $this->parseReviewsFromJsonLd($xpath)
         );
 
         return $this->deduplicateParsedReviews($parsed);
@@ -482,6 +492,90 @@ class AvitoReviewController extends Controller
         }
 
         return $result;
+    }
+
+    /**
+     * Some saved pages contain reviews only as JSON-LD, without the rendered
+     * data-marker elements. Support the standard Review schema as a fallback.
+     */
+    private function parseReviewsFromJsonLd(\DOMXPath $xpath): array
+    {
+        $result = [];
+        $nodes = $xpath->query('//script[@type="application/ld+json"]');
+
+        if (!$nodes) {
+            return $result;
+        }
+
+        foreach ($nodes as $node) {
+            $json = trim($node->textContent);
+            if ($json === '') {
+                continue;
+            }
+
+            try {
+                $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+            } catch (\JsonException) {
+                continue;
+            }
+
+            foreach ($this->findJsonLdReviews($data) as $review) {
+                $author = $review['author'] ?? null;
+                $name = is_array($author) ? ($author['name'] ?? null) : $author;
+                $text = $review['reviewBody'] ?? $review['description'] ?? null;
+                $date = $review['datePublished'] ?? null;
+
+                if (!is_string($text) || trim($text) === '') {
+                    continue;
+                }
+
+                $result[] = [
+                    'name' => is_scalar($name) ? trim((string) $name) : null,
+                    'date' => is_scalar($date) ? trim((string) $date) : null,
+                    'text' => trim($text),
+                    'photos' => [],
+                    'avatar_url' => null,
+                ];
+            }
+        }
+
+        return $result;
+    }
+
+    private function findJsonLdReviews(mixed $data): array
+    {
+        if (!is_array($data)) {
+            return [];
+        }
+
+        $reviews = [];
+        if (isset($data['@type'])) {
+            $types = is_array($data['@type']) ? $data['@type'] : [$data['@type']];
+            if (in_array('Review', $types, true)) {
+                $reviews[] = $data;
+            }
+        }
+
+        foreach ($data as $value) {
+            if (is_array($value)) {
+                $reviews = array_merge($reviews, $this->findJsonLdReviews($value));
+            }
+        }
+
+        return $reviews;
+    }
+
+    private function normalizeHtmlEncoding(string $html): string
+    {
+        $html = preg_replace('/^\xEF\xBB\xBF/', '', $html) ?? $html;
+
+        if (mb_check_encoding($html, 'UTF-8')) {
+            return $html;
+        }
+
+        $encoding = mb_detect_encoding($html, ['Windows-1251', 'KOI8-R', 'ISO-8859-5'], true);
+
+        return $encoding ? mb_convert_encoding($html, 'UTF-8', $encoding) : $html;
     }
 
     private function deduplicateParsedReviews(array $parsed): array
