@@ -2,20 +2,16 @@
 set -euo pipefail
 
 # Usage:
-#   ./scripts/deploy-ssh.sh codex/fix-boarding-datepicker-edge
+#   ./scripts/deploy.sh
+#   ./scripts/deploy.sh another-branch
 #
 # The hosting's default `php` binary is PHP 8.0, while this Laravel project
 # requires PHP 8.1+. Keep the binary explicit so every Artisan command uses
 # the same version as the deployed application.
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BRANCH="${1:-}"
+BRANCH="${1:-${DEPLOY_BRANCH:-codex/fix-boarding-datepicker-edge}}"
 PHP_BIN="${PHP_BIN:-/opt/php81/bin/php}"
-
-if [[ -z "$BRANCH" ]]; then
-    echo "Usage: $0 <branch>"
-    exit 64
-fi
 
 if [[ ! -x "$PHP_BIN" ]]; then
     echo "PHP 8.1 binary was not found or is not executable: $PHP_BIN"
