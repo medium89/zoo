@@ -436,13 +436,17 @@ class TelegramBotController extends Controller
             ->get();
 
         if ($rows->isEmpty()) {
-            $this->sendMessage($chatId, 'Записей за период '.$start->toDateString().' — '.$end->toDateString().' нет.');
+            $this->sendMessage($chatId, 'Записей за период '.$this->russianDatePeriod($start, $end).' нет.');
             return;
         }
 
-        $text = 'Записи за период '.$start->toDateString().' — '.$end->toDateString().":\n";
+        $text = 'Записи: '.$this->russianDatePeriod($start, $end)."\n";
         foreach ($rows->take(40) as $row) {
-            $text .= '• '.$this->bookingLine($row)."\n";
+            $animal = $row->animal;
+            $name = $animal?->name ?: $row->name;
+            $text .= "\n🐾 {$name}\n";
+            $text .= '📅 '.$this->russianDatePeriod($row->start_date, $row->end_date)."\n";
+            $text .= '🛎 '.$this->serviceLabel($row->service_type)."\n";
         }
 
         if ($rows->count() > 40) {
@@ -450,6 +454,41 @@ class TelegramBotController extends Controller
         }
 
         $this->sendMessage($chatId, trim($text));
+    }
+
+    private function russianDatePeriod(Carbon $start, Carbon $end): string
+    {
+        $months = [
+            1 => 'января', 2 => 'февраля', 3 => 'марта', 4 => 'апреля',
+            5 => 'мая', 6 => 'июня', 7 => 'июля', 8 => 'августа',
+            9 => 'сентября', 10 => 'октября', 11 => 'ноября', 12 => 'декабря',
+        ];
+
+        $includeStartYear = $start->year !== $end->year;
+        $includeEndYear = $end->year !== now()->year || $includeStartYear;
+        $startText = $start->day.' '.$months[$start->month].($includeStartYear ? ' '.$start->year : '');
+
+        if ($start->isSameDay($end)) {
+            return $startText.($start->year !== now()->year ? ' '.$start->year : '');
+        }
+
+        if ($start->isSameMonth($end) && $start->year === $end->year) {
+            return $start->day.'–'.$end->day.' '.$months[$end->month].($includeEndYear ? ' '.$end->year : '');
+        }
+
+        $endText = $end->day.' '.$months[$end->month].($includeEndYear ? ' '.$end->year : '');
+
+        return $startText.' — '.$endText;
+    }
+
+    private function serviceLabel(string $serviceType): string
+    {
+        return match ($serviceType) {
+            'передержка' => 'Передержка',
+            'выгул' => 'Выгул',
+            'уход' => 'Уход',
+            default => mb_convert_case($serviceType, MB_CASE_TITLE, 'UTF-8'),
+        };
     }
 
     private function showAnimal(int|string $chatId, string $name): void
