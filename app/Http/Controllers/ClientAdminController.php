@@ -33,7 +33,7 @@ class ClientAdminController extends Controller
         $client->load([
             'animals.photos',
             'animals.boardings' => fn ($query) => $query->latest('start_date'),
-            'boardings.animal',
+            'boardings.animal.photos',
         ]);
 
         return view('admin.clients.show', compact('client'));

@@ -48,7 +48,6 @@ Route::middleware(['auth', 'no.cache'])->prefix('zooadmin')->name('admin.')->gro
     Route::resource('clients', App\Http\Controllers\ClientAdminController::class);
     Route::delete('animals/{animal}/photos/{photo}', [App\Http\Controllers\AnimalAdminController::class, 'destroyPhoto'])->name('animals.photos.destroy');
     Route::resource('animals', App\Http\Controllers\AnimalAdminController::class);
-    Route::post('animals/reorder', [App\Http\Controllers\AnimalAdminController::class, 'reorder'])->name('animals.reorder');
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::resource('feedbacks', FeedbackController::class)->except(['create', 'show']);
     Route::post('feedbacks/reorder', [FeedbackController::class, 'reorder'])->name('feedbacks.reorder');

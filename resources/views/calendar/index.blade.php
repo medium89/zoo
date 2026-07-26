@@ -23,14 +23,21 @@
                     <div id="calendarSidebarList" class="calendar-sidebar__list is-collapsed-mobile">
                         @forelse($entries as $entry)
                             <article class="sidebar-entry">
-                                <div class="sidebar-entry__head">
-                                    <h3 class="sidebar-entry__name">{{ $entry['name'] }}</h3>
-                                    <span class="sidebar-entry__type">{{ $entry['service_type'] }}</span>
+                                <div class="sidebar-entry__content{{ !empty($entry['photo_url']) ? ' has-photo' : '' }}">
+                                    @if(!empty($entry['photo_url']))
+                                        <img class="sidebar-entry__photo" src="{{ $entry['photo_url'] }}" alt="{{ $entry['name'] }}">
+                                    @endif
+                                    <div>
+                                        <div class="sidebar-entry__head">
+                                            <h3 class="sidebar-entry__name">{{ $entry['name'] }}</h3>
+                                            <span class="sidebar-entry__type">{{ $entry['service_type'] }}</span>
+                                        </div>
+                                        <p class="sidebar-entry__dates mb-0">{{ $entry['start_date'] }} — {{ $entry['end_date'] }}</p>
+                                        @if(!empty($entry['description']))
+                                            <p class="sidebar-entry__description mb-0">{{ $entry['description'] }}</p>
+                                        @endif
+                                    </div>
                                 </div>
-                                <p class="sidebar-entry__dates mb-0">{{ $entry['start_date'] }} — {{ $entry['end_date'] }}</p>
-                                @if(!empty($entry['description']))
-                                    <p class="sidebar-entry__description mb-0">{{ $entry['description'] }}</p>
-                                @endif
                             </article>
                         @empty
                             <div class="calendar-sidebar__empty">
@@ -140,6 +147,20 @@
         background: #ffffff;
         border: 1px solid #d7dbe1;
         box-shadow: 0 8px 20px rgba(39, 44, 52, 0.06);
+    }
+
+    .sidebar-entry__content.has-photo {
+        display: grid;
+        grid-template-columns: 58px minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    .sidebar-entry__photo {
+        width: 58px;
+        height: 58px;
+        object-fit: cover;
+        border-radius: 14px;
+        border: 1px solid #d7dbe1;
     }
 
     .sidebar-entry__head {
@@ -362,6 +383,25 @@
         border-radius: 16px;
         background: linear-gradient(180deg, #fffdfa 0%, #f8f1e9 100%);
         border: 1px solid rgba(85, 66, 54, 0.08);
+    }
+
+    .calendar-tooltip__entry-content {
+        display: block;
+    }
+
+    .calendar-tooltip__entry-content.has-photo {
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+    }
+
+    .calendar-tooltip__photo {
+        width: 52px;
+        height: 52px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid rgba(85, 66, 54, 0.14);
     }
 
     .calendar-tooltip__entry-head {
@@ -623,15 +663,23 @@ document.addEventListener('DOMContentLoaded', function () {
         const countText = `Записей на дату: ${items.length}`;
         const entriesHtml = items.map((item) => {
             const description = item.description ? `<p class="calendar-tooltip__description">${escapeHtml(item.description)}</p>` : '';
+            const photo = item.photo_url
+                ? `<img class="calendar-tooltip__photo" src="${escapeHtml(item.photo_url)}" alt="${escapeHtml(item.name)}">`
+                : '';
 
             return `
                 <article class="calendar-tooltip__entry">
-                    <div class="calendar-tooltip__entry-head">
-                        <h3 class="calendar-tooltip__name">${escapeHtml(item.name)}</h3>
-                        <span class="calendar-tooltip__type">${escapeHtml(item.service_type)}</span>
+                    <div class="calendar-tooltip__entry-content${photo ? ' has-photo' : ''}">
+                        ${photo}
+                        <div>
+                            <div class="calendar-tooltip__entry-head">
+                                <h3 class="calendar-tooltip__name">${escapeHtml(item.name)}</h3>
+                                <span class="calendar-tooltip__type">${escapeHtml(item.service_type)}</span>
+                            </div>
+                            <p class="calendar-tooltip__dates">${escapeHtml(item.start_date)} — ${escapeHtml(item.end_date)}</p>
+                            ${description}
+                        </div>
                     </div>
-                    <p class="calendar-tooltip__dates">${escapeHtml(item.start_date)} — ${escapeHtml(item.end_date)}</p>
-                    ${description}
                 </article>
             `;
         }).join('');

@@ -87,7 +87,7 @@ class AitunnelService
 
 Схема:
 {
-  "intent": "create_booking|list_bookings|attach_pet_photo|answer_yes|answer_no|cancel|unknown",
+  "intent": "create_booking|list_bookings|show_pet|show_client|attach_pet_photo|answer_yes|answer_no|cancel|unknown",
   "service_type": "передержка|выгул|уход|null",
   "start_date": "YYYY-MM-DD|null",
   "end_date": "YYYY-MM-DD|null",
@@ -107,6 +107,8 @@ class AitunnelService
 
 Правила:
 - Если просят показать записи на месяц/неделю/день/диапазон — intent=list_bookings и укажи start_date/end_date.
+- Если просят показать информацию о питомце (например, «покажи Луну», даже если написано «покажу Луну») — intent=show_pet и укажи animal.name в именительном падеже.
+- Если просят показать хозяина или клиента — intent=show_client. Укажи client.name, а если хозяина ищут по питомцу (например, «покажи хозяина Луны») — укажи animal.name и оставь client.name=null.
 - Если просят записать/принесут/будет питомец — intent=create_booking.
 - Если услуга не названа явно, service_type="передержка".
 - Даты всегда нормализуй с годом. Если год не указан, выбери ближайшую будущую дату относительно сегодня.

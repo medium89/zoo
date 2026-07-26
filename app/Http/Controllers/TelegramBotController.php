@@ -138,7 +138,7 @@ class TelegramBotController extends Controller
         }
 
         if (Str::startsWith($data, 'animal_yes:')) {
-            $animal = Animal::with('client')->find((int)Str::after($data, 'animal_yes:'));
+            $animal = Animal::with(['client', 'photos'])->find((int)Str::after($data, 'animal_yes:'));
             if (!$animal) {
                 $this->sendMessage($chatId, 'Питомец не найден. Повторите команду.');
                 return;
@@ -222,6 +222,16 @@ class TelegramBotController extends Controller
 
         if ($type === 'list_bookings') {
             $this->sendBookingsList($chatId, $intent);
+            return;
+        }
+
+        if ($type === 'show_pet') {
+            $this->showAnimal($chatId, (string) data_get($intent, 'animal.name'));
+            return;
+        }
+
+        if ($type === 'show_client') {
+            $this->showClient($chatId, (string) data_get($intent, 'client.name'), (string) data_get($intent, 'animal.name'));
             return;
         }
 
@@ -315,6 +325,8 @@ class TelegramBotController extends Controller
         $lastText = $last ? ' уже был у нас '.$last->start_date->format('d.m.Y') : ' уже есть в базе';
         $species = $animal->species ? $animal->species.' ' : '';
         $client = $animal->client ? ', хозяин '.$animal->client->name : '';
+
+        $this->sendAnimalPhotos($chatId, $animal, 1);
 
         $this->sendMessage($chatId, "Это {$species}{$animal->name}{$client}, который{$lastText}?", [
             'inline_keyboard' => [
@@ -438,6 +450,132 @@ class TelegramBotController extends Controller
         }
 
         $this->sendMessage($chatId, trim($text));
+    }
+
+    private function showAnimal(int|string $chatId, string $name): void
+    {
+        $name = trim($name);
+        if ($name === '') {
+            $this->sendMessage($chatId, 'Укажите кличку питомца. Например: «покажи Луну».');
+            return;
+        }
+
+        $animals = $this->animalsByName($name);
+        if ($animals->isEmpty()) {
+            $this->sendMessage($chatId, 'Питомец «'.$name.'» не найден.');
+            return;
+        }
+
+        if ($animals->count() > 1) {
+            $this->sendMessage($chatId, 'Нашёл несколько питомцев с кличкой «'.$name.'». Показываю первого; для точного поиска добавьте имя хозяина.');
+        }
+
+        $animal = $animals->first();
+        $this->sendAnimalPhotos($chatId, $animal);
+        $this->sendMessage($chatId, $this->animalInfoText($animal));
+    }
+
+    private function showClient(int|string $chatId, string $clientName, string $animalName = ''): void
+    {
+        $clientName = trim($clientName);
+        $animalName = trim($animalName);
+
+        if ($clientName === '' && $animalName !== '') {
+            $animal = $this->animalsByName($animalName)->first();
+            if ($animal?->client) {
+                $this->sendClientInfo($chatId, $animal->client);
+                return;
+            }
+            $this->sendMessage($chatId, 'У питомца «'.$animalName.'» хозяин не указан.');
+            return;
+        }
+
+        if ($clientName === '') {
+            $this->sendMessage($chatId, 'Укажите имя хозяина или кличку питомца. Например: «покажи хозяина Луны».');
+            return;
+        }
+
+        $clients = Client::with(['animals.photos'])
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($clientName)])
+            ->orWhereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($clientName).'%'])
+            ->orderBy('name')
+            ->limit(5)
+            ->get();
+
+        if ($clients->isEmpty()) {
+            $this->sendMessage($chatId, 'Хозяин «'.$clientName.'» не найден.');
+            return;
+        }
+
+        if ($clients->count() > 1) {
+            $this->sendMessage($chatId, 'Нашёл несколько хозяев по запросу «'.$clientName.'». Показываю первого.');
+        }
+
+        $this->sendClientInfo($chatId, $clients->first());
+    }
+
+    private function sendClientInfo(int|string $chatId, Client $client): void
+    {
+        $client->loadMissing(['animals.photos']);
+        $text = "Хозяин: {$client->name}\n";
+        $text .= 'Телефон: '.($client->phone ?: 'не указан')."\n";
+        $text .= 'Заметка: '.($client->note ?: '—')."\n";
+        $text .= 'Питомцы: '.($client->animals->isNotEmpty() ? $client->animals->pluck('name')->join(', ') : 'не добавлены');
+
+        $this->sendMessage($chatId, $text);
+
+        foreach ($client->animals->take(10) as $animal) {
+            $this->sendAnimalPhotos($chatId, $animal, 1);
+        }
+    }
+
+    private function animalsByName(string $name)
+    {
+        $normalized = mb_strtolower(trim($name));
+
+        return Animal::with(['client', 'photos', 'boardings' => fn ($query) => $query->latest('start_date')])
+            ->where(function ($query) use ($normalized) {
+                $query->whereRaw('LOWER(name) = ?', [$normalized])
+                    ->orWhereRaw('LOWER(name) LIKE ?', ['%'.$normalized.'%']);
+            })
+            ->orderByRaw('LOWER(name) = ? DESC', [$normalized])
+            ->orderBy('name')
+            ->limit(5)
+            ->get();
+    }
+
+    private function animalInfoText(Animal $animal): string
+    {
+        $last = $animal->boardings->first();
+        $text = "Питомец: {$animal->name}\n";
+        $text .= 'Вид: '.($animal->species ?: 'не указан')."\n";
+        $text .= 'Хозяин: '.($animal->client?->name ?: 'не указан')."\n";
+        $text .= 'Описание: '.($animal->description ?: '—')."\n";
+        $text .= 'Заметки: '.($animal->note ?: '—')."\n";
+        $text .= 'Всего записей: '.$animal->boardings->count();
+
+        if ($last) {
+            $text .= "\nПоследняя: {$last->service_type}, {$last->start_date->toDateString()} — {$last->end_date->toDateString()}";
+        }
+
+        return $text;
+    }
+
+    private function sendAnimalPhotos(int|string $chatId, Animal $animal, ?int $limit = null): void
+    {
+        $photos = $animal->photos;
+        if ($limit) {
+            $photos = $photos->take($limit);
+        }
+
+        foreach ($photos->take(10) as $photo) {
+            $source = $photo->telegram_file_id ?: url(Storage::url($photo->path));
+            $this->telegramApi('sendPhoto', [
+                'chat_id' => $chatId,
+                'photo' => $source,
+                'caption' => $animal->name,
+            ]);
+        }
     }
 
     private function handlePhoto(array $message): void

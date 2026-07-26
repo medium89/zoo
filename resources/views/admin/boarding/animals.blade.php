@@ -21,6 +21,7 @@
                         <thead>
                             <tr>
                                 <th>#</th>
+                                <th>Фото</th>
                                 <th>Кличка</th>
                                 <th>Вид</th>
                                 <th>Хозяин</th>
@@ -34,6 +35,13 @@
                                 @php($last = $animal->boardings->first())
                                 <tr>
                                     <td>{{ $animal->id }}</td>
+                                    <td>
+                                        @if($animal->photos->first())
+                                            <img src="{{ Storage::url($animal->photos->first()->path) }}" alt="{{ $animal->name }}" style="width:46px;height:46px;object-fit:cover;border-radius:8px;">
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
                                     <td><a href="{{ route('admin.animals.show', $animal) }}">{{ $animal->name }}</a></td>
                                     <td>{{ $animal->species ?: '—' }}</td>
                                     <td>

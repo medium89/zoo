@@ -14,7 +14,6 @@ class AnimalAdminController extends Controller
     {
         $animals = Animal::with(['client'])
             ->withCount(['boardings', 'photos'])
-            ->orderBy('order')
             ->orderBy('name')
             ->paginate(20);
 
@@ -82,17 +81,6 @@ class AnimalAdminController extends Controller
         $photo->delete();
 
         return back()->with('success', 'Фото удалено');
-    }
-
-    public function reorder(Request $request)
-    {
-        foreach ($request->input('orders', []) as $id => $order) {
-            if ($model = Animal::find($id)) {
-                $model->order = (int)$order;
-                $model->save();
-            }
-        }
-        return back()->with('success', 'Порядок обновлён');
     }
 
     private function validated(Request $request): array

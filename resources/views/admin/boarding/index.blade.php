@@ -95,11 +95,16 @@
                                 <tr>
                                     <td>{{ $row->id }}</td>
                                     <td>
-                                        @if($row->animal)
-                                            <a href="{{ route('admin.animals.show', $row->animal) }}">{{ $row->animal->name }}</a>
-                                        @else
-                                            {{ $row->name }}
-                                        @endif
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if($row->animal?->photos->first())
+                                                <img src="{{ Storage::url($row->animal->photos->first()->path) }}" alt="{{ $row->animal->name }}" style="width:38px;height:38px;object-fit:cover;border-radius:8px;">
+                                            @endif
+                                            @if($row->animal)
+                                                <a href="{{ route('admin.animals.show', $row->animal) }}">{{ $row->animal->name }}</a>
+                                            @else
+                                                {{ $row->name }}
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         @if($row->client ?: $row->animal?->client)

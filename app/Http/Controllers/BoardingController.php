@@ -18,12 +18,12 @@ class BoardingController extends Controller
         $range = $this->activeRange();
         $this->hydrateAnimalsFromBoardings();
         $entries = $year === 'all' ? $this->entriesAllActive() : $this->entriesForYear($year);
-        $latest = Boarding::with(['animal.client', 'client'])
+        $latest = Boarding::with(['animal.photos', 'animal.client', 'client'])
             ->whereNull('archived_at')
             ->orderByDesc('created_at')
             ->take(20)
             ->get();
-        $animals = Animal::with('client')->orderBy('name')->get();
+        $animals = Animal::with(['client', 'photos'])->orderBy('name')->get();
         $clients = Client::orderBy('name')->get();
 
         return view('admin.boarding.index', [
@@ -141,7 +141,8 @@ class BoardingController extends Controller
 
     public function archiveIndex()
     {
-        $archived = Boarding::whereNotNull('archived_at')
+        $archived = Boarding::with(['animal.photos', 'animal.client', 'client'])
+            ->whereNotNull('archived_at')
             ->orderByDesc('archived_at')
             ->orderByDesc('created_at')
             ->get();
@@ -152,7 +153,7 @@ class BoardingController extends Controller
     public function animals()
     {
         $this->hydrateAnimalsFromBoardings();
-        $animals = Animal::with(['client'])
+        $animals = Animal::with(['client', 'photos'])
             ->withCount(['boardings'])
             ->with(['boardings' => function($query) {
                 $query->latest('start_date')->limit(1);
@@ -189,7 +190,7 @@ class BoardingController extends Controller
         $end = Carbon::create($year, 12, 31);
 
         return Boarding::whereNull('archived_at')
-            ->with(['animal.client', 'client'])
+            ->with(['animal.photos', 'animal.client', 'client'])
             ->where(function($q) use ($start, $end) {
                 $q->whereBetween('start_date', [$start, $end])
                   ->orWhereBetween('end_date', [$start, $end])
@@ -205,7 +206,7 @@ class BoardingController extends Controller
     private function entriesAllActive()
     {
         return Boarding::whereNull('archived_at')
-            ->with(['animal.client', 'client'])
+            ->with(['animal.photos', 'animal.client', 'client'])
             ->orderBy('start_date')
             ->get()
             ->map(fn ($item) => $this->entryPayload($item));
@@ -294,6 +295,9 @@ class BoardingController extends Controller
             'species' => $animal?->species,
             'client_name' => $client?->name,
             'description' => $item->description ?: $animal?->description,
+            'photo_url' => $animal?->photos->first()
+                ? url(\Illuminate\Support\Facades\Storage::url($animal->photos->first()->path))
+                : null,
             'service_type' => $item->service_type,
             'start_date' => $item->start_date->toDateString(),
             'end_date' => $item->end_date->toDateString(),

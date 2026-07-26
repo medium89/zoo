@@ -67,7 +67,18 @@
                             @foreach($client->boardings->sortByDesc('start_date') as $boarding)
                                 <tr>
                                     <td>{{ $boarding->id }}</td>
-                                    <td>{{ $boarding->animal?->name ?: $boarding->name }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if($boarding->animal?->photos->first())
+                                                <img src="{{ Storage::url($boarding->animal->photos->first()->path) }}" alt="{{ $boarding->animal->name }}" style="width:38px;height:38px;object-fit:cover;border-radius:8px;">
+                                            @endif
+                                            @if($boarding->animal)
+                                                <a href="{{ route('admin.animals.show', $boarding->animal) }}">{{ $boarding->animal->name }}</a>
+                                            @else
+                                                {{ $boarding->name }}
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>{{ $boarding->service_type }}</td>
                                     <td>{{ $boarding->start_date->toDateString() }} — {{ $boarding->end_date->toDateString() }}</td>
                                     <td>{{ $boarding->source ?? 'admin' }}</td>

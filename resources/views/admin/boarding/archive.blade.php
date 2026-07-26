@@ -17,9 +17,10 @@
     <div class="card">
         <div class="card-body">
             @if($archived->count())
-                <div class="admin-grid" style="--grid-cols: 60px 1.2fr 1.5fr 1fr 1.3fr 1fr 190px;">
+                <div class="admin-grid" style="--grid-cols: 60px 70px 1.2fr 1.5fr 1fr 1.3fr 1fr 190px;">
                     <div class="admin-grid-header">
                         <span>#</span>
+                        <span>Фото</span>
                         <span>Кличка</span>
                         <span>Описание</span>
                         <span>Тип услуги</span>
@@ -31,7 +32,20 @@
                         @foreach($archived as $row)
                             <div class="admin-grid-row" data-id="{{ $row->id }}">
                                 <div data-label="ID">{{ $row->id }}</div>
-                                <div data-label="Кличка">{{ $row->name }}</div>
+                                <div data-label="Фото">
+                                    @if($row->animal?->photos->first())
+                                        <img src="{{ Storage::url($row->animal->photos->first()->path) }}" alt="{{ $row->animal->name }}" style="width:42px;height:42px;object-fit:cover;border-radius:8px;">
+                                    @else
+                                        —
+                                    @endif
+                                </div>
+                                <div data-label="Кличка">
+                                    @if($row->animal)
+                                        <a href="{{ route('admin.animals.show', $row->animal) }}">{{ $row->animal->name }}</a>
+                                    @else
+                                        {{ $row->name }}
+                                    @endif
+                                </div>
                                 <div data-label="Описание">{{ $row->description }}</div>
                                 <div data-label="Тип услуги">{{ $row->service_type }}</div>
                                 <div data-label="Период">{{ $row->start_date->toDateString() }} — {{ $row->end_date->toDateString() }}</div>

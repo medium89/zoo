@@ -40,7 +40,13 @@
                         <div class="d-flex flex-wrap gap-3">
                             @foreach($animal->photos as $photo)
                                 <div>
-                                    <img src="{{ Storage::url($photo->path) }}" alt="{{ $animal->name }}" style="width:140px;height:140px;object-fit:cover;border-radius:10px;">
+                                    <button type="button"
+                                            class="btn p-0 border-0 js-animal-photo"
+                                            data-image="{{ Storage::url($photo->path) }}"
+                                            data-title="{{ $animal->name }}"
+                                            aria-label="Увеличить фото {{ $animal->name }}">
+                                        <img src="{{ Storage::url($photo->path) }}" alt="{{ $animal->name }}" style="width:140px;height:140px;object-fit:cover;border-radius:10px;cursor:zoom-in;">
+                                    </button>
                                     <form action="{{ route('admin.animals.photos.destroy', [$animal, $photo]) }}" method="POST" class="mt-2 js-delete-form" data-confirm="Удалить фото?">
                                         @csrf
                                         @method('DELETE')
@@ -91,4 +97,43 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="animalPhotoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white" id="animalPhotoModalTitle"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body pt-0 text-center">
+                <img id="animalPhotoModalImage" src="" alt="" class="img-fluid rounded" style="max-height:75vh;">
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modalElement = document.getElementById('animalPhotoModal');
+    const image = document.getElementById('animalPhotoModalImage');
+    const title = document.getElementById('animalPhotoModalTitle');
+    const modal = modalElement ? new bootstrap.Modal(modalElement) : null;
+
+    document.querySelectorAll('.js-animal-photo').forEach((button) => {
+        button.addEventListener('click', function () {
+            if (!modal) return;
+            image.src = button.dataset.image;
+            image.alt = button.dataset.title;
+            title.textContent = button.dataset.title;
+            modal.show();
+        });
+    });
+
+    modalElement?.addEventListener('hidden.bs.modal', function () {
+        image.src = '';
+    });
+});
+</script>
+@endpush
 @endsection
