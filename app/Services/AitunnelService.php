@@ -87,11 +87,12 @@ class AitunnelService
 
 Схема:
 {
-  "intent": "create_booking|list_bookings|show_pet|show_client|attach_pet_photo|answer_yes|answer_no|cancel|unknown",
+  "intent": "create_booking|list_bookings|delete_booking|show_pet|show_client|attach_pet_photo|answer_yes|answer_no|cancel|unknown",
   "service_type": "передержка|выгул|уход|null",
   "start_date": "YYYY-MM-DD|null",
   "end_date": "YYYY-MM-DD|null",
   "period_label": "строка|null",
+  "delete_scope": "single|upcoming|null",
   "animal": {
     "name": "строка|null",
     "species": "кот|кошка|собака|пес|пёс|щенок|другое|null",
@@ -109,9 +110,11 @@ class AitunnelService
 - Если просят показать записи на месяц/неделю/день/диапазон — intent=list_bookings и укажи start_date/end_date.
 - Если просят показать информацию о питомце (например, «покажи Луну», даже если написано «покажу Луну») — intent=show_pet и укажи animal.name в именительном падеже.
 - Если просят показать хозяина или клиента — intent=show_client. Укажи client.name, а если хозяина ищут по питомцу (например, «покажи хозяина Луны») — укажи animal.name и оставь client.name=null.
+- Если просят удалить запись, отменить приём или убрать передержку — intent=delete_booking. Укажи кличку в animal.name, start_date и end_date. Для записи на один день обе даты одинаковые. Для записи на несколько дней укажи весь период; например, «удали Луну с 28 по 30 июля». Если просят все предстоящие/будущие записи конкретного питомца, установи delete_scope="upcoming" и укажи animal.name; даты в таком случае оставь null.
 - Если просят записать/принесут/будет питомец — intent=create_booking.
 - Если услуга не названа явно, service_type="передержка".
 - Даты всегда нормализуй с годом. Если год не указан, выбери ближайшую будущую дату относительно сегодня.
+- Для intent=delete_booking при неуказанном годе используй текущий год, а не будущий.
 - Если пользователь отвечает "да", "подтверждаю", "согласен" — intent=answer_yes.
 - Если "нет", "не тот", "создай нового" — intent=answer_no.
 - Если "отмена", "отмени" — intent=cancel.

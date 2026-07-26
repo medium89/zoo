@@ -167,6 +167,45 @@ class TelegramBotController extends Controller
             return;
         }
 
+        if (Str::startsWith($data, 'delete_booking_select:')) {
+            $boardingId = (int) Str::after($data, 'delete_booking_select:');
+            if (!in_array($boardingId, array_map('intval', $payload['delete_candidate_ids'] ?? []), true)) {
+                $this->sendMessage($chatId, 'Эту запись уже нельзя удалить из текущего запроса. Повторите команду.');
+                return;
+            }
+
+            $boarding = Boarding::with(['animal.client', 'client'])
+                ->whereNull('archived_at')
+                ->find($boardingId);
+            if (!$boarding) {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Запись не найдена или уже удалена.');
+                return;
+            }
+
+            $this->askDeleteConfirmation($chatId, $fromId, $boarding);
+            return;
+        }
+
+        if ($data === 'delete_booking_confirm') {
+            $boardingId = (int) ($payload['delete_boarding_id'] ?? 0);
+            $boarding = Boarding::with(['animal.client', 'client'])
+                ->whereNull('archived_at')
+                ->find($boardingId);
+
+            if (!$boarding) {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Запись не найдена или уже удалена.');
+                return;
+            }
+
+            $line = $this->bookingLine($boarding);
+            $boarding->delete();
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, "Запись удалена:\n{$line}");
+            return;
+        }
+
         $this->sendMessage($chatId, 'Неизвестное действие.');
     }
 
@@ -232,6 +271,11 @@ class TelegramBotController extends Controller
 
         if ($type === 'show_client') {
             $this->showClient($chatId, (string) data_get($intent, 'client.name'), (string) data_get($intent, 'animal.name'));
+            return;
+        }
+
+        if ($type === 'delete_booking') {
+            $this->startBookingDeletion($chatId, $fromId, $intent);
             return;
         }
 
@@ -454,6 +498,93 @@ class TelegramBotController extends Controller
         }
 
         $this->sendMessage($chatId, trim($text));
+    }
+
+    private function startBookingDeletion(int|string $chatId, string $fromId, array $intent): void
+    {
+        $startValue = data_get($intent, 'start_date');
+        $endValue = data_get($intent, 'end_date') ?: $startValue;
+        $isUpcoming = data_get($intent, 'delete_scope') === 'upcoming';
+        $animalName = trim((string) data_get($intent, 'animal.name'));
+
+        if ($isUpcoming && $animalName === '') {
+            $this->sendMessage($chatId, 'Для предстоящих записей укажите кличку питомца. Например: «удали все предстоящие записи Пушка».');
+            return;
+        }
+
+        if ((!$startValue || !$endValue) && !$isUpcoming) {
+            $this->sendMessage($chatId, 'Для удаления укажите период записи. Например: «удали Луну с 28 по 30 июля».');
+            return;
+        }
+
+        $start = $isUpcoming ? now()->startOfDay() : Carbon::parse($startValue)->startOfDay();
+        $end = $isUpcoming ? null : Carbon::parse($endValue)->endOfDay();
+
+        $rows = Boarding::with(['animal.client', 'client'])
+            ->whereNull('archived_at')
+            ->when($animalName !== '', function ($query) use ($animalName) {
+                $name = mb_strtolower($animalName);
+                $query->where(function ($sub) use ($name) {
+                    $sub->whereRaw('LOWER(name) = ?', [$name])
+                        ->orWhereHas('animal', fn ($animalQuery) => $animalQuery->whereRaw('LOWER(name) = ?', [$name]));
+                });
+            })
+            ->when($end, fn ($query) => $query->where('start_date', '<=', $end))
+            ->where('end_date', '>=', $start)
+            ->orderBy('start_date')
+            ->limit(8)
+            ->get();
+
+        if ($rows->isEmpty()) {
+            $subject = $animalName !== '' ? ' для питомца «'.$animalName.'»' : '';
+            $period = $isUpcoming ? 'начиная с '.$this->russianDatePeriod($start, $start) : 'за период '.$this->russianDatePeriod($start, $end);
+            $this->sendMessage($chatId, 'Активных записей'.$subject.' '.$period.' не найдено.');
+            return;
+        }
+
+        if ($rows->count() === 1) {
+            $this->askDeleteConfirmation($chatId, $fromId, $rows->first());
+            return;
+        }
+
+        $payload = ['delete_candidate_ids' => $rows->pluck('id')->all()];
+        $this->saveSession($fromId, $chatId, 'waiting_delete_selection', $payload);
+
+        $keyboard = $rows->map(fn (Boarding $row) => [[
+            'text' => '#'.$row->id.' · '.$this->deleteButtonLabel($row),
+            'callback_data' => 'delete_booking_select:'.$row->id,
+        ]])->all();
+        $keyboard[] = [['text' => 'Отмена', 'callback_data' => 'cancel']];
+
+        $message = $isUpcoming
+            ? 'Нашёл предстоящие записи. Выберите одну запись для удаления:'
+            : 'Нашёл несколько записей. Выберите, какую удалить:';
+        $this->sendMessage($chatId, $message, [
+            'inline_keyboard' => $keyboard,
+        ]);
+    }
+
+    private function askDeleteConfirmation(int|string $chatId, string $fromId, Boarding $boarding): void
+    {
+        $this->saveSession($fromId, $chatId, 'waiting_delete_confirmation', [
+            'delete_boarding_id' => $boarding->id,
+        ]);
+
+        $this->sendMessage($chatId, "Будет удалена запись:\n".$this->bookingLine($boarding)."\n\nПитомец и хозяин останутся в базе. Удалить?", [
+            'inline_keyboard' => [
+                [
+                    ['text' => 'Удалить', 'callback_data' => 'delete_booking_confirm'],
+                    ['text' => 'Отмена', 'callback_data' => 'cancel'],
+                ],
+            ],
+        ]);
+    }
+
+    private function deleteButtonLabel(Boarding $boarding): string
+    {
+        $name = $boarding->animal?->name ?: $boarding->name;
+
+        return $name.' · '.$this->russianDatePeriod($boarding->start_date, $boarding->end_date);
     }
 
     private function russianDatePeriod(Carbon $start, Carbon $end): string
