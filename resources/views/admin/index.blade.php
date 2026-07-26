@@ -488,7 +488,8 @@
             </div>
             <div class="sidebar-content__item px-3 text-uppercase text-muted small">Настройки</div>
             <div class="sidebar-content__item">
-                <a href="{{ route('admin.settings') }}" class="{{ request()->is('zooadmin/settings*') ? 'active' : '' }}"><i class="fa fa-gear me-2"></i>Настройки</a>
+                <a href="{{ route('admin.settings') }}" class="{{ request()->is('zooadmin/settings') ? 'active' : '' }}"><i class="fa fa-gear me-2"></i>Настройки</a>
+                <a href="{{ route('admin.telegram-bot-settings.edit') }}" class="{{ request()->is('zooadmin/settings/telegram-bot*') ? 'active' : '' }}"><i class="fa fa-robot me-2"></i>Telegram-бот</a>
                 <a href="{{ route('admin.personal-data-consent.edit') }}" class="{{ request()->is('zooadmin/personal-data-consent*') ? 'active' : '' }}"><i class="fa fa-file-signature me-2"></i>Согласие ПДн</a>
                 <a href="{{ route('admin.nav-links.index') }}" class="{{ request()->is('zooadmin/nav-links*') ? 'active' : '' }}"><i class="fa fa-list me-2"></i>Меню сайта</a>
                 <a href="{{ route('admin.users.index') }}" class="{{ request()->is('zooadmin/users*') ? 'active' : '' }}"><i class="fa fa-users me-2"></i>Пользователи</a>

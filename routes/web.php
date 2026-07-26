@@ -28,6 +28,8 @@ Route::middleware(['auth', 'no.cache'])->prefix('zooadmin')->name('admin.')->gro
     Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('index');
     Route::get('settings', [App\Http\Controllers\AdminController::class, 'settings'])->name('settings');
     Route::post('settings/site', [App\Http\Controllers\AdminController::class, 'saveSiteStatus'])->name('settings.site');
+    Route::get('settings/telegram-bot', [App\Http\Controllers\TelegramBotSettingsController::class, 'edit'])->name('telegram-bot-settings.edit');
+    Route::put('settings/telegram-bot', [App\Http\Controllers\TelegramBotSettingsController::class, 'update'])->name('telegram-bot-settings.update');
     Route::get('personal-data-consent', [App\Http\Controllers\PersonalDataConsentController::class, 'edit'])->name('personal-data-consent.edit');
     Route::post('personal-data-consent', [App\Http\Controllers\PersonalDataConsentController::class, 'update'])->name('personal-data-consent.update');
     Route::resource('sliders', App\Http\Controllers\SliderController::class);
