@@ -13,22 +13,27 @@
 
     @if($animals->count())
         <form id="animals-order-form" action="{{ route('admin.animals.reorder') }}" method="POST">@csrf</form>
-        <div class="admin-grid" style="--grid-cols: 100px 1fr 2fr 160px;">
+        <div class="admin-grid" style="--grid-cols: 80px 1fr 1fr 1fr 100px 160px;">
             <div class="admin-grid-header">
                 <div>#</div>
                 <div>Кличка</div>
-                <div>Описание</div>
+                <div>Вид</div>
+                <div>Хозяин</div>
+                <div>Записи</div>
                 <div class="text-end">Действия</div>
             </div>
             <div class="admin-grid-body js-sortable" id="animalSort" data-custom-sort="1">
                 @foreach($animals as $animal)
                     <div class="admin-grid-row" data-id="{{ $animal->id }}">
                         <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
-                        <div>{{ $animal->name }}</div>
-                        <div class="text-clip">{{ $animal->description }}</div>
+                        <div><a href="{{ route('admin.animals.show', $animal) }}">{{ $animal->name }}</a></div>
+                        <div>{{ $animal->species ?: '—' }}</div>
+                        <div>{{ $animal->client?->name ?: '—' }}</div>
+                        <div>{{ $animal->boardings_count }}</div>
                         <input type="hidden" name="orders[{{ $animal->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="animals-order-form">
                         <div class="actions">
                             <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ route('admin.animals.show', $animal) }}" class="btn btn-sm btn-outline-secondary"><i class="fa fa-eye"></i></a>
                                 <a href="{{ route('admin.animals.edit', $animal) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
                                 <form action="{{ route('admin.animals.destroy', $animal) }}" method="POST" class="d-inline js-delete-form" data-confirm="Удалить питомца?">
                                     @csrf

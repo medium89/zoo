@@ -1,0 +1,118 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
+use RuntimeException;
+
+class AitunnelService
+{
+    public function extractIntent(string $text): array
+    {
+        $apiKey = config('services.aitunnel.api_key');
+        if (!$apiKey) {
+            throw new RuntimeException('AITUNNEL_API_KEY is not configured.');
+        }
+
+        $response = Http::withToken($apiKey)
+            ->acceptJson()
+            ->timeout(45)
+            ->post($this->baseUrl().'/chat/completions', [
+                'model' => config('services.aitunnel.chat_model', 'gemini-2.5-flash-lite'),
+                'temperature' => 0.1,
+                'response_format' => ['type' => 'json_object'],
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => $this->systemPrompt(),
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $text,
+                    ],
+                ],
+            ]);
+
+        if (!$response->ok()) {
+            throw new RuntimeException('AITunnel request failed: '.$response->status());
+        }
+
+        $content = $response->json('choices.0.message.content');
+        $decoded = is_string($content) ? json_decode($content, true) : null;
+
+        if (!is_array($decoded)) {
+            throw new RuntimeException('AITunnel returned invalid JSON.');
+        }
+
+        return $decoded;
+    }
+
+    public function transcribeAudio(string $bytes, string $filename = 'voice.ogg'): string
+    {
+        $apiKey = config('services.aitunnel.api_key');
+        if (!$apiKey) {
+            throw new RuntimeException('AITUNNEL_API_KEY is not configured.');
+        }
+
+        $response = Http::withToken($apiKey)
+            ->timeout(60)
+            ->attach('file', $bytes, $filename)
+            ->post($this->baseUrl().'/audio/transcriptions', [
+                'model' => config('services.aitunnel.stt_model', 'whisper-1'),
+                'language' => 'ru',
+            ]);
+
+        if (!$response->ok()) {
+            throw new RuntimeException('AITunnel transcription failed: '.$response->status());
+        }
+
+        return trim((string)$response->json('text'));
+    }
+
+    private function baseUrl(): string
+    {
+        return rtrim(config('services.aitunnel.base_url', 'https://api.aitunnel.ru/v1'), '/');
+    }
+
+    private function systemPrompt(): string
+    {
+        $today = Carbon::now(config('app.timezone'))->toDateString();
+
+        return <<<PROMPT
+Ты извлекаешь намерения администратора зоосервиса из русских сообщений для Telegram-бота.
+Сегодня: {$today}. Часовой пояс: Asia/Barnaul.
+
+Верни только JSON без Markdown.
+
+Схема:
+{
+  "intent": "create_booking|list_bookings|attach_pet_photo|answer_yes|answer_no|cancel|unknown",
+  "service_type": "передержка|выгул|уход|null",
+  "start_date": "YYYY-MM-DD|null",
+  "end_date": "YYYY-MM-DD|null",
+  "period_label": "строка|null",
+  "animal": {
+    "name": "строка|null",
+    "species": "кот|кошка|собака|пес|пёс|щенок|другое|null",
+    "description": "строка|null"
+  },
+  "client": {
+    "name": "строка|null",
+    "phone": "строка|null",
+    "note": "строка|null"
+  },
+  "confidence": 0.0
+}
+
+Правила:
+- Если просят показать записи на месяц/неделю/день/диапазон — intent=list_bookings и укажи start_date/end_date.
+- Если просят записать/принесут/будет питомец — intent=create_booking.
+- Если услуга не названа явно, service_type="передержка".
+- Даты всегда нормализуй с годом. Если год не указан, выбери ближайшую будущую дату относительно сегодня.
+- Если пользователь отвечает "да", "подтверждаю", "согласен" — intent=answer_yes.
+- Если "нет", "не тот", "создай нового" — intent=answer_no.
+- Если "отмена", "отмени" — intent=cancel.
+PROMPT;
+    }
+}

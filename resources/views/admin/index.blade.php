@@ -474,6 +474,7 @@
             </div>
             <div class="sidebar-content__item px-3 text-uppercase text-muted small border-top pt-2 mt-2">Работа</div>
             <div class="sidebar-content__item">
+                <a href="{{ route('admin.clients.index') }}" class="{{ request()->is('zooadmin/clients*') ? 'active' : '' }}"><i class="fa fa-address-book me-2"></i>Клиенты</a>
                 <a href="{{ route('admin.animals.index') }}" class="{{ request()->is('zooadmin/animals*') ? 'active' : '' }}"><i class="fa fa-paw me-2"></i>Питомцы</a>
                 <a href="{{ route('admin.categories.index') }}" class="{{ request()->is('zooadmin/categories*') ? 'active' : '' }}"><i class="fa fa-tags me-2"></i>Категории животных</a>
                 <a href="{{ route('admin.feedbacks.index') }}" class="{{ request()->is('zooadmin/feedbacks*') ? 'active' : '' }}"><i class="fa fa-envelope me-2"></i>Обратная связь</a>

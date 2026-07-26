@@ -22,6 +22,8 @@
                             <tr>
                                 <th>#</th>
                                 <th>Кличка</th>
+                                <th>Вид</th>
+                                <th>Хозяин</th>
                                 <th>Описание</th>
                                 <th>Количество заявок</th>
                                 <th>Последняя заявка</th>
@@ -32,7 +34,15 @@
                                 @php($last = $animal->boardings->first())
                                 <tr>
                                     <td>{{ $animal->id }}</td>
-                                    <td>{{ $animal->name }}</td>
+                                    <td><a href="{{ route('admin.animals.show', $animal) }}">{{ $animal->name }}</a></td>
+                                    <td>{{ $animal->species ?: '—' }}</td>
+                                    <td>
+                                        @if($animal->client)
+                                            <a href="{{ route('admin.clients.show', $animal->client) }}">{{ $animal->client->name }}</a>
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
                                     <td>{{ $animal->description }}</td>
                                     <td>{{ $animal->boardings_count }}</td>
                                     <td>

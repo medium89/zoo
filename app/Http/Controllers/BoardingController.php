@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Animal;
 use App\Models\Boarding;
+use App\Models\Client;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -17,14 +18,20 @@ class BoardingController extends Controller
         $range = $this->activeRange();
         $this->hydrateAnimalsFromBoardings();
         $entries = $year === 'all' ? $this->entriesAllActive() : $this->entriesForYear($year);
-        $latest = Boarding::whereNull('archived_at')->orderByDesc('created_at')->take(20)->get();
-        $animals = Animal::orderBy('name')->get();
+        $latest = Boarding::with(['animal.client', 'client'])
+            ->whereNull('archived_at')
+            ->orderByDesc('created_at')
+            ->take(20)
+            ->get();
+        $animals = Animal::with('client')->orderBy('name')->get();
+        $clients = Client::orderBy('name')->get();
 
         return view('admin.boarding.index', [
             'year' => $year,
             'entries' => $entries,
             'latest' => $latest,
             'animals' => $animals,
+            'clients' => $clients,
             'minYear' => $range['min'],
             'maxYear' => $range['max'],
         ]);
@@ -33,15 +40,21 @@ class BoardingController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'client_id' => 'nullable|exists:clients,id',
+            'animal_id' => 'nullable|exists:animals,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'service_type' => 'required|string|in:передержка,выгул,уход',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
+            'note' => 'nullable|string',
         ]);
 
-        $entry = Boarding::create($data);
-        $this->syncAnimal($data);
+        $animal = $this->syncAnimal($data);
+        $data['animal_id'] = $animal?->id;
+        $data['client_id'] = $data['client_id'] ?? $animal?->client_id;
+
+        Boarding::create($data);
 
         return back()->with('success', 'Запись добавлена');
     }
@@ -49,15 +62,21 @@ class BoardingController extends Controller
     public function update(Request $request, Boarding $boarding)
     {
         $data = $request->validate([
+            'client_id' => 'nullable|exists:clients,id',
+            'animal_id' => 'nullable|exists:animals,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'service_type' => 'required|string|in:передержка,выгул,уход',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
+            'note' => 'nullable|string',
         ]);
 
+        $animal = $this->syncAnimal($data);
+        $data['animal_id'] = $animal?->id;
+        $data['client_id'] = $data['client_id'] ?? $animal?->client_id;
+
         $boarding->update($data);
-        $this->syncAnimal($data);
 
         return back()->with('success', 'Запись обновлена');
     }
@@ -133,7 +152,8 @@ class BoardingController extends Controller
     public function animals()
     {
         $this->hydrateAnimalsFromBoardings();
-        $animals = Animal::withCount(['boardings'])
+        $animals = Animal::with(['client'])
+            ->withCount(['boardings'])
             ->with(['boardings' => function($query) {
                 $query->latest('start_date')->limit(1);
             }])
@@ -155,9 +175,9 @@ class BoardingController extends Controller
 
         return response()->streamDownload(function() use ($entries) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['ID','Кличка','Описание','Тип услуги','Дата начала','Дата окончания']);
+            fputcsv($out, ['ID','Кличка','Вид','Хозяин','Описание','Тип услуги','Дата начала','Дата окончания']);
             foreach ($entries as $row) {
-                fputcsv($out, [$row['id'], $row['name'], $row['description'], $row['service_type'], $row['start_date'], $row['end_date']]);
+                fputcsv($out, [$row['id'], $row['name'], $row['species'], $row['client_name'], $row['description'], $row['service_type'], $row['start_date'], $row['end_date']]);
             }
             fclose($out);
         }, 'boarding.csv', $headers);
@@ -169,6 +189,7 @@ class BoardingController extends Controller
         $end = Carbon::create($year, 12, 31);
 
         return Boarding::whereNull('archived_at')
+            ->with(['animal.client', 'client'])
             ->where(function($q) use ($start, $end) {
                 $q->whereBetween('start_date', [$start, $end])
                   ->orWhereBetween('end_date', [$start, $end])
@@ -178,33 +199,16 @@ class BoardingController extends Controller
             })
             ->orderBy('start_date')
             ->get()
-            ->map(function($item){
-                return [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'description' => $item->description,
-                    'service_type' => $item->service_type,
-                    'start_date' => $item->start_date->toDateString(),
-                    'end_date' => $item->end_date->toDateString(),
-                ];
-            });
+            ->map(fn ($item) => $this->entryPayload($item));
     }
 
     private function entriesAllActive()
     {
         return Boarding::whereNull('archived_at')
+            ->with(['animal.client', 'client'])
             ->orderBy('start_date')
             ->get()
-            ->map(function($item){
-                return [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'description' => $item->description,
-                    'service_type' => $item->service_type,
-                    'start_date' => $item->start_date->toDateString(),
-                    'end_date' => $item->end_date->toDateString(),
-                ];
-            });
+            ->map(fn ($item) => $this->entryPayload($item));
     }
 
     private function activeRange(): array
@@ -219,13 +223,30 @@ class BoardingController extends Controller
         return ['min' => $min, 'max' => $max];
     }
 
-    private function syncAnimal(array $data): void
+    private function syncAnimal(array $data): ?Animal
     {
-        if (($data['service_type'] ?? null) !== 'передержка') {
-            return;
+        if (!empty($data['animal_id'])) {
+            $animal = Animal::find($data['animal_id']);
+
+            if ($animal && !empty($data['client_id']) && !$animal->client_id) {
+                $animal->client_id = $data['client_id'];
+                $animal->save();
+            }
+
+            return $animal;
         }
 
-        $animal = Animal::firstOrNew(['name' => $data['name']]);
+        $animal = Animal::whereRaw('LOWER(name) = ?', [mb_strtolower($data['name'])])
+            ->when($data['client_id'] ?? null, fn ($query, $clientId) => $query->where('client_id', $clientId))
+            ->first();
+
+        if (!$animal) {
+            $animal = new Animal(['name' => $data['name']]);
+        }
+
+        if (!empty($data['client_id'])) {
+            $animal->client_id = $data['client_id'];
+        }
 
         if (!empty($data['description'])) {
             $animal->description = $data['description'];
@@ -236,22 +257,46 @@ class BoardingController extends Controller
         } elseif ($animal->isDirty()) {
             $animal->save();
         }
+
+        return $animal;
     }
 
     private function hydrateAnimalsFromBoardings(): void
     {
-        $existingNames = Animal::pluck('name')->all();
-        $missing = Boarding::where('service_type', 'передержка')
-            ->whereNotIn('name', $existingNames)
+        $missing = Boarding::whereNull('animal_id')
             ->orderByDesc('created_at')
-            ->get()
-            ->unique('name');
+            ->get();
 
         foreach ($missing as $boarding) {
-            Animal::create([
-                'name' => $boarding->name,
-                'description' => $boarding->description,
-            ]);
+            $animal = Animal::whereRaw('LOWER(name) = ?', [mb_strtolower($boarding->name)])->first();
+
+            if (!$animal) {
+                $animal = Animal::create([
+                    'name' => $boarding->name,
+                    'description' => $boarding->description,
+                ]);
+            }
+
+            $boarding->animal_id = $animal->id;
+            $boarding->client_id = $animal->client_id;
+            $boarding->save();
         }
+    }
+
+    private function entryPayload(Boarding $item): array
+    {
+        $animal = $item->animal;
+        $client = $item->client ?: $animal?->client;
+
+        return [
+            'id' => $item->id,
+            'name' => $animal?->name ?: $item->name,
+            'species' => $animal?->species,
+            'client_name' => $client?->name,
+            'description' => $item->description ?: $animal?->description,
+            'service_type' => $item->service_type,
+            'start_date' => $item->start_date->toDateString(),
+            'end_date' => $item->end_date->toDateString(),
+        ];
     }
 }

@@ -36,4 +36,21 @@ return [
         'secret' => env('RECAPTCHA_SECRET'),
     ],
 
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_ids' => array_filter([
+            env('TELEGRAM_CHAT_ID'),
+            env('TELEGRAM_CHAT_ID_2'),
+        ]),
+        'allowed_user_ids' => array_filter(array_map('trim', explode(',', env('TELEGRAM_ALLOWED_USER_IDS', '')))),
+        'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
+    ],
+
+    'aitunnel' => [
+        'base_url' => env('AITUNNEL_BASE_URL', 'https://api.aitunnel.ru/v1'),
+        'api_key' => env('AITUNNEL_API_KEY'),
+        'chat_model' => env('AITUNNEL_CHAT_MODEL', 'gemini-2.5-flash-lite'),
+        'stt_model' => env('AITUNNEL_STT_MODEL', 'whisper-1'),
+    ],
+
 ];

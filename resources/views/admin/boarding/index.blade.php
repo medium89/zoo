@@ -27,6 +27,15 @@
                     <input type="text" name="name" class="form-control" required list="animalHints" autocomplete="off" placeholder="Выберите или введите">
                 </div>
                 <div class="col-md-3">
+                    <label class="form-label">Хозяин</label>
+                    <select name="client_id" class="form-select">
+                        <option value="">Без хозяина</option>
+                        @foreach($clients as $client)
+                            <option value="{{ $client->id }}">{{ $client->name }}{{ $client->phone ? ' · '.$client->phone : '' }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <label class="form-label">Описание</label>
                     <input type="text" name="description" class="form-control" placeholder="Напр. особенности, контакт" maxlength="255">
                 </div>
@@ -46,13 +55,17 @@
                     <label class="form-label">Окончание</label>
                     <input type="text" name="end_date" class="form-control js-date" autocomplete="off" inputmode="numeric" maxlength="10" required placeholder="YYYY-MM-DD">
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label">Заметка</label>
+                    <input type="text" name="note" class="form-control" placeholder="Дополнительная информация">
+                </div>
                 <div class="col-12 text-end">
                     <button type="submit" class="btn btn-success">Добавить</button>
                 </div>
             </form>
             <datalist id="animalHints">
                 @foreach($animals as $animal)
-                    <option value="{{ $animal->name }}" data-description="{{ $animal->description }}">{{ $animal->description }}</option>
+                    <option value="{{ $animal->name }}" data-description="{{ $animal->description }}" data-client-id="{{ $animal->client_id }}">{{ trim(($animal->species ? $animal->species.' · ' : '').($animal->client?->name ?: '').($animal->description ? ' · '.$animal->description : ''), ' ·') }}</option>
                 @endforeach
             </datalist>
         </div>
@@ -68,9 +81,11 @@
                             <tr>
                                 <th>#</th>
                                 <th>Кличка</th>
+                                <th>Хозяин</th>
                                 <th>Описание</th>
                                 <th>Тип услуги</th>
                                 <th>Период</th>
+                                <th>Источник</th>
                                 <th>Создано</th>
                                 <th class="text-end"></th>
                             </tr>
@@ -79,10 +94,24 @@
                             @foreach($latest as $row)
                                 <tr>
                                     <td>{{ $row->id }}</td>
-                                    <td>{{ $row->name }}</td>
+                                    <td>
+                                        @if($row->animal)
+                                            <a href="{{ route('admin.animals.show', $row->animal) }}">{{ $row->animal->name }}</a>
+                                        @else
+                                            {{ $row->name }}
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($row->client ?: $row->animal?->client)
+                                            <a href="{{ route('admin.clients.show', $row->client ?: $row->animal->client) }}">{{ ($row->client ?: $row->animal->client)->name }}</a>
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
                                     <td>{{ $row->description }}</td>
                                     <td>{{ $row->service_type }}</td>
                                     <td>{{ $row->start_date->toDateString() }} — {{ $row->end_date->toDateString() }}</td>
+                                    <td>{{ $row->source ?? 'admin' }}</td>
                                     <td>{{ $row->created_at->format('d.m.Y H:i') }}</td>
                                     <td class="text-end">
                                         <div class="d-flex justify-content-end flex-wrap gap-1">
@@ -90,10 +119,12 @@
                                                     class="btn btn-sm btn-outline-primary js-edit-entry"
                                                     data-id="{{ $row->id }}"
                                                     data-name="{{ $row->name }}"
+                                                    data-client-id="{{ $row->client_id }}"
                                                     data-description="{{ $row->description }}"
                                                     data-service-type="{{ $row->service_type }}"
                                                     data-start="{{ $row->start_date->toDateString() }}"
-                                                    data-end="{{ $row->end_date->toDateString() }}">
+                                                    data-end="{{ $row->end_date->toDateString() }}"
+                                                    data-note="{{ $row->note }}">
                                                 Редактировать
                                             </button>
                                             <button type="button"
@@ -162,6 +193,15 @@
                         <input type="text" name="name" class="form-control" required list="animalHints" autocomplete="off" placeholder="Выберите или введите">
                     </div>
                     <div class="col-md-6">
+                        <label class="form-label">Хозяин</label>
+                        <select name="client_id" class="form-select">
+                            <option value="">Без хозяина</option>
+                            @foreach($clients as $client)
+                                <option value="{{ $client->id }}">{{ $client->name }}{{ $client->phone ? ' · '.$client->phone : '' }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6">
                         <label class="form-label">Описание</label>
                         <input type="text" name="description" class="form-control" placeholder="Напр. особенности, контакт" maxlength="255">
                     </div>
@@ -180,6 +220,10 @@
                     <div class="col-md-4">
                         <label class="form-label">Окончание</label>
                         <input type="text" name="end_date" class="form-control js-date" autocomplete="off" inputmode="numeric" maxlength="10" required placeholder="YYYY-MM-DD">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Заметка</label>
+                        <textarea name="note" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
             </div>
@@ -295,18 +339,22 @@ document.addEventListener('DOMContentLoaded', function(){
 
     const createFields = {
         name: createForm.querySelector('[name="name"]'),
+        client: createForm.querySelector('[name="client_id"]'),
         description: createForm.querySelector('[name="description"]'),
         service: createForm.querySelector('[name="service_type"]'),
         start: createForm.querySelector('[name="start_date"]'),
         end: createForm.querySelector('[name="end_date"]'),
+        note: createForm.querySelector('[name="note"]'),
     };
 
     const editFields = {
         name: editForm.querySelector('[name="name"]'),
+        client: editForm.querySelector('[name="client_id"]'),
         description: editForm.querySelector('[name="description"]'),
         service: editForm.querySelector('[name="service_type"]'),
         start: editForm.querySelector('[name="start_date"]'),
         end: editForm.querySelector('[name="end_date"]'),
+        note: editForm.querySelector('[name="note"]'),
     };
 
     function parseIsoDate(value){
@@ -450,7 +498,11 @@ document.addEventListener('DOMContentLoaded', function(){
                 const list = map[dateStr] || [];
                 if(list.length>0){
                     cell.classList.add(list.length>1 ? 'conflict' : 'busy');
-                    cell.dataset.tooltip = list.map(x=>`${x.name} • ${x.service_type} (${x.start_date} — ${x.end_date})`).join('\n');
+                    cell.dataset.tooltip = list.map(x=>{
+                        const client = x.client_name ? ` · ${x.client_name}` : '';
+                        const species = x.species ? ` (${x.species})` : '';
+                        return `${x.name}${species}${client} • ${x.service_type} (${x.start_date} — ${x.end_date})`;
+                    }).join('\n');
                 }
                 body.appendChild(cell);
             }
@@ -533,10 +585,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
         editForm.action = editForm.dataset.updateTemplate.replace('__ID__', payload.id);
         editFields.name.value = payload.name || '';
+        editFields.client.value = payload.client_id || '';
         editFields.description.value = payload.description || '';
         editFields.service.value = payload.service_type || 'передержка';
         editFields.start.value = payload.start || '';
         editFields.end.value = payload.end || '';
+        editFields.note.value = payload.note || '';
         editModal.show();
     }
 
@@ -546,6 +600,9 @@ document.addEventListener('DOMContentLoaded', function(){
             const found = options.find(opt => opt.value === fields.name.value);
             if(found && !fields.description.value){
                 fields.description.value = found.dataset.description || '';
+            }
+            if(found && fields.client && !fields.client.value && found.dataset.clientId){
+                fields.client.value = found.dataset.clientId;
             }
         };
         fields.name.addEventListener('change', maybeFill);
@@ -557,10 +614,12 @@ document.addEventListener('DOMContentLoaded', function(){
             openEditModal({
                 id: btn.dataset.id,
                 name: btn.dataset.name,
+                client_id: btn.dataset.clientId,
                 description: btn.dataset.description,
                 service_type: btn.dataset.serviceType,
                 start: btn.dataset.start,
                 end: btn.dataset.end,
+                note: btn.dataset.note,
             });
         });
     });
