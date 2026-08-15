@@ -58,6 +58,10 @@ Route::middleware(['auth', 'no.cache'])->prefix('zooadmin')->name('admin.')->gro
     Route::post('boarding', [App\Http\Controllers\BoardingController::class, 'store'])->name('boarding.store');
     Route::get('boarding/animals', [App\Http\Controllers\BoardingController::class, 'animals'])->name('boarding.animals');
     Route::get('boarding/archive', [App\Http\Controllers\BoardingController::class, 'archiveIndex'])->name('boarding.archive');
+    Route::get('boarding/{boarding}/tasks', [App\Http\Controllers\BoardingTaskController::class, 'index'])->name('boarding.tasks.index');
+    Route::post('boarding/{boarding}/tasks', [App\Http\Controllers\BoardingTaskController::class, 'store'])->name('boarding.tasks.store');
+    Route::put('boarding-tasks/{task}', [App\Http\Controllers\BoardingTaskController::class, 'update'])->name('boarding.tasks.update');
+    Route::delete('boarding-tasks/{task}', [App\Http\Controllers\BoardingTaskController::class, 'destroy'])->name('boarding.tasks.destroy');
     Route::put('boarding/{boarding}', [App\Http\Controllers\BoardingController::class, 'update'])->name('boarding.update');
     Route::post('boarding/{boarding}/archive', [App\Http\Controllers\BoardingController::class, 'archive'])->name('boarding.archive.store');
     Route::post('boarding/{boarding}/restore', [App\Http\Controllers\BoardingController::class, 'restore'])->name('boarding.restore');

@@ -132,6 +132,7 @@
                                                     data-note="{{ $row->note }}">
                                                 Редактировать
                                             </button>
+                                            <a href="{{ route('admin.boarding.tasks.index', $row) }}" class="btn btn-sm btn-outline-success">Действия</a>
                                             <button type="button"
                                                     class="btn btn-sm btn-outline-secondary js-archive-entry"
                                                     data-id="{{ $row->id }}"

@@ -40,4 +40,9 @@ class Boarding extends Model
     {
         return $this->belongsTo(Animal::class);
     }
+
+    public function tasks()
+    {
+        return $this->hasMany(BoardingTask::class);
+    }
 }

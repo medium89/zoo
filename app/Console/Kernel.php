@@ -15,6 +15,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('telegram:send-tomorrow-bookings')
             ->everyMinute()
             ->withoutOverlapping();
+
+        $schedule->command('telegram:send-boarding-task-notifications')
+            ->everyMinute()
+            ->withoutOverlapping();
     }
 
     /**

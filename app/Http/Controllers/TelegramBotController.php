@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Animal;
 use App\Models\Boarding;
+use App\Models\BoardingTaskRun;
 use App\Models\Client;
 use App\Models\TelegramBotSession;
 use App\Services\AitunnelService;
@@ -51,6 +52,11 @@ class TelegramBotController extends Controller
 
         if (!$this->isAllowed($fromId)) {
             $this->sendMessage($chatId, 'Нет доступа к этому боту.');
+            return;
+        }
+
+        if (preg_match('/^task:(\d+):(done|cancel)$/', $data, $matches)) {
+            $this->handleBoardingTaskCallback((int) $matches[1], $matches[2], $fromId, $chatId);
             return;
         }
 
@@ -948,6 +954,40 @@ class TelegramBotController extends Controller
     private function clearSession(string $fromId): void
     {
         TelegramBotSession::where('telegram_user_id', $fromId)->delete();
+    }
+
+    private function handleBoardingTaskCallback(int $runId, string $action, string $fromId, int|string $chatId): void
+    {
+        $run = BoardingTaskRun::with(['task.boarding.animal', 'messages'])->find($runId);
+        if (!$run) {
+            $this->sendMessage($chatId, 'Это действие уже недоступно.');
+            return;
+        }
+
+        $animal = $run->task->boarding->animal?->name ?: $run->task->boarding->name;
+        if ($run->status !== 'pending') {
+            $label = $run->status === 'done' ? 'уже отмечено как выполненное' : 'уже отменено';
+            $this->sendMessage($chatId, "«{$run->task->title}» для {$animal} {$label}.");
+            return;
+        }
+
+        $status = $action === 'done' ? 'done' : 'cancelled';
+        $run->update([
+            'status' => $status,
+            'responded_at' => now(),
+            'responded_by' => $fromId,
+        ]);
+
+        foreach ($run->messages as $message) {
+            $this->telegramApi('editMessageReplyMarkup', [
+                'chat_id' => $message->chat_id,
+                'message_id' => $message->message_id,
+                'reply_markup' => ['inline_keyboard' => []],
+            ]);
+        }
+
+        $result = $status === 'done' ? '✅ Готово' : '↩️ Отменено';
+        $this->sendMessage($chatId, "{$result}: {$run->task->title} — {$animal}.");
     }
 
     private function sendMessage(int|string $chatId, string $text, ?array $replyMarkup = null): void
