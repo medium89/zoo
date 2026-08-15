@@ -277,6 +277,10 @@ class AvitoReviewController extends Controller
 
             $existing = AvitoReview::where('source_hash', $hash)->first();
             if ($existing) {
+                if (empty($existing->avatar_url) && !empty($item['avatar_url'])) {
+                    $existing->avatar_url = $item['avatar_url'];
+                    $existing->save();
+                }
                 continue;
             }
 
@@ -291,6 +295,7 @@ class AvitoReviewController extends Controller
                 'review_date' => $item['date'] ?? null,
                 'text' => $item['text'] ?? null,
                 'photos' => $photos ?: null,
+                'avatar_url' => $item['avatar_url'] ?? null,
                 'status' => 'new',
                 'source_hash' => $hash,
                 'order' => $order,
@@ -406,6 +411,7 @@ class AvitoReviewController extends Controller
                     'date' => $date,
                     'text' => $text,
                     'photos' => $photos,
+                    'avatar_url' => $this->extractAuthorAvatarFromMicrodata($xpath, $node, $authorNode),
                 ];
             }
         }
@@ -471,6 +477,29 @@ class AvitoReviewController extends Controller
                     }
                 }
             }
+
+            if (strtolower($node->nodeName) === 'img' && ($prefix = $this->extractAvatarMarkerPrefix($marker))) {
+                $url = $this->extractImageUrl($node);
+                if ($url !== null && empty($groups[$prefix]['avatar_url'])) {
+                    $groups[$prefix]['avatar_url'] = $url;
+                }
+            }
+        }
+
+        // В разметке Avito data-marker аватара иногда стоит на контейнере, а не на теге img.
+        $images = $xpath->query('//img');
+        if ($images) {
+            foreach ($images as $image) {
+                $avatar = $this->findAvatarMarkerOnAncestors($image);
+                if ($avatar === null) {
+                    continue;
+                }
+
+                [$prefix, $url] = $avatar;
+                if (empty($groups[$prefix]['avatar_url']) && $url !== null) {
+                    $groups[$prefix]['avatar_url'] = $url;
+                }
+            }
         }
 
         $result = [];
@@ -479,6 +508,7 @@ class AvitoReviewController extends Controller
             $date = $group['date'] ?? null;
             $text = $group['text'] ?? null;
             $photos = $group['photos'] ?? [];
+            $avatarUrl = $group['avatar_url'] ?? null;
 
             if (!$text) {
                 continue;
@@ -494,6 +524,7 @@ class AvitoReviewController extends Controller
                 'date' => $date,
                 'text' => $text,
                 'photos' => $photos,
+                'avatar_url' => $avatarUrl,
             ];
         }
 
@@ -601,6 +632,9 @@ class AvitoReviewController extends Controller
                 $photos = [];
             }
             $photos = array_values(array_unique(array_filter($photos, fn ($url) => is_string($url) && trim($url) !== '')));
+            $avatarUrl = isset($item['avatar_url']) && is_string($item['avatar_url'])
+                ? trim($item['avatar_url'])
+                : '';
 
             if ($name === '' && $date === '' && $text === '') {
                 continue;
@@ -615,6 +649,7 @@ class AvitoReviewController extends Controller
                     'date' => $date !== '' ? $date : null,
                     'text' => $text !== '' ? $text : null,
                     'photos' => $photos,
+                    'avatar_url' => $avatarUrl !== '' ? $avatarUrl : null,
                 ];
                 continue;
             }
@@ -622,6 +657,10 @@ class AvitoReviewController extends Controller
             if (!empty($photos)) {
                 $merged = array_merge($unique[$hash]['photos'] ?? [], $photos);
                 $unique[$hash]['photos'] = array_values(array_unique($merged));
+            }
+
+            if (empty($unique[$hash]['avatar_url']) && $avatarUrl !== '') {
+                $unique[$hash]['avatar_url'] = $avatarUrl;
             }
         }
 
@@ -662,6 +701,44 @@ class AvitoReviewController extends Controller
             if ($url !== '') {
                 return $url;
             }
+        }
+
+        return null;
+    }
+
+    private function extractAuthorAvatarFromMicrodata(\DOMXPath $xpath, \DOMNode $reviewNode, ?\DOMNode $authorNode): ?string
+    {
+        if ($authorNode) {
+            $imageNode = $xpath->query('.//*[@itemprop="image" or self::img]', $authorNode)->item(0);
+            if ($imageNode && ($url = $this->extractImageUrl($imageNode))) {
+                return $url;
+            }
+        }
+
+        $imageNode = $xpath->query('.//img[contains(translate(@data-marker, "AVATAR", "avatar"), "avatar")]', $reviewNode)->item(0);
+
+        return $imageNode ? $this->extractImageUrl($imageNode) : null;
+    }
+
+    private function extractAvatarMarkerPrefix(string $marker): ?string
+    {
+        if (!preg_match('~^(.*?)/(?:header/)?(?:avatar|author-avatar|user-avatar)(?:/|$)~i', $marker, $matches)) {
+            return null;
+        }
+
+        $prefix = trim($matches[1], '/');
+        return $prefix !== '' ? $prefix : null;
+    }
+
+    private function findAvatarMarkerOnAncestors(\DOMNode $image): ?array
+    {
+        for ($node = $image; $node; $node = $node->parentNode) {
+            $marker = $node->attributes?->getNamedItem('data-marker')?->nodeValue;
+            if (!is_string($marker) || ($prefix = $this->extractAvatarMarkerPrefix($marker)) === null) {
+                continue;
+            }
+
+            return [$prefix, $this->extractImageUrl($image)];
         }
 
         return null;

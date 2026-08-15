@@ -16,6 +16,7 @@ class AvitoReviewControllerParserTest extends TestCase
 <body>
     <div>
         <div data-marker="reviews/review(0)/header/title">Ирина</div>
+        <div data-marker="reviews/review(0)/header/avatar"><img src="https://example.com/irina-avatar.jpg" /></div>
         <p data-marker="reviews/review(0)/header/subtitle">12 декабря · Клиент</p>
         <p data-marker="reviews/review(0)/text-section/text">Все понравилось, спасибо!</p>
         <img data-marker="reviews/review(0)/image(0)/image" src="https://example.com/review-1.jpg" />
@@ -31,6 +32,7 @@ HTML;
         $this->assertMatchesRegularExpression('/^\d{4}-12-12 00:00:00$/', (string)$parsed[0]['date']);
         $this->assertSame('Все понравилось, спасибо!', $parsed[0]['text']);
         $this->assertSame(['https://example.com/review-1.jpg'], $parsed[0]['photos']);
+        $this->assertSame('https://example.com/irina-avatar.jpg', $parsed[0]['avatar_url']);
     }
 
     public function test_it_deduplicates_same_review_from_microdata_and_data_marker_blocks(): void

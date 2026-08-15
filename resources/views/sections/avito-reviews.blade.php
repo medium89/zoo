@@ -18,7 +18,7 @@
                     @foreach($avitoReviews as $review)
                         @php
                             $photos = is_array($review->photos) ? $review->photos : [];
-                            $rawPhoto = $photos[0] ?? null;
+                            $rawPhoto = $review->avatar_url ?: ($photos[0] ?? null);
                             $photoUrl = null;
                             if ($rawPhoto) {
                                 $photoUrl = preg_match('#^https?://#', $rawPhoto)
@@ -41,7 +41,7 @@
                                 <div class="review-card__header">
                                     <div class="review-card__avatar {{ $photoUrl ? '' : 'review-card__avatar--placeholder' }}">
                                         @if($photoUrl)
-                                            <img src="{{ $photoUrl }}" alt="Фото питомца или клиента">
+                                            <img src="{{ $photoUrl }}" alt="Аватар автора отзыва">
                                         @else
                                             <span>{{ mb_substr($name, 0, 1) }}</span>
                                         @endif
