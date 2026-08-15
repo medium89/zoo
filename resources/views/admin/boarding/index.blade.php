@@ -76,7 +76,7 @@
         <div class="card-body">
             @if($latest->count())
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table align-middle boarding-latest-table">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -113,7 +113,7 @@
                                             —
                                         @endif
                                     </td>
-                                    <td>{{ $row->description }}</td>
+                                    <td>{{ $row->description ?: '—' }}</td>
                                     <td>{{ $row->service_type }}</td>
                                     <td>{{ $row->start_date->toDateString() }} — {{ $row->end_date->toDateString() }}</td>
                                     <td>{{ $row->source ?? 'admin' }}</td>
@@ -242,6 +242,81 @@
 </div>
 
 <style>
+    .boarding-latest-table.admin-flex-table tr {
+        display:grid;
+        position:relative;
+        grid-template-columns:repeat(4, minmax(0, 1fr));
+        align-items:start;
+        gap:18px 24px;
+        padding:20px;
+    }
+    .boarding-latest-table.admin-flex-table td {
+        display:block;
+        min-width:0;
+        padding:0;
+    }
+    .boarding-latest-table.admin-flex-table td::before {
+        display:block;
+        min-width:0;
+        margin-bottom:4px;
+        color:#7b8794;
+        font-size:.75rem;
+        font-weight:700;
+        letter-spacing:.04em;
+        text-transform:uppercase;
+    }
+    .boarding-latest-table.admin-flex-table td:first-child {
+        position:absolute;
+        top:16px;
+        right:18px;
+        display:inline-flex;
+        align-items:center;
+        min-height:28px;
+        padding:3px 9px;
+        border:1px solid #d8dee5;
+        border-radius:999px;
+        background:#f8fafc;
+        font-size:.82rem;
+        font-weight:700;
+    }
+    .boarding-latest-table.admin-flex-table td:first-child::before {
+        display:none;
+    }
+    .boarding-latest-table.admin-flex-table td:nth-child(2) a,
+    .boarding-latest-table.admin-flex-table td:nth-child(2) {
+        font-weight:700;
+        font-size:1.05rem;
+    }
+    .boarding-latest-table.admin-flex-table td:last-child {
+        grid-column:1 / -1;
+        margin-top:2px;
+        padding-top:14px;
+        border-top:1px solid #edf0f2;
+    }
+    .boarding-latest-table.admin-flex-table td:last-child::before {
+        display:none;
+    }
+    .boarding-latest-table.admin-flex-table td:last-child .d-flex {
+        justify-content:flex-start !important;
+    }
+    .boarding-latest-table .btn {
+        white-space:nowrap;
+    }
+    @media (max-width: 991.98px) {
+        .boarding-latest-table.admin-flex-table tr {
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+        }
+    }
+    @media (max-width: 575.98px) {
+        .boarding-latest-table.admin-flex-table tr {
+            grid-template-columns:1fr;
+            gap:12px;
+            padding:16px;
+        }
+        .boarding-latest-table.admin-flex-table td:last-child .d-flex {
+            justify-content:flex-start !important;
+        }
+    }
     .boarding-calendar-page { min-width:0; overflow-x:hidden; }
     .calendar-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap:16px; min-width:0; }
     .cal-month { min-width:0; border:1px solid #e5e7eb; border-radius:8px; padding:10px; box-shadow:0 4px 10px rgba(0,0,0,0.04); }

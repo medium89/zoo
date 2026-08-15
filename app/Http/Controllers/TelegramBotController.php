@@ -13,6 +13,7 @@ use App\Services\BoardingTaskInstructionParser;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
@@ -1109,11 +1110,32 @@ class TelegramBotController extends Controller
     {
         $token = config('services.telegram.bot_token');
         if (!$token) {
+            Log::error('Telegram API request skipped: bot token is missing.', ['method' => $method]);
+
             return ['ok' => false];
         }
 
-        $response = Http::timeout(30)->post("https://api.telegram.org/bot{$token}/{$method}", $payload);
+        try {
+            $response = Http::timeout(30)->post("https://api.telegram.org/bot{$token}/{$method}", $payload);
+        } catch (Throwable $e) {
+            Log::warning('Telegram API request failed.', [
+                'method' => $method,
+                'error' => $e->getMessage(),
+            ]);
 
-        return $response->json() ?: ['ok' => false];
+            return ['ok' => false];
+        }
+
+        $result = $response->json();
+        if (!$response->successful() || !is_array($result) || !($result['ok'] ?? false)) {
+            Log::warning('Telegram API returned an unsuccessful response.', [
+                'method' => $method,
+                'status' => $response->status(),
+                'error_code' => $result['error_code'] ?? null,
+                'description' => $result['description'] ?? null,
+            ]);
+        }
+
+        return is_array($result) ? $result : ['ok' => false];
     }
 }
