@@ -24,6 +24,10 @@
                     <label class="form-label">Действие</label>
                     <input name="title" class="form-control" required maxlength="255" placeholder="Например, Утреннее кормление котов">
                 </div>
+                <div class="col-md-8">
+                    <label class="form-label">Инструкция для бота</label>
+                    <textarea name="instructions" class="form-control" rows="3" placeholder="Подробности, которые бот покажет в уведомлении"></textarea>
+                </div>
                 <div class="col-md-2">
                     <label class="form-label">Время</label>
                     <input type="time" name="scheduled_time" class="form-control" required>
@@ -46,6 +50,10 @@
                         <div class="col-md-6">
                             <label class="form-label">Действие</label>
                             <input name="title" class="form-control" value="{{ $task->title }}" required maxlength="255">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Инструкция для бота</label>
+                            <textarea name="instructions" class="form-control" rows="3" placeholder="Подробности, которые бот покажет в уведомлении">{{ $task->instructions }}</textarea>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Время</label>

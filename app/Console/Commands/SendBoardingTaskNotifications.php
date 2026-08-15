@@ -86,6 +86,8 @@ class SendBoardingTaskNotifications extends Command
     {
         $animal = $task->boarding->animal?->name ?: $task->boarding->name;
 
-        return "🐾 {$animal}\n🕒 ".substr($task->scheduled_time, 0, 5)."\n\n{$task->title}";
+        $instructions = trim((string) $task->instructions);
+
+        return "🐾 {$animal}\n🕒 ".substr($task->scheduled_time, 0, 5)."\n\n{$task->title}".($instructions !== '' ? "\n\n{$instructions}" : '');
     }
 }

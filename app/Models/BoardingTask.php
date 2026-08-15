@@ -9,6 +9,7 @@ class BoardingTask extends Model
     protected $fillable = [
         'boarding_id',
         'title',
+        'instructions',
         'scheduled_time',
         'is_active',
     ];

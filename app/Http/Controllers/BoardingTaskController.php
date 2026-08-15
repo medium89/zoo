@@ -19,6 +19,7 @@ class BoardingTaskController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
+            'instructions' => 'nullable|string',
             'scheduled_time' => 'required|date_format:H:i',
         ]);
 
@@ -31,6 +32,7 @@ class BoardingTaskController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
+            'instructions' => 'nullable|string',
             'scheduled_time' => 'required|date_format:H:i',
             'is_active' => 'nullable|boolean',
         ]);

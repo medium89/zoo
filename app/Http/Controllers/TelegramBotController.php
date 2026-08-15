@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Animal;
 use App\Models\Boarding;
+use App\Models\BoardingTask;
 use App\Models\BoardingTaskRun;
 use App\Models\Client;
 use App\Models\TelegramBotSession;
 use App\Services\AitunnelService;
+use App\Services\BoardingTaskInstructionParser;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -17,8 +19,10 @@ use Throwable;
 
 class TelegramBotController extends Controller
 {
-    public function __construct(private readonly AitunnelService $aitunnel)
-    {
+    public function __construct(
+        private readonly AitunnelService $aitunnel,
+        private readonly BoardingTaskInstructionParser $taskInstructionParser,
+    ) {
     }
 
     public function __invoke(Request $request)
@@ -55,11 +59,6 @@ class TelegramBotController extends Controller
             return;
         }
 
-        if (preg_match('/^task:(\d+):(done|cancel)$/', $data, $matches)) {
-            $this->handleBoardingTaskCallback((int) $matches[1], $matches[2], $fromId, $chatId);
-            return;
-        }
-
         if (isset($message['photo'])) {
             $this->handlePhoto($message);
             return;
@@ -87,6 +86,11 @@ class TelegramBotController extends Controller
             return;
         }
 
+        if ($tasks = $this->taskInstructionParser->parse($text)) {
+            $this->startBoardingTaskCreation($chatId, $fromId, $tasks);
+            return;
+        }
+
         $session = $this->session($fromId);
         if ($session) {
             if ($this->handleSessionText($session, $chatId, $fromId, $text)) {
@@ -108,6 +112,16 @@ class TelegramBotController extends Controller
 
         if (!$this->isAllowed($fromId)) {
             $this->sendMessage($chatId, 'Нет доступа к этому боту.');
+            return;
+        }
+
+        if (preg_match('/^task:(\d+):(done|cancel)$/', $data, $matches)) {
+            $this->handleBoardingTaskCallback((int) $matches[1], $matches[2], $fromId, $chatId);
+            return;
+        }
+
+        if (Str::startsWith($data, 'task_boarding:')) {
+            $this->selectBoardingForTasks($chatId, $fromId, Str::after($data, 'task_boarding:'));
             return;
         }
 
@@ -988,6 +1002,86 @@ class TelegramBotController extends Controller
 
         $result = $status === 'done' ? '✅ Готово' : '↩️ Отменено';
         $this->sendMessage($chatId, "{$result}: {$run->task->title} — {$animal}.");
+    }
+
+    /** @param array<int, array{title: string, scheduled_time: string, instructions: string}> $tasks */
+    private function startBoardingTaskCreation(int|string $chatId, string $fromId, array $tasks): void
+    {
+        $boardings = Boarding::with('animal')
+            ->whereNull('archived_at')
+            ->whereDate('start_date', '<=', now()->toDateString())
+            ->whereDate('end_date', '>=', now()->toDateString())
+            ->orderBy('end_date')
+            ->get();
+
+        if ($boardings->isEmpty()) {
+            $this->sendMessage($chatId, 'Сейчас нет активной передержки, к которой можно привязать действия.');
+            return;
+        }
+
+        if ($boardings->count() === 1) {
+            $boarding = $boardings->first();
+            $this->createBoardingTasks($boarding, $tasks);
+            $this->sendTaskScheduleSummary($chatId, $boarding, $tasks);
+            return;
+        }
+
+        $this->saveSession($fromId, $chatId, 'waiting_task_boarding', [
+            'tasks' => $tasks,
+            'task_boarding_ids' => $boardings->pluck('id')->all(),
+        ]);
+
+        $buttons = $boardings->map(function (Boarding $boarding): array {
+            $animal = $boarding->animal?->name ?: $boarding->name;
+
+            return ['text' => $animal.' · '.$boarding->end_date->format('d.m'), 'callback_data' => 'task_boarding:'.$boarding->id];
+        })->chunk(1)->map(fn ($row) => $row->all())->all();
+        $buttons[] = [['text' => 'Отмена', 'callback_data' => 'cancel']];
+
+        $this->sendMessage($chatId, 'К какой активной передержке добавить это расписание?', ['inline_keyboard' => $buttons]);
+    }
+
+    private function selectBoardingForTasks(int|string $chatId, string $fromId, string $boardingId): void
+    {
+        $session = $this->session($fromId);
+        $allowedIds = array_map('strval', $session?->payload['task_boarding_ids'] ?? []);
+        if (!$session || $session->state !== 'waiting_task_boarding' || !in_array($boardingId, $allowedIds, true)) {
+            $this->sendMessage($chatId, 'Выбор передержки устарел. Отправьте инструкции ещё раз.');
+            return;
+        }
+
+        $boarding = Boarding::with('animal')->whereNull('archived_at')->find((int) $boardingId);
+        if (!$boarding) {
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Передержка больше недоступна.');
+            return;
+        }
+
+        $tasks = $session->payload['tasks'] ?? [];
+        $this->createBoardingTasks($boarding, $tasks);
+        $this->clearSession($fromId);
+        $this->sendTaskScheduleSummary($chatId, $boarding, $tasks);
+    }
+
+    /** @param array<int, array{title: string, scheduled_time: string, instructions: string}> $tasks */
+    private function createBoardingTasks(Boarding $boarding, array $tasks): void
+    {
+        foreach ($tasks as $task) {
+            BoardingTask::create([
+                'boarding_id' => $boarding->id,
+                'title' => $task['title'],
+                'instructions' => $task['instructions'],
+                'scheduled_time' => $task['scheduled_time'],
+            ]);
+        }
+    }
+
+    /** @param array<int, array{title: string, scheduled_time: string, instructions: string}> $tasks */
+    private function sendTaskScheduleSummary(int|string $chatId, Boarding $boarding, array $tasks): void
+    {
+        $animal = $boarding->animal?->name ?: $boarding->name;
+        $lines = array_map(fn (array $task) => '• '.$task['scheduled_time'].' — '.$task['title'], $tasks);
+        $this->sendMessage($chatId, "Расписание добавлено для {$animal}:\n".implode("\n", $lines));
     }
 
     private function sendMessage(int|string $chatId, string $text, ?array $replyMarkup = null): void
