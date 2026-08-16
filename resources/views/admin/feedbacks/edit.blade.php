@@ -28,7 +28,6 @@
             </select>
         </div>
         <button type="submit" class="btn btn-primary">Обновить</button>
-        <a href="{{ route('admin.feedbacks.index') }}" class="btn btn-secondary">Отмена</a>
     </form>
 </div>
 @endsection

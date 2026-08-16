@@ -22,7 +22,7 @@
                   class="row g-3 align-items-end"
                   id="boardingForm">
                 @csrf
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Кличка</label>
                     <input type="text" name="name" class="form-control" required list="animalHints" autocomplete="off" placeholder="Выберите или введите">
                 </div>
@@ -35,7 +35,16 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <label class="form-label">Категория</label>
+                    <select name="category_id" class="form-select js-category">
+                        <option value="">Не указана</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">Описание</label>
                     <input type="text" name="description" class="form-control" placeholder="Напр. особенности, контакт" maxlength="255">
                 </div>
@@ -55,9 +64,17 @@
                     <label class="form-label">Окончание</label>
                     <input type="text" name="end_date" class="form-control js-date" autocomplete="off" inputmode="numeric" maxlength="10" required placeholder="YYYY-MM-DD">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Заметка</label>
                     <input type="text" name="note" class="form-control" placeholder="Дополнительная информация">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Раз в день</label>
+                    <input type="number" name="units_per_day" class="form-control js-units-per-day" min="1" max="24" value="1" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Цена за услугу, ₽</label>
+                    <input type="number" name="unit_price" class="form-control js-unit-price" min="0" max="100000" value="500" required>
                 </div>
                 <div class="col-12 text-end">
                     <button type="submit" class="btn btn-success">Добавить</button>
@@ -65,7 +82,7 @@
             </form>
             <datalist id="animalHints">
                 @foreach($animals as $animal)
-                    <option value="{{ $animal->name }}" data-description="{{ $animal->description }}" data-client-id="{{ $animal->client_id }}">{{ trim(($animal->species ? $animal->species.' · ' : '').($animal->client?->name ?: '').($animal->description ? ' · '.$animal->description : ''), ' ·') }}</option>
+                    <option value="{{ $animal->name }}" data-description="{{ $animal->description }}" data-client-id="{{ $animal->client_id }}" data-category-id="{{ $animal->category_id }}" data-dog-size="{{ $animal->dog_size }}">{{ trim((($animal->category?->name ?: $animal->species) ? ($animal->category?->name ?: $animal->species).' · ' : '').($animal->client?->name ?: '').($animal->description ? ' · '.$animal->description : ''), ' ·') }}</option>
                 @endforeach
             </datalist>
         </div>
@@ -124,9 +141,13 @@
                                                     class="btn btn-sm btn-outline-primary js-edit-entry"
                                                     data-id="{{ $row->id }}"
                                                     data-name="{{ $row->name }}"
+                                                    data-category-id="{{ $row->animal?->category_id }}"
+                                                    data-dog-size="{{ $row->animal?->dog_size }}"
                                                     data-client-id="{{ $row->client_id }}"
                                                     data-description="{{ $row->description }}"
                                                     data-service-type="{{ $row->service_type }}"
+                                                    data-units-per-day="{{ $row->units_per_day ?: 1 }}"
+                                                    data-unit-price="{{ $row->unit_price }}"
                                                     data-start="{{ $row->start_date->toDateString() }}"
                                                     data-end="{{ $row->end_date->toDateString() }}"
                                                     data-note="{{ $row->note }}">
@@ -194,16 +215,25 @@
             </div>
             <div class="modal-body">
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Кличка</label>
                         <input type="text" name="name" class="form-control" required list="animalHints" autocomplete="off" placeholder="Выберите или введите">
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Хозяин</label>
                         <select name="client_id" class="form-select">
                             <option value="">Без хозяина</option>
                             @foreach($clients as $client)
                                 <option value="{{ $client->id }}">{{ $client->name }}{{ $client->phone ? ' · '.$client->phone : '' }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Категория</label>
+                        <select name="category_id" class="form-select js-category">
+                            <option value="">Не указана</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -226,6 +256,14 @@
                     <div class="col-md-4">
                         <label class="form-label">Окончание</label>
                         <input type="text" name="end_date" class="form-control js-date" autocomplete="off" inputmode="numeric" maxlength="10" required placeholder="YYYY-MM-DD">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Раз в день</label>
+                        <input type="number" name="units_per_day" class="form-control js-units-per-day" min="1" max="24" value="1" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Цена за услугу, ₽</label>
+                        <input type="number" name="unit_price" class="form-control js-unit-price" min="0" max="100000" required>
                     </div>
                     <div class="col-12">
                         <label class="form-label">Заметка</label>
@@ -408,6 +446,7 @@
 document.addEventListener('DOMContentLoaded', function(){
     document.body.classList.add('boarding-calendar-active');
     const entries = JSON.parse(@json($entriesJson));
+    const tariffs = @json($tariffs);
     let state = { year: @json($year), entries, minYear: {{ $minYear }}, maxYear: {{ $maxYear }} };
     const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
@@ -421,21 +460,27 @@ document.addEventListener('DOMContentLoaded', function(){
     const createFields = {
         name: createForm.querySelector('[name="name"]'),
         client: createForm.querySelector('[name="client_id"]'),
+        category: createForm.querySelector('[name="category_id"]'),
         description: createForm.querySelector('[name="description"]'),
         service: createForm.querySelector('[name="service_type"]'),
         start: createForm.querySelector('[name="start_date"]'),
         end: createForm.querySelector('[name="end_date"]'),
         note: createForm.querySelector('[name="note"]'),
+        units: createForm.querySelector('[name="units_per_day"]'),
+        price: createForm.querySelector('[name="unit_price"]'),
     };
 
     const editFields = {
         name: editForm.querySelector('[name="name"]'),
         client: editForm.querySelector('[name="client_id"]'),
+        category: editForm.querySelector('[name="category_id"]'),
         description: editForm.querySelector('[name="description"]'),
         service: editForm.querySelector('[name="service_type"]'),
         start: editForm.querySelector('[name="start_date"]'),
         end: editForm.querySelector('[name="end_date"]'),
         note: editForm.querySelector('[name="note"]'),
+        units: editForm.querySelector('[name="units_per_day"]'),
+        price: editForm.querySelector('[name="unit_price"]'),
     };
 
     function parseIsoDate(value){
@@ -672,6 +717,16 @@ document.addEventListener('DOMContentLoaded', function(){
         editFields.start.value = payload.start || '';
         editFields.end.value = payload.end || '';
         editFields.note.value = payload.note || '';
+        editFields.units.value = payload.units_per_day || 1;
+        editFields.category.value = payload.category_id || '';
+        editFields.dogSize = payload.dog_size || '';
+        if(payload.unit_price){
+            editFields.price.value = payload.unit_price;
+            editFields.price.dataset.manual = 'true';
+        } else {
+            delete editFields.price.dataset.manual;
+            syncDefaultPrice(editFields, true);
+        }
         editModal.show();
     }
 
@@ -685,19 +740,49 @@ document.addEventListener('DOMContentLoaded', function(){
             if(found && fields.client && !fields.client.value && found.dataset.clientId){
                 fields.client.value = found.dataset.clientId;
             }
+            if(fields.category) fields.category.value = found?.dataset.categoryId || '';
+            fields.dogSize = found?.dataset.dogSize || '';
+            syncDefaultPrice(fields);
         };
         fields.name.addEventListener('change', maybeFill);
         fields.name.addEventListener('blur', maybeFill);
     }
+
+    function animalGroup(category){
+        const value = String(category || '').trim().toLowerCase();
+        if(['кот', 'кошка', 'котёнок', 'котенок', 'кошки'].includes(value)) return 'cat';
+        if(['собака', 'пёс', 'пес', 'щенок', 'собаки'].includes(value)) return 'dog_large';
+        if(['грызуны', 'птицы', 'рыбки'].includes(value)) return 'small_pet';
+        return 'other';
+    }
+
+    function syncDefaultPrice(fields, force = false){
+        if(!fields.price || (!force && fields.price.dataset.manual === 'true')) return;
+        const service = fields.service?.value || 'передержка';
+        let group = animalGroup(fields.category?.selectedOptions?.[0]?.textContent);
+        if(group === 'dog_large' && fields.dogSize === 'small') group = 'dog_small';
+        fields.price.value = tariffs?.[service]?.[group] ?? tariffs?.[service]?.other ?? 500;
+        fields.price.dataset.manual = 'false';
+    }
+
+    [createFields, editFields].forEach(fields => {
+        fields.price?.addEventListener('input', () => { fields.price.dataset.manual = 'true'; });
+        fields.service?.addEventListener('change', () => syncDefaultPrice(fields, true));
+        fields.category?.addEventListener('change', () => syncDefaultPrice(fields, true));
+    });
 
     document.querySelectorAll('.js-edit-entry').forEach(btn=>{
         btn.addEventListener('click', ()=>{
             openEditModal({
                 id: btn.dataset.id,
                 name: btn.dataset.name,
+                category_id: btn.dataset.categoryId,
+                dog_size: btn.dataset.dogSize,
                 client_id: btn.dataset.clientId,
                 description: btn.dataset.description,
                 service_type: btn.dataset.serviceType,
+                units_per_day: btn.dataset.unitsPerDay,
+                unit_price: btn.dataset.unitPrice,
                 start: btn.dataset.start,
                 end: btn.dataset.end,
                 note: btn.dataset.note,
@@ -738,6 +823,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     bindNameHints(createFields);
     bindNameHints(editFields);
+    syncDefaultPrice(createFields, true);
 
     // Кастомный datepicker около поля
     const dateInputs = Array.from(document.querySelectorAll('.js-date'));

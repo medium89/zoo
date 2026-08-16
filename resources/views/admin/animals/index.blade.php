@@ -16,7 +16,7 @@
             <div class="admin-grid-header">
                 <div>#</div>
                 <div>Кличка</div>
-                <div>Вид</div>
+                <div>Категория</div>
                 <div>Хозяин</div>
                 <div>Записи</div>
                 <div class="text-end">Действия</div>
@@ -25,8 +25,11 @@
                 @foreach($animals as $animal)
                     <div class="admin-grid-row">
                         <div class="text-muted">{{ $animals->firstItem() + $loop->index }}</div>
-                        <div><a href="{{ route('admin.animals.show', $animal) }}">{{ $animal->name }}</a></div>
-                        <div>{{ $animal->species ?: '—' }}</div>
+                        <div>
+                            <a href="{{ route('admin.animals.show', $animal) }}">{{ $animal->name }}</a>
+                            @include('admin.partials.tags-list', ['tags' => $animal->tags])
+                        </div>
+                        <div>{{ $animal->category?->name ?: '—' }}</div>
                         <div>{{ $animal->client?->name ?: '—' }}</div>
                         <div>{{ $animal->boardings_count }}</div>
                         <div class="actions">
@@ -44,7 +47,12 @@
                 @endforeach
             </div>
         </div>
-        {{ $animals->links() }}
+        <div class="admin-pagination mt-4">
+            <span class="text-muted small">
+                Показано: {{ $animals->firstItem() }}–{{ $animals->lastItem() }} из {{ $animals->total() }} питомцев
+            </span>
+            {{ $animals->onEachSide(1)->links('pagination::bootstrap-4') }}
+        </div>
     @else
         <div class="text-muted">Питомцев пока нет.</div>
     @endif

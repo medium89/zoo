@@ -25,7 +25,6 @@
         <small class="text-muted d-block mt-2">Настройки применяются отдельно к каждому фото (бегунки над превью).</small>
     </div>
     <button type="submit" class="btn btn-success" id="submitBtn">Загрузить</button>
-    <a href="{{ route('admin.galleries.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @section('scripts')
 <script>

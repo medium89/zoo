@@ -65,7 +65,6 @@
         <label class="form-check-label" for="active">Активен</label>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
-    <a href="{{ route('admin.sliders.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @endsection
 

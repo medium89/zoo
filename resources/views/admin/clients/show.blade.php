@@ -6,7 +6,6 @@
         <h1>{{ $client->name }}</h1>
         <div class="d-flex gap-2">
             <a href="{{ route('admin.clients.edit', $client) }}" class="btn btn-primary">Редактировать</a>
-            <a href="{{ route('admin.clients.index') }}" class="btn btn-secondary">Назад</a>
         </div>
     </div>
 
@@ -20,6 +19,9 @@
                 <div class="card-header">Информация</div>
                 <div class="card-body">
                     <p><strong>Телефон:</strong> {{ $client->phone ?: '—' }}</p>
+                    @if(!empty($client->tags))
+                        <div class="mb-3"><strong>Теги:</strong>@include('admin.partials.tags-list', ['tags' => $client->tags])</div>
+                    @endif
                     <p class="mb-0"><strong>Заметка:</strong><br>{{ $client->note ?: '—' }}</p>
                 </div>
             </div>
@@ -33,7 +35,7 @@
                             <div class="d-flex justify-content-between gap-2">
                                 <div>
                                     <a href="{{ route('admin.animals.show', $animal) }}" class="fw-bold">{{ $animal->name }}</a>
-                                    <div class="text-muted small">{{ $animal->species ?: 'вид не указан' }} · записей: {{ $animal->boardings->count() }}</div>
+                                    <div class="text-muted small">{{ $animal->category?->name ?: 'категория не указана' }} · записей: {{ $animal->boardings->count() }}</div>
                                 </div>
                                 @if($animal->photos->first())
                                     <img src="{{ Storage::url($animal->photos->first()->path) }}" alt="{{ $animal->name }}" style="width:54px;height:54px;object-fit:cover;border-radius:8px;">
@@ -53,7 +55,7 @@
         <div class="card-body">
             @if($client->boardings->count())
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table align-middle boarding-history-table">
                         <thead>
                             <tr>
                                 <th>#</th>

@@ -101,6 +101,44 @@
             width: 100%;
         }
 
+        .admin-breadcrumbs {
+            margin: 0 0 22px;
+        }
+
+        .admin-breadcrumbs ol {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 7px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .admin-breadcrumbs li {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #8190a0;
+            font-size: .82rem;
+            font-weight: 700;
+        }
+
+        .admin-breadcrumbs li + li::before {
+            color: #b6c0ca;
+            content: '/';
+            font-weight: 600;
+        }
+
+        .admin-breadcrumbs a {
+            color: #64778a;
+            text-decoration: none;
+            transition: color .15s ease;
+        }
+
+        .admin-breadcrumbs a:hover { color: #1f3345; }
+        .admin-breadcrumbs li[aria-current="page"] { color: #263846; }
+
         .admin-to-top {
             position: fixed;
             right: 18px;
@@ -147,6 +185,91 @@
             align-items: center;
             gap: 4px;
             padding: 0.35rem 0.65rem;
+        }
+
+        .admin-pagination {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 18px;
+        }
+
+        .admin-pagination .pagination {
+            margin: 0;
+        }
+
+        .admin-editor-modal .modal-content {
+            border: 0;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 22px 60px rgba(31, 35, 42, .24);
+        }
+
+        .admin-editor-modal .modal-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid #edf0f2;
+        }
+
+        .admin-editor-modal .modal-body {
+            padding: 22px;
+            background: #f7f8fa;
+        }
+
+        .admin-editor-modal .container-fluid {
+            padding: 0;
+        }
+
+        .admin-editor-modal .card {
+            box-shadow: none;
+        }
+
+        .admin-editor-loading {
+            display: grid;
+            min-height: 180px;
+            place-items: center;
+            color: #718096;
+        }
+
+        .entity-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 7px;
+        }
+
+        .entity-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 24px;
+            padding: 3px 8px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            font-size: .74rem;
+            font-weight: 700;
+            line-height: 1.15;
+        }
+
+        .entity-tag--positive { color: #237348; background: #e4f6eb; border-color: #bfe8ce; }
+        .entity-tag--negative { color: #ae3e3e; background: #fff0f0; border-color: #f2c5c5; }
+
+        .tag-editor__controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .tag-editor__controls .form-control { min-width: 0; }
+        .tag-editor__controls .btn { white-space: nowrap; }
+        .tag-editor__list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+        .tag-editor__item { gap: 5px; }
+        .tag-editor__remove { width: 16px; height: 16px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: currentColor; font-size: 1rem; font-weight: 800; line-height: 14px; }
+        .tag-editor__remove:hover { background: rgba(0,0,0,.08); }
+
+        @media (max-width: 575.98px) {
+            .admin-editor-modal .modal-body { padding: 16px; }
+            .admin-editor-modal .modal-header { padding: 15px 16px; }
+            .tag-editor__controls { align-items: stretch; flex-direction: column; }
+            .tag-editor__controls .btn-group { align-self: flex-start; }
         }
 
         /* Шапки страниц и таблицы */
@@ -206,6 +329,67 @@
         }
         .content .admin-flex-table td.no-label::before {
             display: none;
+        }
+
+        /* История записей: такие же читаемые карточки, как в передержке */
+        .content .boarding-history-table.admin-flex-table {
+            border-spacing: 0;
+        }
+        .content .boarding-history-table.admin-flex-table tr {
+            display: grid;
+            position: relative;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+            gap: 18px 24px;
+            padding: 20px;
+            margin-bottom: 14px;
+        }
+        .content .boarding-history-table.admin-flex-table td {
+            display: block;
+            min-width: 0;
+            padding: 0;
+        }
+        .content .boarding-history-table.admin-flex-table td::before {
+            display: block;
+            min-width: 0;
+            margin-bottom: 4px;
+            color: #7b8794;
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        .content .boarding-history-table.admin-flex-table td:first-child {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 3px 9px;
+            border: 1px solid #d8dee5;
+            border-radius: 999px;
+            background: #f8fafc;
+            font-size: .82rem;
+            font-weight: 700;
+        }
+        .content .boarding-history-table.admin-flex-table td:first-child::before {
+            display: none;
+        }
+        .content .boarding-history-table.admin-flex-table td:nth-child(2) {
+            padding-right: 52px;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+        .content .boarding-history-table.admin-flex-table td:nth-child(2) a {
+            font-weight: 700;
+        }
+        @media (max-width: 575.98px) {
+            .content .boarding-history-table.admin-flex-table tr {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                padding: 16px;
+            }
         }
         .content .admin-flex-table td .js-order-label,
         .js-order-label {
@@ -460,7 +644,7 @@
 <div class="d-flex admin-layout">
     <nav id="sidebar" class="sidebar d-flex flex-column p-0">
         <h4 class="text-center py-3 border-bottom mb-0">
-            <a href="{{ route('admin.settings') }}">Админпанель</a></h4>
+            <a href="{{ route('admin.dashboard') }}">Админпанель</a></h4>
         <div class="sidebar-content">
             <div class="sidebar-content__item px-3 text-uppercase text-muted small pt-2 pb-2 mt-2">Контент</div>
             <div class="sidebar-content__item">
@@ -474,6 +658,7 @@
             </div>
             <div class="sidebar-content__item px-3 text-uppercase text-muted small border-top pt-2 mt-2">Работа</div>
             <div class="sidebar-content__item">
+                <a href="{{ route('admin.dashboard') }}" class="{{ request()->is('zooadmin/dashboard*') ? 'active' : '' }}"><i class="fa fa-chart-line me-2"></i>Дашборд</a>
                 <a href="{{ route('admin.clients.index') }}" class="{{ request()->is('zooadmin/clients*') ? 'active' : '' }}"><i class="fa fa-address-book me-2"></i>Клиенты</a>
                 <a href="{{ route('admin.animals.index') }}" class="{{ request()->is('zooadmin/animals*') ? 'active' : '' }}"><i class="fa fa-paw me-2"></i>Питомцы</a>
                 <a href="{{ route('admin.categories.index') }}" class="{{ request()->is('zooadmin/categories*') ? 'active' : '' }}"><i class="fa fa-tags me-2"></i>Категории животных</a>
@@ -505,7 +690,81 @@
         </div>
     </nav>
     <div class="content flex-grow-1">
-        @yield('content')
+        @php
+            $routeName = request()->route()?->getName() ?? '';
+            $currentPath = trim(request()->path(), '/');
+            $breadcrumbSections = [
+                'dashboard' => ['Сводка', route('admin.dashboard')],
+                'settings' => ['Настройки', route('admin.settings')],
+                'telegram-bot-settings' => ['Telegram-бот', route('admin.telegram-bot-settings.edit')],
+                'personal-data-consent' => ['Согласие ПДн', route('admin.personal-data-consent.edit')],
+                'clients' => ['Клиенты', route('admin.clients.index')],
+                'animals' => ['Питомцы', route('admin.animals.index')],
+                'categories' => ['Категории животных', route('admin.categories.index')],
+                'boarding' => ['Передержка', route('admin.boarding.index')],
+                'feedbacks' => ['Обратная связь', route('admin.feedbacks.index')],
+                'avito-reviews' => ['Отзывы Avito', route('admin.avito-reviews.index')],
+                'sliders' => ['Слайдер', route('admin.sliders.index')],
+                'about' => ['Обо мне', route('admin.about.edit')],
+                'advantages' => ['Преимущества', route('admin.advantages.index')],
+                'services' => ['Услуги', route('admin.services.index')],
+                'galleries' => ['Фотоальбом', route('admin.galleries.index')],
+                'images' => ['Изображения', route('admin.images.index')],
+                'socials' => ['Социальные контакты', route('admin.socials.index')],
+                'articles' => ['Статьи', route('admin.articles.index')],
+                'article-comments' => ['Комментарии', route('admin.article-comments.index')],
+                'nav-links' => ['Меню сайта', route('admin.nav-links.index')],
+                'users' => ['Пользователи', route('admin.users.index')],
+            ];
+            $sectionKey = collect(array_keys($breadcrumbSections))
+                ->first(fn ($key) => str_starts_with($currentPath, 'zooadmin/'.$key));
+            $breadcrumbs = [];
+            if ($sectionKey && $sectionKey !== 'dashboard') {
+                $breadcrumbs[] = ['Сводка', route('admin.dashboard'), false];
+                $section = $breadcrumbSections[$sectionKey];
+                $isSectionRoot = in_array($routeName, ["admin.{$sectionKey}.index", 'admin.settings', 'admin.about.edit', 'admin.telegram-bot-settings.edit', 'admin.personal-data-consent.edit'], true);
+                $breadcrumbs[] = [$section[0], $isSectionRoot ? null : $section[1], $isSectionRoot];
+                if (!$isSectionRoot) {
+                    $pageLabel = match (true) {
+                        $routeName === 'admin.boarding.animals' => 'Питомцы',
+                        str_contains($routeName, '.create') => 'Новая запись',
+                        str_contains($routeName, '.edit') => 'Редактирование',
+                        str_contains($routeName, '.show') => 'Карточка',
+                        str_contains($routeName, '.archive') => 'Архив',
+                        str_contains($routeName, '.tasks') => 'Действия',
+                        default => 'Раздел',
+                    };
+                    $breadcrumbs[] = [$pageLabel, null, true];
+                }
+            }
+        @endphp
+        @if($breadcrumbs)
+            <nav class="admin-breadcrumbs" aria-label="Навигационная цепочка">
+                <ol>
+                    @foreach($breadcrumbs as [$label, $url, $isCurrent])
+                        <li @if($isCurrent) aria-current="page" @endif>
+                            @if($url)<a href="{{ $url }}">{{ $label }}</a>@else{{ $label }}@endif
+                        </li>
+                    @endforeach
+                </ol>
+            </nav>
+        @endif
+        <div id="admin-content">
+            @yield('content')
+        </div>
+    </div>
+</div>
+<div class="modal fade admin-editor-modal" id="adminEditorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="adminEditorModalTitle">Редактирование</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body" id="adminEditorModalBody">
+                <div class="admin-editor-loading">Загрузка формы…</div>
+            </div>
+        </div>
     </div>
 </div>
 <a href="#" class="admin-to-top" id="adminToTop" aria-label="Наверх">
@@ -535,6 +794,199 @@
         const sidebar = document.getElementById('sidebar');
         const toggleButton = document.getElementById('sidebarToggle');
         const backdrop = document.getElementById('sidebarBackdrop');
+        const editorModalEl = document.getElementById('adminEditorModal');
+        const editorModalBody = document.getElementById('adminEditorModalBody');
+        const editorModalTitle = document.getElementById('adminEditorModalTitle');
+        const editorModal = editorModalEl ? new bootstrap.Modal(editorModalEl) : null;
+        const editorScrollKey = `admin-editor-scroll:${window.location.pathname}${window.location.search}`;
+
+        const restoreEditorScroll = () => {
+            const saved = sessionStorage.getItem(editorScrollKey);
+            if (!saved) return;
+            sessionStorage.removeItem(editorScrollKey);
+            requestAnimationFrame(() => window.scrollTo(0, Number(saved) || 0));
+        };
+
+        restoreEditorScroll();
+
+        const appendTag = (editor, name) => {
+            const cleanName = name.trim().replace(/\s+/g, ' ');
+            if (!cleanName) return;
+
+            const list = editor.querySelector('[data-tag-list]');
+            const input = editor.querySelector('[data-tag-input]');
+            const type = editor.querySelector('[data-tag-type].active')?.dataset.tagType || 'negative';
+            const exists = Array.from(list.querySelectorAll('input[name$="[name]"]'))
+                .some((field) => field.value.trim().toLocaleLowerCase('ru') === cleanName.toLocaleLowerCase('ru'));
+            if (exists) {
+                input.value = '';
+                return;
+            }
+
+            const index = Number(editor.dataset.tagIndex || list.children.length);
+            editor.dataset.tagIndex = String(index + 1);
+
+            const item = document.createElement('span');
+            item.className = `tag-editor__item entity-tag entity-tag--${type}`;
+            const label = document.createElement('span');
+            label.textContent = cleanName;
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'tag-editor__remove';
+            remove.dataset.removeTag = '';
+            remove.setAttribute('aria-label', `Удалить тег ${cleanName}`);
+            remove.textContent = '×';
+
+            const nameField = document.createElement('input');
+            nameField.type = 'hidden';
+            nameField.name = `tags[${index}][name]`;
+            nameField.value = cleanName;
+            const typeField = document.createElement('input');
+            typeField.type = 'hidden';
+            typeField.name = `tags[${index}][type]`;
+            typeField.value = type;
+
+            item.append(label, remove, nameField, typeField);
+            list.appendChild(item);
+            input.value = '';
+        };
+
+        document.addEventListener('keydown', (event) => {
+            const input = event.target.closest('[data-tag-input]');
+            if (!input || event.key !== 'Enter' || event.isComposing) return;
+            event.preventDefault();
+            appendTag(input.closest('[data-tag-editor]'), input.value);
+        });
+
+        document.addEventListener('click', (event) => {
+            const typeButton = event.target.closest('[data-tag-type]');
+            if (typeButton) {
+                const editor = typeButton.closest('[data-tag-editor]');
+                editor.querySelectorAll('[data-tag-type]').forEach((button) => button.classList.toggle('active', button === typeButton));
+                return;
+            }
+
+            const removeButton = event.target.closest('[data-remove-tag]');
+            if (removeButton) removeButton.closest('.tag-editor__item')?.remove();
+        });
+
+        const isEditorUrl = (url) => {
+            if (url.origin !== window.location.origin || !url.pathname.startsWith('/zooadmin/')) return false;
+
+            const path = url.pathname.replace(/\/$/, '');
+            const standaloneEditors = [
+                '/zooadmin/settings',
+                '/zooadmin/about',
+                '/zooadmin/settings/telegram-bot',
+                '/zooadmin/personal-data-consent',
+            ];
+            const usesFullPageEditor = /^\/zooadmin\/articles(?:\/create|\/[^/]+\/edit)$/.test(path)
+                || path === '/zooadmin/personal-data-consent';
+
+            if (usesFullPageEditor) return false;
+
+            const isProfile = /^\/zooadmin\/(animals|clients)\/\d+$/.test(path);
+
+            return standaloneEditors.includes(path) || isProfile || /\/create$/.test(path) || /\/edit$/.test(path);
+        };
+
+        const setEditorContent = (source) => {
+            const heading = source.querySelector('h1, h2, h3');
+            editorModalTitle.textContent = heading?.textContent.trim() || 'Редактирование';
+            heading?.remove();
+            editorModalBody.innerHTML = source.innerHTML;
+        };
+
+        const showEditorError = () => {
+            editorModalBody.innerHTML = '<div class="alert alert-danger mb-0">Не удалось загрузить форму. Попробуйте ещё раз.</div>';
+        };
+
+        const openEditor = async (url) => {
+            if (!editorModal || !editorModalBody) {
+                window.location.href = url;
+                return;
+            }
+
+            editorModalTitle.textContent = 'Загрузка…';
+            editorModalBody.innerHTML = '<div class="admin-editor-loading">Загрузка формы…</div>';
+            editorModal.show();
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin',
+                });
+                const html = await response.text();
+                const documentFromResponse = new DOMParser().parseFromString(html, 'text/html');
+                const source = documentFromResponse.getElementById('admin-content');
+
+                if (!response.ok || !source) {
+                    window.location.href = url;
+                    return;
+                }
+
+                setEditorContent(source);
+            } catch (error) {
+                showEditorError();
+            }
+        };
+
+        document.addEventListener('click', (event) => {
+            const link = event.target.closest('a[href]');
+            if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === '_blank') return;
+            if (!isEditorUrl(new URL(link.href, window.location.origin))) return;
+
+            event.preventDefault();
+            openEditor(link.href);
+        });
+
+        editorModalBody?.addEventListener('submit', async (event) => {
+            const form = event.target.closest('form');
+            if (!form) return;
+
+            event.preventDefault();
+            const submitButton = form.querySelector('[type="submit"]');
+            const originalLabel = submitButton?.innerHTML;
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Сохраняем…';
+            }
+
+            try {
+                const response = await fetch(form.action, {
+                    method: (form.method || 'POST').toUpperCase(),
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin',
+                });
+                const html = await response.text();
+                const documentFromResponse = new DOMParser().parseFromString(html, 'text/html');
+                const source = documentFromResponse.getElementById('admin-content');
+                const hasValidationErrors = source?.querySelector('.is-invalid, .alert-danger');
+
+                if (!response.ok || !source) {
+                    throw new Error('Form request failed');
+                }
+
+                if (hasValidationErrors) {
+                    setEditorContent(source);
+                    return;
+                }
+
+                sessionStorage.setItem(editorScrollKey, String(window.scrollY));
+                editorModal.hide();
+                window.location.reload();
+            } catch (error) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger mt-3 mb-0';
+                alert.textContent = 'Не удалось сохранить изменения. Проверьте соединение и попробуйте ещё раз.';
+                form.appendChild(alert);
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalLabel;
+                }
+            }
+        });
 
         const isDesktop = () => window.innerWidth >= 992;
         let desktopOpen = true;

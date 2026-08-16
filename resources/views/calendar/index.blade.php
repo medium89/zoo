@@ -7,7 +7,7 @@
             <aside class="calendar-sidebar" aria-label="Список активных записей">
                 <div class="calendar-sidebar__inner">
                     <div class="calendar-sidebar__head">
-                        <p class="calendar-sidebar__meta mb-0"><span class="calendar-sidebar__meta-count">{{ $entries->count() }}</span> активных записей до конца {{ $year }} года</p>
+                        <p class="calendar-sidebar__meta mb-0"><span class="calendar-sidebar__meta-count">{{ $entries->count() }}</span> активных записей</p>
                         @if($entries->isNotEmpty())
                             <button
                                 type="button"
@@ -15,7 +15,7 @@
                                 aria-expanded="false"
                                 aria-controls="calendarSidebarList"
                             >
-                                Подробнее
+                                Развернуть
                             </button>
                         @endif
                     </div>
@@ -32,7 +32,7 @@
                                             <h3 class="sidebar-entry__name">{{ $entry['name'] }}</h3>
                                             <span class="sidebar-entry__type">{{ $entry['service_type'] }}</span>
                                         </div>
-                                        <p class="sidebar-entry__dates mb-0">{{ $entry['start_date'] }} — {{ $entry['end_date'] }}</p>
+                                        <p class="sidebar-entry__dates mb-0">{{ $entry['start_date_label'] }} — {{ $entry['end_date_label'] }}</p>
                                         @if(!empty($entry['description']))
                                             <p class="sidebar-entry__description mb-0">{{ $entry['description'] }}</p>
                                         @endif
@@ -509,6 +509,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const entries = @json($entries->values());
     const year = {{ $year }};
     const firstVisibleMonth = {{ $currentMonth }};
+    const visibleFrom = @json($today);
     const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
     const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
@@ -523,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function () {
     sidebarToggle?.addEventListener('click', function () {
         const isExpanded = sidebarToggle.getAttribute('aria-expanded') === 'true';
         sidebarToggle.setAttribute('aria-expanded', String(!isExpanded));
-        sidebarToggle.textContent = isExpanded ? 'Подробнее' : 'Свернуть';
+        sidebarToggle.textContent = isExpanded ? 'Развернуть' : 'Свернуть';
         sidebarList?.classList.toggle('is-collapsed-mobile', isExpanded);
     });
 
@@ -563,7 +564,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return new Intl.DateTimeFormat('ru-RU', {
             day: 'numeric',
             month: 'long',
-            year: 'numeric',
             timeZone: 'UTC',
         }).format(date);
     }
@@ -676,7 +676,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <h3 class="calendar-tooltip__name">${escapeHtml(item.name)}</h3>
                                 <span class="calendar-tooltip__type">${escapeHtml(item.service_type)}</span>
                             </div>
-                            <p class="calendar-tooltip__dates">${escapeHtml(item.start_date)} — ${escapeHtml(item.end_date)}</p>
+                            <p class="calendar-tooltip__dates">${escapeHtml(item.start_date_label)} — ${escapeHtml(item.end_date_label)}</p>
                             ${description}
                         </div>
                     </div>
@@ -750,6 +750,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             for (let day = 1; day <= daysInMonth; day += 1) {
                 const dateValue = formatIsoDate(buildUtcDate(year, month, day));
+
+                if (dateValue < visibleFrom) {
+                    const pastCell = document.createElement('div');
+                    pastCell.className = 'cal-spacer';
+                    body.appendChild(pastCell);
+                    continue;
+                }
+
                 const items = map[dateValue] || [];
 
                 if (!items.length) {

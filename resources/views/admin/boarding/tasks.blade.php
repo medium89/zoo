@@ -8,7 +8,6 @@
             <h1 class="mb-1">Действия: {{ $animalName }}</h1>
             <div class="text-muted">{{ $boarding->start_date->format('d.m.Y') }} — {{ $boarding->end_date->format('d.m.Y') }}</div>
         </div>
-        <a href="{{ route('admin.boarding.index') }}" class="btn btn-outline-secondary">К передержкам</a>
     </div>
 
     @if(session('success'))

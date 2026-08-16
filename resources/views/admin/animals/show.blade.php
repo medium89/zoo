@@ -6,7 +6,6 @@
         <h1>{{ $animal->name }}</h1>
         <div class="d-flex gap-2">
             <a href="{{ route('admin.animals.edit', $animal) }}" class="btn btn-primary">Редактировать</a>
-            <a href="{{ route('admin.animals.index') }}" class="btn btn-secondary">Назад</a>
         </div>
     </div>
 
@@ -19,7 +18,13 @@
             <div class="card h-100">
                 <div class="card-header">Информация</div>
                 <div class="card-body">
-                    <p><strong>Вид:</strong> {{ $animal->species ?: '—' }}</p>
+                    <p><strong>Категория:</strong> {{ $animal->category?->name ?: '—' }}</p>
+                    @if(!empty($animal->tags))
+                        <div class="mb-3"><strong>Теги:</strong>@include('admin.partials.tags-list', ['tags' => $animal->tags])</div>
+                    @endif
+                    @if($animal->dog_size)
+                        <p><strong>Размер:</strong> {{ $animal->dog_size === 'small' ? 'мелкая собака' : 'средняя или крупная собака' }}</p>
+                    @endif
                     <p><strong>Хозяин:</strong>
                         @if($animal->client)
                             <a href="{{ route('admin.clients.show', $animal->client) }}">{{ $animal->client->name }}</a>
@@ -68,7 +73,7 @@
         <div class="card-body">
             @if($animal->boardings->count())
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table align-middle boarding-history-table">
                         <thead>
                             <tr>
                                 <th>#</th>

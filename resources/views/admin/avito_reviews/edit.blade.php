@@ -80,7 +80,6 @@
         </div>
 
         <div class="d-flex justify-content-between mt-3">
-            <a href="{{ route('admin.avito-reviews.index') }}" class="btn btn-secondary">Назад</a>
             <button type="submit" class="btn btn-primary">Сохранить</button>
         </div>
     </form>

@@ -25,7 +25,10 @@
                 @foreach($clients as $client)
                     <div class="admin-grid-row">
                         <div class="text-muted">{{ $client->id }}</div>
-                        <div><a href="{{ route('admin.clients.show', $client) }}">{{ $client->name }}</a></div>
+                        <div>
+                            <a href="{{ route('admin.clients.show', $client) }}">{{ $client->name }}</a>
+                            @include('admin.partials.tags-list', ['tags' => $client->tags])
+                        </div>
                         <div>{{ $client->phone ?: '—' }}</div>
                         <div>{{ $client->animals_count }}</div>
                         <div>{{ $client->boardings_count }}</div>

@@ -42,9 +42,8 @@
                 </div>
 
                 <button type="submit" class="btn btn-success">Добавить пользователя</button>
-                <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Отмена</a>
             </form>
         </div>
     </div>
 </div>
-@endsection 
+@endsection

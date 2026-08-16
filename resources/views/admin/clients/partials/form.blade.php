@@ -11,8 +11,10 @@
         <label class="form-label">Заметка</label>
         <textarea name="note" class="form-control" rows="4">{{ old('note', $client?->note) }}</textarea>
     </div>
+    <div class="mb-3">
+        @include('admin.partials.tags-editor', ['tags' => $client?->tags])
+    </div>
 </div>
 <div class="card-footer d-flex gap-2">
     <button class="btn btn-success">Сохранить</button>
-    <a href="{{ $client ? route('admin.clients.show', $client) : route('admin.clients.index') }}" class="btn btn-secondary">Назад</a>
 </div>

@@ -48,7 +48,6 @@
         <label class="form-check-label" for="active">Активна</label>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
-    <a href="{{ route('admin.services.index') }}" class="btn btn-secondary">Назад</a>
 </form>
 @endsection
 
