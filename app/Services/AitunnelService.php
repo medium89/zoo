@@ -70,6 +70,61 @@ class AitunnelService
         return trim((string)$response->json('text'));
     }
 
+    /**
+     * Определяет, является ли короткая характеристика питомца/клиента
+     * положительной или требующей внимания.
+     */
+    public function classifyTag(string $tag): array
+    {
+        $apiKey = config('services.aitunnel.api_key');
+        if (!$apiKey) {
+            throw new RuntimeException('AITUNNEL_API_KEY is not configured.');
+        }
+
+        $response = Http::withToken($apiKey)
+            ->acceptJson()
+            ->timeout(20)
+            ->post($this->baseUrl().'/chat/completions', [
+                'model' => config('services.aitunnel.chat_model', 'gemini-2.5-flash-lite'),
+                'temperature' => 0,
+                'response_format' => ['type' => 'json_object'],
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => <<<'PROMPT'
+Ты классифицируешь один короткий тег для карточки питомца или клиента зоосервиса.
+Верни только JSON без Markdown по схеме:
+{"type":"positive|negative","reason":"краткое объяснение по-русски"}
+
+positive — приятное или полезное качество: дружелюбный, спокойный, привит, постоянный клиент.
+negative — то, что требует внимания, осторожности или влияет на уход: кусается, боится людей, аллергия, агрессивный.
+Если тег нейтральный, двусмысленный или неизвестный, выбирай negative, чтобы администратор его заметил.
+reason — до 90 символов, без оценок личности и без лишних слов.
+PROMPT,
+                    ],
+                    ['role' => 'user', 'content' => trim($tag)],
+                ],
+            ]);
+
+        if (!$response->ok()) {
+            throw new RuntimeException('AITunnel tag classification failed: '.$response->status());
+        }
+
+        $content = $response->json('choices.0.message.content');
+        $decoded = is_string($content) ? json_decode($content, true) : null;
+        if (!is_array($decoded)) {
+            throw new RuntimeException('AITunnel returned invalid tag classification JSON.');
+        }
+
+        $type = ($decoded['type'] ?? null) === 'positive' ? 'positive' : 'negative';
+        $reason = trim((string) ($decoded['reason'] ?? ''));
+
+        return [
+            'type' => $type,
+            'reason' => mb_substr($reason, 0, 90),
+        ];
+    }
+
     private function baseUrl(): string
     {
         return rtrim(config('services.aitunnel.base_url', 'https://api.aitunnel.ru/v1'), '/');

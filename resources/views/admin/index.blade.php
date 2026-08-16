@@ -259,17 +259,21 @@
         }
 
         .tag-editor__controls .form-control { min-width: 0; }
-        .tag-editor__controls .btn { white-space: nowrap; }
         .tag-editor__list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
-        .tag-editor__item { gap: 5px; }
-        .tag-editor__remove { width: 16px; height: 16px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: currentColor; font-size: 1rem; font-weight: 800; line-height: 14px; }
-        .tag-editor__remove:hover { background: rgba(0,0,0,.08); }
+        .tag-editor__item { position: relative; gap: 0; padding: 0; overflow: visible; }
+        .tag-editor__label { min-height: 24px; padding: 3px 8px; border: 0; border-radius: inherit; background: transparent; color: inherit; font: inherit; text-align: left; }
+        .tag-editor__label:hover { background: rgba(0,0,0,.06); }
+        .tag-editor__item.is-classifying { color: #5c6470; background: #f1f3f5; border-color: #d8dde3; }
+        .tag-editor__item.is-classifying .tag-editor__label::after { content: ' · ИИ…'; font-weight: 600; }
+        .tag-editor__actions { position: absolute; z-index: 5; top: calc(100% + 5px); left: 0; display: flex; gap: 3px; min-width: max-content; padding: 4px; border: 1px solid #dce1e7; border-radius: 9px; background: #fff; box-shadow: 0 8px 20px rgba(31,41,55,.14); }
+        .tag-editor__action { border: 0; border-radius: 6px; padding: 4px 7px; background: #f4f6f8; color: #384252; font-size: .72rem; font-weight: 700; }
+        .tag-editor__action:hover { background: #e8edf2; }
+        .tag-editor__action--remove { color: #ae3e3e; }
 
         @media (max-width: 575.98px) {
             .admin-editor-modal .modal-body { padding: 16px; }
             .admin-editor-modal .modal-header { padding: 15px 16px; }
             .tag-editor__controls { align-items: stretch; flex-direction: column; }
-            .tag-editor__controls .btn-group { align-self: flex-start; }
         }
 
         /* Шапки страниц и таблицы */
@@ -799,6 +803,7 @@
         const editorModalTitle = document.getElementById('adminEditorModalTitle');
         const editorModal = editorModalEl ? new bootstrap.Modal(editorModalEl) : null;
         const editorScrollKey = `admin-editor-scroll:${window.location.pathname}${window.location.search}`;
+        const tagClassificationUrl = @json(route('admin.tags.classify'));
 
         const restoreEditorScroll = () => {
             const saved = sessionStorage.getItem(editorScrollKey);
@@ -809,13 +814,43 @@
 
         restoreEditorScroll();
 
+        const setTagType = (item, type, reason = '') => {
+            item.classList.remove('entity-tag--positive', 'entity-tag--negative', 'is-classifying');
+            item.classList.add(`entity-tag--${type === 'positive' ? 'positive' : 'negative'}`);
+            const typeField = item.querySelector('input[name$="[type]"]');
+            if (typeField) typeField.value = type === 'positive' ? 'positive' : 'negative';
+            item.title = reason ? `ИИ: ${reason}` : 'Нажмите, чтобы изменить тип или удалить';
+        };
+
+        const classifyTag = async (item, name) => {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+                || item.closest('form')?.querySelector('input[name="_token"]')?.value;
+
+            try {
+                const response = await fetch(tagClassificationUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+                    },
+                    body: JSON.stringify({ tag: name }),
+                });
+                if (!response.ok) throw new Error('Tag classification failed');
+
+                const result = await response.json();
+                setTagType(item, result.type, result.reason || 'Тип определён автоматически.');
+            } catch (_) {
+                setTagType(item, 'negative', 'Не удалось определить автоматически — проверьте тег вручную.');
+            }
+        };
+
         const appendTag = (editor, name) => {
             const cleanName = name.trim().replace(/\s+/g, ' ');
             if (!cleanName) return;
 
             const list = editor.querySelector('[data-tag-list]');
             const input = editor.querySelector('[data-tag-input]');
-            const type = editor.querySelector('[data-tag-type].active')?.dataset.tagType || 'negative';
             const exists = Array.from(list.querySelectorAll('input[name$="[name]"]'))
                 .some((field) => field.value.trim().toLocaleLowerCase('ru') === cleanName.toLocaleLowerCase('ru'));
             if (exists) {
@@ -827,15 +862,32 @@
             editor.dataset.tagIndex = String(index + 1);
 
             const item = document.createElement('span');
-            item.className = `tag-editor__item entity-tag entity-tag--${type}`;
-            const label = document.createElement('span');
+            item.className = 'tag-editor__item entity-tag entity-tag--negative is-classifying';
+            item.dataset.tagItem = '';
+            item.title = 'ИИ определяет тип тега…';
+            const label = document.createElement('button');
+            label.type = 'button';
+            label.className = 'tag-editor__label';
+            label.dataset.tagToggle = '';
             label.textContent = cleanName;
+            const actions = document.createElement('span');
+            actions.className = 'tag-editor__actions';
+            actions.dataset.tagActions = '';
+            actions.hidden = true;
+            [['positive', 'Хороший'], ['negative', 'Проблемный']].forEach(([type, text]) => {
+                const action = document.createElement('button');
+                action.type = 'button';
+                action.className = 'tag-editor__action';
+                action.dataset.setTagType = type;
+                action.textContent = text;
+                actions.appendChild(action);
+            });
             const remove = document.createElement('button');
             remove.type = 'button';
-            remove.className = 'tag-editor__remove';
+            remove.className = 'tag-editor__action tag-editor__action--remove';
             remove.dataset.removeTag = '';
-            remove.setAttribute('aria-label', `Удалить тег ${cleanName}`);
-            remove.textContent = '×';
+            remove.textContent = 'Удалить';
+            actions.appendChild(remove);
 
             const nameField = document.createElement('input');
             nameField.type = 'hidden';
@@ -844,11 +896,12 @@
             const typeField = document.createElement('input');
             typeField.type = 'hidden';
             typeField.name = `tags[${index}][type]`;
-            typeField.value = type;
+            typeField.value = 'negative';
 
-            item.append(label, remove, nameField, typeField);
+            item.append(label, actions, nameField, typeField);
             list.appendChild(item);
             input.value = '';
+            classifyTag(item, cleanName);
         };
 
         document.addEventListener('keydown', (event) => {
@@ -859,15 +912,29 @@
         });
 
         document.addEventListener('click', (event) => {
-            const typeButton = event.target.closest('[data-tag-type]');
-            if (typeButton) {
-                const editor = typeButton.closest('[data-tag-editor]');
-                editor.querySelectorAll('[data-tag-type]').forEach((button) => button.classList.toggle('active', button === typeButton));
+            const toggle = event.target.closest('[data-tag-toggle]');
+            if (toggle) {
+                const item = toggle.closest('[data-tag-item]');
+                const actions = item?.querySelector('[data-tag-actions]');
+                if (actions) actions.hidden = !actions.hidden;
+                return;
+            }
+
+            const setTypeButton = event.target.closest('[data-set-tag-type]');
+            if (setTypeButton) {
+                const item = setTypeButton.closest('[data-tag-item]');
+                setTagType(item, setTypeButton.dataset.setTagType, 'Тип выбран вручную.');
+                const actions = item?.querySelector('[data-tag-actions]');
+                if (actions) actions.hidden = true;
                 return;
             }
 
             const removeButton = event.target.closest('[data-remove-tag]');
             if (removeButton) removeButton.closest('.tag-editor__item')?.remove();
+
+            if (!event.target.closest('[data-tag-item]')) {
+                document.querySelectorAll('[data-tag-actions]').forEach((actions) => { actions.hidden = true; });
+            }
         });
 
         const isEditorUrl = (url) => {
