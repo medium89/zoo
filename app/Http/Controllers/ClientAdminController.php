@@ -23,7 +23,9 @@ class ClientAdminController extends Controller
 
     public function store(Request $request)
     {
-        $client = Client::create($this->validated($request));
+        $data = $this->validated($request);
+        $data['tags'] = $this->normalizeTags($data['tags'] ?? []);
+        $client = Client::create($data);
 
         return redirect()->route('admin.clients.show', $client)->with('success', 'Клиент добавлен');
     }
@@ -32,8 +34,10 @@ class ClientAdminController extends Controller
     {
         $client->load([
             'animals.photos',
+            'animals.category',
             'animals.boardings' => fn ($query) => $query->latest('start_date'),
             'boardings.animal.photos',
+            'boardings.animal.category',
         ]);
 
         return view('admin.clients.show', compact('client'));
@@ -46,7 +50,9 @@ class ClientAdminController extends Controller
 
     public function update(Request $request, Client $client)
     {
-        $client->update($this->validated($request));
+        $data = $this->validated($request);
+        $data['tags'] = $this->normalizeTags($data['tags'] ?? []);
+        $client->update($data);
 
         return redirect()->route('admin.clients.show', $client)->with('success', 'Клиент обновлён');
     }
@@ -64,6 +70,22 @@ class ClientAdminController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:255',
             'note' => 'nullable|string',
+            'tags' => 'nullable|array',
+            'tags.*.name' => 'nullable|string|max:60',
+            'tags.*.type' => 'nullable|in:positive,negative',
         ]);
+    }
+
+    private function normalizeTags(array $tags): array
+    {
+        return collect($tags)
+            ->map(fn (array $tag) => [
+                'name' => trim((string) ($tag['name'] ?? '')),
+                'type' => ($tag['type'] ?? null) === 'positive' ? 'positive' : 'negative',
+            ])
+            ->filter(fn (array $tag) => $tag['name'] !== '')
+            ->unique(fn (array $tag) => mb_strtolower($tag['name']))
+            ->values()
+            ->all();
     }
 }

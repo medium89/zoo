@@ -15,6 +15,8 @@ class Boarding extends Model
         'name',
         'description',
         'service_type',
+        'units_per_day',
+        'unit_price',
         'source',
         'status',
         'start_date',
@@ -29,6 +31,8 @@ class Boarding extends Model
         'end_date' => 'date',
         'confirmed_at' => 'datetime',
         'archived_at' => 'datetime',
+        'units_per_day' => 'integer',
+        'unit_price' => 'integer',
     ];
 
     public function client()

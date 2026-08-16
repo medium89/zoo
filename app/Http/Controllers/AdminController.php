@@ -9,7 +9,7 @@ class AdminController extends Controller
 {
     public function index()
     {
-        return redirect()->route('admin.settings');
+        return redirect()->route('admin.dashboard');
     }
 
     public function settings()

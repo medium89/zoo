@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Animal;
 use App\Models\AnimalPhoto;
 use App\Models\Client;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,7 +13,7 @@ class AnimalAdminController extends Controller
 {
     public function index()
     {
-        $animals = Animal::with(['client'])
+        $animals = Animal::with(['client', 'category'])
             ->withCount(['boardings', 'photos'])
             ->orderBy('name')
             ->paginate(20);
@@ -23,13 +24,15 @@ class AnimalAdminController extends Controller
     public function create()
     {
         $clients = Client::orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
 
-        return view('admin.animals.create', compact('clients'));
+        return view('admin.animals.create', compact('clients', 'categories'));
     }
 
     public function store(Request $request)
     {
-        $data = $this->validated($request);
+        $data = $this->withCategoryName($this->validated($request));
+        $data['tags'] = $this->normalizeTags($data['tags'] ?? []);
 
         $data['order'] = (int)Animal::max('order') + 1;
         $animal = Animal::create($data);
@@ -42,6 +45,7 @@ class AnimalAdminController extends Controller
     {
         $animal->load([
             'client',
+            'category',
             'photos',
             'boardings' => fn ($query) => $query->latest('start_date'),
         ]);
@@ -52,13 +56,15 @@ class AnimalAdminController extends Controller
     public function edit(Animal $animal)
     {
         $clients = Client::orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
 
-        return view('admin.animals.edit', compact('animal', 'clients'));
+        return view('admin.animals.edit', compact('animal', 'clients', 'categories'));
     }
 
     public function update(Request $request, Animal $animal)
     {
-        $data = $this->validated($request);
+        $data = $this->withCategoryName($this->validated($request));
+        $data['tags'] = $this->normalizeTags($data['tags'] ?? []);
 
         $animal->update($data);
         $this->storeUploadedPhotos($request, $animal);
@@ -88,15 +94,41 @@ class AnimalAdminController extends Controller
         $data = $request->validate([
             'client_id' => 'nullable|exists:clients,id',
             'name' => 'required|string|max:255',
-            'species' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
+            'dog_size' => 'nullable|in:small,large',
             'description' => 'nullable|string|max:255',
             'note' => 'nullable|string',
+            'tags' => 'nullable|array',
+            'tags.*.name' => 'nullable|string|max:60',
+            'tags.*.type' => 'nullable|in:positive,negative',
             'photos.*' => 'nullable|image|max:10240',
         ]);
 
         unset($data['photos']);
 
         return $data;
+    }
+
+    private function withCategoryName(array $data): array
+    {
+        $data['species'] = !empty($data['category_id'])
+            ? Category::find($data['category_id'])?->name
+            : null;
+
+        return $data;
+    }
+
+    private function normalizeTags(array $tags): array
+    {
+        return collect($tags)
+            ->map(fn (array $tag) => [
+                'name' => trim((string) ($tag['name'] ?? '')),
+                'type' => ($tag['type'] ?? null) === 'positive' ? 'positive' : 'negative',
+            ])
+            ->filter(fn (array $tag) => $tag['name'] !== '')
+            ->unique(fn (array $tag) => mb_strtolower($tag['name']))
+            ->values()
+            ->all();
     }
 
     private function storeUploadedPhotos(Request $request, Animal $animal): void

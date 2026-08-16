@@ -89,6 +89,7 @@ class AitunnelService
 {
   "intent": "create_booking|list_bookings|delete_booking|show_pet|show_client|attach_pet_photo|answer_yes|answer_no|cancel|unknown",
   "service_type": "передержка|выгул|уход|null",
+  "units_per_day": "целое число 1-24|null",
   "start_date": "YYYY-MM-DD|null",
   "end_date": "YYYY-MM-DD|null",
   "period_label": "строка|null",
@@ -96,6 +97,7 @@ class AitunnelService
   "animal": {
     "name": "строка|null",
     "species": "кот|кошка|собака|пес|пёс|щенок|другое|null",
+    "size": "мелкая|средняя|крупная|null",
     "description": "строка|null"
   },
   "client": {
@@ -113,6 +115,8 @@ class AitunnelService
 - Если просят удалить запись, отменить приём или убрать передержку — intent=delete_booking. Укажи кличку в animal.name, start_date и end_date. Для записи на один день обе даты одинаковые. Для записи на несколько дней укажи весь период; например, «удали Луну с 28 по 30 июля». Если просят все предстоящие/будущие записи конкретного питомца, установи delete_scope="upcoming" и укажи animal.name; даты в таком случае оставь null.
 - Если просят записать/принесут/будет питомец — intent=create_booking.
 - Если услуга не названа явно, service_type="передержка".
+- Для выгула и ухода извлекай units_per_day из формулировок «2 раза в день», «три выгула», «утром и вечером». Если количество не указано, верни null.
+- Для собаки извлекай размер, если он назван. «Мелкая» = мелкая; средняя и крупная возвращаются как средняя или крупная.
 - Даты всегда нормализуй с годом. Если год не указан, выбери ближайшую будущую дату относительно сегодня.
 - Для intent=delete_booking при неуказанном годе используй текущий год, а не будущий.
 - Если пользователь отвечает "да", "подтверждаю", "согласен" — intent=answer_yes.

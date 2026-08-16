@@ -11,16 +11,28 @@ class Animal extends Model
 
     protected $fillable = [
         'client_id',
+        'category_id',
         'name',
         'species',
+        'dog_size',
         'description',
         'note',
+        'tags',
         'order',
+    ];
+
+    protected $casts = [
+        'tags' => 'array',
     ];
 
     public function client()
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function boardings()
@@ -37,4 +49,5 @@ class Animal extends Model
     {
         return $this->hasMany(AnimalPhoto::class);
     }
+
 }

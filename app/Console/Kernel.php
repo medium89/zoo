@@ -19,6 +19,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('telegram:send-boarding-task-notifications')
             ->everyMinute()
             ->withoutOverlapping();
+
+        $schedule->command('boarding:archive-expired')
+            ->dailyAt('00:05')
+            ->withoutOverlapping();
     }
 
     /**

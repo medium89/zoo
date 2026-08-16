@@ -7,8 +7,10 @@ use App\Models\Boarding;
 use App\Models\BoardingTask;
 use App\Models\BoardingTaskRun;
 use App\Models\Client;
+use App\Models\Category;
 use App\Models\TelegramBotSession;
 use App\Services\AitunnelService;
+use App\Services\BoardingPricingService;
 use App\Services\BoardingTaskInstructionParser;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,6 +25,7 @@ class TelegramBotController extends Controller
     public function __construct(
         private readonly AitunnelService $aitunnel,
         private readonly BoardingTaskInstructionParser $taskInstructionParser,
+        private readonly BoardingPricingService $pricing,
     ) {
     }
 
@@ -144,8 +147,26 @@ class TelegramBotController extends Controller
         if (Str::startsWith($data, 'species:')) {
             $value = Str::after($data, 'species:');
             $payload['species'] = $value === 'none' ? null : $value;
-            $this->saveSession($fromId, $chatId, 'waiting_owner', $payload);
-            $this->askOwner($chatId);
+            $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+            return;
+        }
+
+        if (Str::startsWith($data, 'category:')) {
+            $category = Category::find((int) Str::after($data, 'category:'));
+            if (!$category) {
+                $this->sendMessage($chatId, 'Категория не найдена. Выберите её ещё раз.');
+                return;
+            }
+
+            $payload['category_id'] = $category->id;
+            $payload['species'] = $category->name;
+            $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+            return;
+        }
+
+        if (Str::startsWith($data, 'dog_size:')) {
+            $payload['dog_size'] = Str::after($data, 'dog_size:');
+            $this->continueAfterRequiredFields($chatId, $fromId, $payload);
             return;
         }
 
@@ -167,10 +188,12 @@ class TelegramBotController extends Controller
 
             $payload['animal_id'] = $animal->id;
             $payload['animal_name'] = $animal->name;
-            $payload['species'] = $animal->species ?: ($payload['species'] ?? null);
+            $payload['category_id'] = $animal->category_id ?: ($payload['category_id'] ?? null);
+            $payload['species'] = $animal->category?->name ?: $animal->species ?: ($payload['species'] ?? null);
+            $payload['dog_size'] = $animal->dog_size ?: ($payload['dog_size'] ?? null);
             $payload['client_id'] = $animal->client_id ?: ($payload['client_id'] ?? null);
             $payload['client_name'] = $animal->client?->name ?: ($payload['client_name'] ?? null);
-            $this->askBookingConfirmation($chatId, $fromId, $payload);
+            $this->continueAfterRequiredFields($chatId, $fromId, $payload);
             return;
         }
 
@@ -185,6 +208,19 @@ class TelegramBotController extends Controller
             $boarding = $this->createBookingFromPayload($payload);
             $this->clearSession($fromId);
             $this->sendMessage($chatId, "Запись создана #{$boarding->id}:\n".$this->bookingLine($boarding));
+            return;
+        }
+
+        if ($data === 'booking_change_price') {
+            $this->saveSession($fromId, $chatId, 'waiting_booking_price', $payload);
+            $this->sendMessage($chatId, 'Введите новую цену за одну услугу в рублях. Например: 650');
+            return;
+        }
+
+        if (preg_match('/^booking_units:(\d+)$/', $data, $matches)) {
+            $payload['units_per_day'] = (int) $matches[1];
+            unset($payload['unit_price']);
+            $this->askBookingConfirmation($chatId, $fromId, $payload);
             return;
         }
 
@@ -250,9 +286,44 @@ class TelegramBotController extends Controller
         }
 
         if ($session->state === 'waiting_species') {
-            $payload['species'] = in_array($normalized, ['без вида', 'не знаю', 'нет'], true) ? null : $text;
-            $this->saveSession($fromId, $chatId, 'waiting_owner', $payload);
-            $this->askOwner($chatId);
+            if (in_array($normalized, ['без вида', 'без категории', 'не знаю', 'нет'], true)) {
+                $payload['category_id'] = null;
+                $payload['species'] = null;
+                $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+                return true;
+            }
+
+            $category = $this->categoryFromText($normalized);
+            if (!$category) {
+                $this->askSpecies($chatId, $payload['animal_name']);
+                return true;
+            }
+
+            $payload['category_id'] = $category?->id;
+            $payload['species'] = $category->name;
+            $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+            return true;
+        }
+
+        if ($session->state === 'waiting_dog_size') {
+            $size = $this->normalizeDogSize($normalized);
+            if (!$size) {
+                $this->askDogSize($chatId, $payload['animal_name']);
+                return true;
+            }
+            $payload['dog_size'] = $size;
+            $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+            return true;
+        }
+
+        if ($session->state === 'waiting_booking_price') {
+            $price = (int) preg_replace('/\D+/', '', $text);
+            if ($price < 1 || $price > 100000) {
+                $this->sendMessage($chatId, 'Укажите цену целым числом от 1 до 100 000 ₽.');
+                return true;
+            }
+            $payload['unit_price'] = $price;
+            $this->askBookingConfirmation($chatId, $fromId, $payload);
             return true;
         }
 
@@ -312,7 +383,10 @@ class TelegramBotController extends Controller
             'start_date' => $intent['start_date'] ?? null,
             'end_date' => $intent['end_date'] ?? ($intent['start_date'] ?? null),
             'animal_name' => $animal['name'] ?? null,
+            'category_id' => null,
             'species' => $this->normalizeSpecies($animal['species'] ?? null),
+            'dog_size' => $this->normalizeDogSize($animal['size'] ?? null),
+            'units_per_day' => max(1, min(24, (int) ($intent['units_per_day'] ?? 1))),
             'description' => $animal['description'] ?? null,
             'client_name' => $client['name'] ?? null,
             'client_phone' => $client['phone'] ?? null,
@@ -327,7 +401,7 @@ class TelegramBotController extends Controller
             return;
         }
 
-        if (!$payload['species']) {
+        if (!$payload['category_id']) {
             $this->saveSession($fromId, $chatId, 'waiting_species', $payload);
             $this->askSpecies($chatId, $payload['animal_name']);
             return;
@@ -347,6 +421,12 @@ class TelegramBotController extends Controller
             return;
         }
 
+        if ($this->isDog($payload['species'] ?? null) && empty($payload['dog_size'])) {
+            $this->saveSession($fromId, $chatId, 'waiting_dog_size', $payload);
+            $this->askDogSize($chatId, $payload['animal_name']);
+            return;
+        }
+
         if (empty($payload['client_id']) && empty($payload['client_name']) && empty($payload['owner_asked'])) {
             $this->saveSession($fromId, $chatId, 'waiting_owner', $payload);
             $this->askOwner($chatId);
@@ -358,17 +438,23 @@ class TelegramBotController extends Controller
 
     private function askSpecies(int|string $chatId, string $animalName): void
     {
-        $this->sendMessage($chatId, "Кто {$animalName}: кот, собака или можно оставить без вида?", [
-            'inline_keyboard' => [
-                [
-                    ['text' => 'Кот', 'callback_data' => 'species:кот'],
-                    ['text' => 'Собака', 'callback_data' => 'species:собака'],
-                ],
-                [
-                    ['text' => 'Без вида', 'callback_data' => 'species:none'],
-                    ['text' => 'Отмена', 'callback_data' => 'cancel'],
-                ],
-            ],
+        $speciesButtons = Category::orderBy('name')->get(['id', 'name'])
+            ->map(fn (Category $category): array => [
+                'text' => mb_strimwidth($category->name, 0, 28, '…'),
+                'callback_data' => 'category:'.$category->id,
+            ])
+            ->values()
+            ->chunk(2)
+            ->map(fn ($row): array => $row->all())
+            ->all();
+
+        $speciesButtons[] = [
+            ['text' => 'Без категории', 'callback_data' => 'species:none'],
+            ['text' => 'Отмена', 'callback_data' => 'cancel'],
+        ];
+
+        $this->sendMessage($chatId, "Какая категория у {$animalName}? Выберите её из списка или напишите сообщением.", [
+            'inline_keyboard' => $speciesButtons,
         ]);
     }
 
@@ -378,6 +464,21 @@ class TelegramBotController extends Controller
             'inline_keyboard' => [
                 [
                     ['text' => 'Без хозяина', 'callback_data' => 'owner_skip'],
+                    ['text' => 'Отмена', 'callback_data' => 'cancel'],
+                ],
+            ],
+        ]);
+    }
+
+    private function askDogSize(int|string $chatId, string $animalName): void
+    {
+        $this->sendMessage($chatId, "Какого размера {$animalName}? Это нужно для тарифа.", [
+            'inline_keyboard' => [
+                [
+                    ['text' => 'Мелкая', 'callback_data' => 'dog_size:small'],
+                    ['text' => 'Средняя или крупная', 'callback_data' => 'dog_size:large'],
+                ],
+                [
                     ['text' => 'Отмена', 'callback_data' => 'cancel'],
                 ],
             ],
@@ -410,13 +511,28 @@ class TelegramBotController extends Controller
     {
         $overlaps = $this->overlaps($payload);
         $payload['overlap_ids'] = $overlaps->pluck('id')->all();
+        $payload['units_per_day'] = max(1, min(24, (int) ($payload['units_per_day'] ?? 1)));
+        $payload['unit_price'] = (int) ($payload['unit_price'] ?? $this->pricing->defaultRate(
+            $payload['service_type'],
+            $payload['species'] ?? null,
+            $payload['dog_size'] ?? null,
+        ));
         $this->saveSession($fromId, $chatId, 'waiting_booking_confirmation', $payload);
 
         $text = "Будет создана запись:\n";
         $text .= 'Услуга: '.$payload['service_type']."\n";
         $text .= 'Даты: '.$payload['start_date'].' — '.$payload['end_date']."\n";
         $text .= 'Питомец: '.trim(($payload['species'] ? $payload['species'].' ' : '').$payload['animal_name'])."\n";
+        if ($this->isDog($payload['species'] ?? null)) {
+            $text .= 'Размер: '.($payload['dog_size'] === 'small' ? 'мелкая собака' : 'средняя или крупная собака')."\n";
+        }
         $text .= 'Хозяин: '.($payload['client_name'] ?: 'без хозяина')."\n";
+        $days = $this->pricing->daysBetween($payload['start_date'], $payload['end_date']);
+        $total = $payload['unit_price'] * $payload['units_per_day'] * $days;
+        $unitLabel = $payload['service_type'] === 'передержка' ? 'за сутки' : 'за один раз';
+        $quantity = $payload['units_per_day'] > 1 ? ' × '.$payload['units_per_day'].' раз в день' : '';
+        $text .= 'Стоимость: '.number_format($payload['unit_price'], 0, '.', ' ')." ₽ {$unitLabel}{$quantity}\n";
+        $text .= 'Итого: '.number_format($total, 0, '.', ' ').' ₽ за '.$days.' '.$this->daysLabel($days)."\n";
 
         if ($overlaps->count()) {
             $text .= "\nНа эти даты уже есть другие записи:\n";
@@ -425,12 +541,20 @@ class TelegramBotController extends Controller
             }
         }
 
-        $text .= "\nПодтвердить?";
+        $text .= "\nЦена верна?";
 
         $this->sendMessage($chatId, trim($text), [
             'inline_keyboard' => [
                 [
                     ['text' => 'Подтвердить', 'callback_data' => 'booking_confirm'],
+                    ['text' => 'Изменить цену', 'callback_data' => 'booking_change_price'],
+                ],
+                [
+                    ['text' => '1 раз/день', 'callback_data' => 'booking_units:1'],
+                    ['text' => '2 раза/день', 'callback_data' => 'booking_units:2'],
+                    ['text' => '3 раза/день', 'callback_data' => 'booking_units:3'],
+                ],
+                [
                     ['text' => 'Отмена', 'callback_data' => 'booking_cancel'],
                 ],
             ],
@@ -457,14 +581,23 @@ class TelegramBotController extends Controller
         if (!$animal) {
             $animal = Animal::create([
                 'client_id' => $client?->id,
+                'category_id' => $payload['category_id'] ?? null,
                 'name' => $payload['animal_name'],
                 'species' => $payload['species'] ?? null,
+                'dog_size' => $payload['dog_size'] ?? null,
                 'description' => $payload['description'] ?? null,
                 'order' => (int)Animal::max('order') + 1,
             ]);
-        } elseif ($client && !$animal->client_id) {
-            $animal->client_id = $client->id;
-            $animal->save();
+        } else {
+            if ($client && !$animal->client_id) {
+                $animal->client_id = $client->id;
+            }
+            if (empty($animal->dog_size) && !empty($payload['dog_size'])) {
+                $animal->dog_size = $payload['dog_size'];
+            }
+            if ($animal->isDirty()) {
+                $animal->save();
+            }
         }
 
         foreach ($payload['pending_photo_file_ids'] ?? [] as $fileId) {
@@ -477,6 +610,8 @@ class TelegramBotController extends Controller
             'name' => $animal->name,
             'description' => $payload['description'] ?? $animal->description,
             'service_type' => $payload['service_type'],
+            'units_per_day' => $payload['units_per_day'] ?? 1,
+            'unit_price' => $payload['unit_price'],
             'source' => 'telegram_bot',
             'status' => 'active',
             'start_date' => $payload['start_date'],
@@ -740,6 +875,9 @@ class TelegramBotController extends Controller
         $last = $animal->boardings->first();
         $text = "Питомец: {$animal->name}\n";
         $text .= 'Вид: '.($animal->species ?: 'не указан')."\n";
+        if ($animal->dog_size) {
+            $text .= 'Размер: '.($animal->dog_size === 'small' ? 'мелкая собака' : 'средняя или крупная собака')."\n";
+        }
         $text .= 'Хозяин: '.($animal->client?->name ?: 'не указан')."\n";
         $text .= 'Описание: '.($animal->description ?: '—')."\n";
         $text .= 'Заметки: '.($animal->note ?: '—')."\n";
@@ -876,9 +1014,13 @@ class TelegramBotController extends Controller
 
     private function matchingAnimals(array $payload)
     {
-        return Animal::with(['client', 'boardings' => fn ($query) => $query->latest('start_date')])
+        return Animal::with(['client', 'category', 'boardings' => fn ($query) => $query->latest('start_date')])
             ->whereRaw('LOWER(name) = ?', [mb_strtolower($payload['animal_name'])])
-            ->when($payload['species'] ?? null, function ($query, $species) {
+            ->when($payload['category_id'] ?? null, function ($query, $categoryId) {
+                $query->where('category_id', $categoryId);
+            }, function ($query) use ($payload) {
+                if (empty($payload['species'])) return;
+                $species = $payload['species'];
                 $query->where(function ($sub) use ($species) {
                     $sub->whereNull('species')->orWhereRaw('LOWER(species) = ?', [mb_strtolower($species)]);
                 });
@@ -929,6 +1071,49 @@ class TelegramBotController extends Controller
             'пес', 'пёс', 'щенок' => 'собака',
             default => $value,
         };
+    }
+
+    private function categoryFromText(string $value): ?Category
+    {
+        $aliases = [
+            'кот' => 'кошки',
+            'кошка' => 'кошки',
+            'собака' => 'собаки',
+            'пёс' => 'собаки',
+            'пес' => 'собаки',
+            'грызун' => 'грызуны',
+            'птица' => 'птицы',
+            'рыбка' => 'рыбки',
+        ];
+
+        return Category::whereRaw('LOWER(name) = ?', [$aliases[$value] ?? $value])->first();
+    }
+
+    private function normalizeDogSize(?string $value): ?string
+    {
+        $value = mb_strtolower(trim((string) $value));
+
+        return match ($value) {
+            'мелкая', 'маленькая', 'small' => 'small',
+            'средняя', 'крупная', 'средняя или крупная', 'large', 'medium', 'medium_large' => 'large',
+            default => null,
+        };
+    }
+
+    private function isDog(?string $species): bool
+    {
+        return in_array(mb_strtolower(trim((string) $species)), ['собака', 'собаки', 'пёс', 'пес', 'щенок'], true);
+    }
+
+    private function daysLabel(int $days): string
+    {
+        $last = $days % 10;
+        $lastTwo = $days % 100;
+
+        if ($last === 1 && $lastTwo !== 11) return 'день';
+        if (in_array($last, [2, 3, 4], true) && !in_array($lastTwo, [12, 13, 14], true)) return 'дня';
+
+        return 'дней';
     }
 
     private function isAllowed(string $telegramUserId): bool

@@ -13,6 +13,11 @@ class Client extends Model
         'name',
         'phone',
         'note',
+        'tags',
+    ];
+
+    protected $casts = [
+        'tags' => 'array',
     ];
 
     public function animals()

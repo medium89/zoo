@@ -26,6 +26,8 @@ Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.s
 // Admin Routes
 Route::middleware(['auth', 'no.cache'])->prefix('zooadmin')->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('index');
+    Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::post('dashboard/tariffs', [App\Http\Controllers\DashboardController::class, 'updateTariffs'])->name('dashboard.tariffs.update');
     Route::get('settings', [App\Http\Controllers\AdminController::class, 'settings'])->name('settings');
     Route::post('settings/site', [App\Http\Controllers\AdminController::class, 'saveSiteStatus'])->name('settings.site');
     Route::get('settings/telegram-bot', [App\Http\Controllers\TelegramBotSettingsController::class, 'edit'])->name('telegram-bot-settings.edit');
