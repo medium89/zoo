@@ -13,11 +13,16 @@ class ServiceOrderAdminController extends Controller
 {
     public function index()
     {
+        $animals = Animal::with(['client', 'category'])->orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
+
         return view('admin.service-orders.index', [
             'orders' => ServiceOrder::with(['client', 'services', 'animals.category', 'animals.animal.photos'])->whereNull('archived_at')->orderBy('start_date')->orderByDesc('created_at')->get(),
             'clients' => Client::orderBy('name')->get(),
-            'animals' => Animal::with(['client', 'category'])->orderBy('name')->get(),
-            'categories' => Category::orderBy('name')->get(),
+            'animals' => $animals,
+            'categories' => $categories,
+            'animalsPayload' => $animals->map(fn (Animal $animal) => ['id' => $animal->id, 'name' => $animal->name, 'category_id' => $animal->category_id, 'client' => $animal->client?->name])->values()->all(),
+            'categoriesPayload' => $categories->map(fn (Category $category) => ['id' => $category->id, 'name' => $category->name])->values()->all(),
         ]);
     }
 
