@@ -17,7 +17,7 @@
         @endphp
         <article class="order-card">
             <div class="order-card__header">
-                <div class="order-card__identity"><span class="order-card__eyebrow">Заказ #{{ $order->id }}</span><h2><i class="fa fa-user"></i> {{ $order->client?->name ?: 'Клиент не указан' }}</h2></div>
+                <div class="order-card__identity"><h2><i class="fa fa-user"></i> {{ $order->client?->name ?: 'Клиент не указан' }}</h2></div>
                 <p class="order-card__period"><i class="fa fa-calendar-days"></i> {{ $order->start_date->locale('ru')->translatedFormat('j F') }} — {{ $order->end_date->locale('ru')->translatedFormat('j F') }}</p>
                 <span class="order-status {{ $status[1] }}">{{ $status[0] }}</span>
             </div>
