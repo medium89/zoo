@@ -23,13 +23,20 @@
             </div>
             <div class="order-card__animals">
                 @foreach($positions as $position)
-                    @php($animalName = $position->animal?->name ?: $position->label ?: 'Без клички')
-                    @php($positionPrice = $position->services->sum(fn ($service) => $position->quantity * $service->units_per_day * $service->unit_price))
+                    @php
+                        $animalName = $position->animal?->name ?: $position->label ?: 'Без клички';
+                        $positionPrice = $position->services->sum(fn ($service) => $position->quantity * $service->units_per_day * $service->unit_price);
+                        $petTags = collect($position->animal?->tags ?? [])->filter(fn ($tag) => !empty($tag['name']))->values();
+                        $petHint = trim(implode(' · ', array_filter([$position->animal?->description, $position->animal?->note])));
+                    @endphp
                     <section class="work-animal">
                         <div class="work-animal__photo">@if($position->animal?->photos->first())<img src="{{ Storage::url($position->animal->photos->first()->path) }}" alt="{{ $animalName }}">@else<i class="fa fa-paw"></i>@endif</div>
                         <div class="work-animal__main">
                             <div class="work-animal__title"><strong>{{ $position->quantity > 1 ? $position->quantity.' × ' : '' }}{{ $animalName }}</strong>@if($position->animal)<a href="{{ route('admin.animals.show', $position->animal) }}" title="Открыть карточку питомца"><i class="fa fa-arrow-up-right-from-square"></i></a>@endif</div>
-                            <span class="work-animal__type">{{ $position->animal?->category?->name ?: $position->category?->name ?: 'Вид не указан' }}</span>
+                            <div class="work-animal__meta"><span class="work-animal__type">{{ $position->animal?->category?->name ?: $position->category?->name ?: 'Вид не указан' }}</span>
+                                @foreach($petTags->take(2) as $tag)<span class="work-animal__tag work-animal__tag--{{ ($tag['type'] ?? '') === 'positive' ? 'positive' : 'negative' }}">{{ $tag['name'] }}</span>@endforeach
+                                @if($petTags->count() > 2)<span class="work-animal__tag work-animal__tag--more">+{{ $petTags->count() - 2 }}</span>@endif
+                            </div>
                             @if($position->note)<p class="work-animal__note">{{ $position->note }}</p>@endif
                         </div>
                         <div class="work-animal__services">
@@ -37,7 +44,7 @@
                                 <div class="service-chip"><span>{{ ucfirst($service->service_type) }}</span><small>@if($service->service_type !== 'передержка'){{ $service->units_per_day }} раз в день · @endif{{ number_format($service->unit_price, 0, '.', ' ') }} ₽</small></div>
                             @endforeach</div>
                         </div>
-                        <strong class="work-animal__price">{{ number_format($positionPrice, 0, '.', ' ') }} ₽<small>в день</small></strong>
+                        <strong class="work-animal__price" @if($petHint) title="{{ $petHint }}" @endif>{{ number_format($positionPrice, 0, '.', ' ') }} ₽<small>в день</small></strong>
                     </section>
                 @endforeach
             </div>
@@ -72,7 +79,7 @@
 .order-card__animals{grid-column:1;grid-row:2;display:flex;align-items:center;gap:20px;min-width:0;padding:14px 22px;border-radius:0 0 0 16px}
 .work-animal{display:flex;align-items:center;gap:12px;min-width:0;padding:0;border:0;background:transparent;border-radius:0;flex:1 1 auto;grid-template-columns:none;grid-template-rows:none}
 .work-animal+.work-animal{padding-left:20px;border-left:1px solid #e6ebf2}
-.work-animal__photo{flex:0 0 42px}.work-animal__main{display:block;min-width:105px}.work-animal__title{white-space:nowrap}.work-animal__type{display:block;margin:3px 0 0}.work-animal__type::before{display:none}.work-animal__services{display:block;grid-column:auto;grid-row:auto;min-width:0}.work-animal__service-list{flex-wrap:nowrap}.service-chip{display:block;min-width:148px}.service-chip span,.service-chip small{display:block}.work-animal__price{display:none}
+.work-animal__photo{flex:0 0 42px}.work-animal__main{display:block;min-width:105px}.work-animal__title{white-space:nowrap}.work-animal__meta{display:flex;align-items:center;gap:4px;margin-top:3px;white-space:nowrap}.work-animal__type{display:block;margin:0}.work-animal__type::before{display:none}.work-animal__tag{padding:2px 5px;border-radius:5px;font-size:.62rem;font-weight:800;line-height:1.2}.work-animal__tag--positive{color:#18723b;background:#e2f7e9}.work-animal__tag--negative{color:#b42d37;background:#ffe8ea}.work-animal__tag--more{color:#64748b;background:#edf1f5}.work-animal__services{display:block;grid-column:auto;grid-row:auto;min-width:0}.work-animal__service-list{flex-wrap:nowrap}.service-chip{display:block;min-width:148px}.service-chip span,.service-chip small{display:block}.work-animal__price{display:none}
 .order-card__footer{grid-column:2;grid-row:2;display:flex;align-items:center;padding:12px 22px 12px 18px;border-left:1px solid #e7edf3;border-radius:0 0 16px 0;background:#fff}.order-card__context{display:none}.order-card__actions{display:flex;align-items:center;gap:10px;white-space:nowrap}.order-card__actions .btn{width:56px;height:48px;padding:0;display:grid;place-items:center;font-size:1.05rem}.order-card__actions .btn-outline-secondary{color:#516b87;border-color:#8ca0b8}.order-card__total{min-width:92px;padding:0 4px 0 0;font-size:1.1rem}.order-card__total small{font-size:.8rem}
 @media(max-width:900px){.order-card{display:block}.order-card__header{display:grid;grid-template-columns:1fr auto;padding:15px}.order-card__period{grid-column:1 / -1;grid-row:2;margin-top:8px!important;padding:8px 0 0;border-left:0;border-top:1px solid #edf0f4}.order-card__animals{border-radius:0;padding:14px 15px;overflow-x:auto}.work-animal{min-width:max-content}.order-card__footer{border-left:0;border-top:1px solid #e7edf3;border-radius:0 0 16px 16px;padding:12px 15px;justify-content:flex-end}}
 @media(max-width:520px){.order-card__header{display:flex}.order-card__animals{display:grid;gap:12px;overflow:visible}.work-animal+.work-animal{padding:12px 0 0;border-left:0;border-top:1px solid #e6ebf2}.work-animal__service-list{flex-wrap:wrap}.order-card__actions{width:100%;justify-content:space-between}.order-card__actions .btn{width:48px;height:42px}}
