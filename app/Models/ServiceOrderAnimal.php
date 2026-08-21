@@ -29,4 +29,9 @@ class ServiceOrderAnimal extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function services()
+    {
+        return $this->hasMany(ServiceOrderService::class);
+    }
 }

@@ -263,10 +263,16 @@ class TelegramBotController extends Controller
                 'confirmed_at' => now(),
             ]);
             foreach ($groups as $group) {
-                $order->animals()->create([
+                $orderAnimal = $order->animals()->create([
                     'category_id' => $group['category_id'],
                     'label' => $group['label'],
                     'quantity' => $group['quantity'],
+                ]);
+                $orderAnimal->services()->create([
+                    'service_order_id' => $order->id,
+                    'service_type' => $serviceType,
+                    'units_per_day' => $order->units_per_day,
+                    'unit_price' => (int) round($group['daily_price'] / max(1, $group['quantity'])),
                 ]);
             }
             $this->clearSession($fromId);
@@ -995,8 +1001,8 @@ TEXT);
             'status' => $boarding->status,
             'confirmed_at' => $boarding->confirmed_at,
         ]);
-        $order->services()->create(['service_type' => $boarding->service_type, 'units_per_day' => $boarding->units_per_day, 'unit_price' => $boarding->unit_price]);
-        $order->animals()->create(['animal_id' => $animal->id, 'category_id' => $animal->category_id, 'label' => $animal->name, 'quantity' => 1, 'note' => $boarding->description]);
+        $orderAnimal = $order->animals()->create(['animal_id' => $animal->id, 'category_id' => $animal->category_id, 'label' => $animal->name, 'quantity' => 1, 'note' => $boarding->description]);
+        $orderAnimal->services()->create(['service_order_id' => $order->id, 'service_type' => $boarding->service_type, 'units_per_day' => $boarding->units_per_day, 'unit_price' => $boarding->unit_price]);
 
         return $boarding;
     }

@@ -375,10 +375,9 @@ class BoardingController extends Controller
                 'archived_at' => $boarding->archived_at,
             ]
         );
-        $order->services()->delete();
-        $order->services()->create(['service_type' => $boarding->service_type, 'units_per_day' => $boarding->units_per_day, 'unit_price' => $boarding->unit_price]);
         $order->animals()->delete();
-        $order->animals()->create(['animal_id' => $boarding->animal_id, 'category_id' => $boarding->animal?->category_id, 'label' => $boarding->animal?->name ?: $boarding->name, 'quantity' => 1, 'note' => $boarding->description]);
+        $orderAnimal = $order->animals()->create(['animal_id' => $boarding->animal_id, 'category_id' => $boarding->animal?->category_id, 'label' => $boarding->animal?->name ?: $boarding->name, 'quantity' => 1, 'note' => $boarding->description]);
+        $orderAnimal->services()->create(['service_order_id' => $order->id, 'service_type' => $boarding->service_type, 'units_per_day' => $boarding->units_per_day, 'unit_price' => $boarding->unit_price]);
     }
 
     private function serviceOrderEntries(?Carbon $start = null, ?Carbon $end = null)

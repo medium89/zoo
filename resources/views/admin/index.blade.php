@@ -641,6 +641,7 @@
         .form-range::-moz-range-track { background: #dfe3e8; }
     </style>
     @vite(['resources/js/app.js'])
+    @stack('styles')
 </head>
 <body>
 <button id="sidebarToggle" class="btn btn-dark" aria-label="Переключить меню"><i class="fa fa-bars"></i></button>
