@@ -6,6 +6,7 @@ use App\Models\Animal;
 use App\Models\Boarding;
 use App\Models\Client;
 use App\Models\Category;
+use App\Models\ServiceOrder;
 use App\Services\BoardingPricingService;
 use App\Services\ExpiredBoardingArchiver;
 use Carbon\Carbon;
@@ -27,6 +28,11 @@ class BoardingController extends Controller
             ->orderByDesc('created_at')
             ->take(20)
             ->get();
+        $serviceOrders = ServiceOrder::with(['client', 'animals.category', 'animals.animal'])
+            ->whereNull('archived_at')
+            ->orderBy('start_date')
+            ->take(6)
+            ->get();
         $animals = Animal::with(['client', 'photos', 'category'])->orderBy('name')->get();
         $clients = Client::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
@@ -35,6 +41,7 @@ class BoardingController extends Controller
             'year' => $year,
             'entries' => $entries,
             'latest' => $latest,
+            'serviceOrders' => $serviceOrders,
             'animals' => $animals,
             'clients' => $clients,
             'categories' => $categories,
@@ -223,7 +230,7 @@ class BoardingController extends Controller
         $start = Carbon::create($year, 1, 1);
         $end = Carbon::create($year, 12, 31);
 
-        return Boarding::whereNull('archived_at')
+        $boardings = Boarding::whereNull('archived_at')
             ->with(['animal.photos', 'animal.client', 'animal.category', 'client'])
             ->where(function($q) use ($start, $end) {
                 $q->whereBetween('start_date', [$start, $end])
@@ -235,21 +242,37 @@ class BoardingController extends Controller
             ->orderBy('start_date')
             ->get()
             ->map(fn ($item) => $this->entryPayload($item));
+
+        return $boardings
+            ->concat($this->serviceOrderEntries($start, $end))
+            ->sortBy('start_date')
+            ->values();
     }
 
     private function entriesAllActive()
     {
-        return Boarding::whereNull('archived_at')
+        $boardings = Boarding::whereNull('archived_at')
             ->with(['animal.photos', 'animal.client', 'animal.category', 'client'])
             ->orderBy('start_date')
             ->get()
             ->map(fn ($item) => $this->entryPayload($item));
+
+        return $boardings
+            ->concat($this->serviceOrderEntries())
+            ->sortBy('start_date')
+            ->values();
     }
 
     private function activeRange(): array
     {
-        $minStart = Boarding::whereNull('archived_at')->min('start_date');
-        $maxEnd = Boarding::whereNull('archived_at')->max('end_date');
+        $minStart = collect([
+            Boarding::whereNull('archived_at')->min('start_date'),
+            ServiceOrder::whereNull('archived_at')->min('start_date'),
+        ])->filter()->min();
+        $maxEnd = collect([
+            Boarding::whereNull('archived_at')->max('end_date'),
+            ServiceOrder::whereNull('archived_at')->max('end_date'),
+        ])->filter()->max();
         $nowYear = Carbon::now()->year;
 
         $min = $minStart ? Carbon::parse($minStart)->year : $nowYear;
@@ -342,6 +365,7 @@ class BoardingController extends Controller
 
         return [
             'id' => $item->id,
+            'entry_type' => 'boarding',
             'name' => $animal?->name ?: $item->name,
             'species' => $animal?->category?->name ?: $animal?->species,
             'client_name' => $client?->name,
@@ -352,6 +376,43 @@ class BoardingController extends Controller
             'service_type' => $item->service_type,
             'start_date' => $item->start_date->toDateString(),
             'end_date' => $item->end_date->toDateString(),
+        ];
+    }
+
+    private function serviceOrderEntries(?Carbon $start = null, ?Carbon $end = null)
+    {
+        return ServiceOrder::whereNull('archived_at')
+            ->with(['animals.category', 'client'])
+            ->when($start && $end, function ($query) use ($start, $end) {
+                $query->where(function ($sub) use ($start, $end) {
+                    $sub->whereBetween('start_date', [$start, $end])
+                        ->orWhereBetween('end_date', [$start, $end])
+                        ->orWhere(fn ($range) => $range->where('start_date', '<=', $start)->where('end_date', '>=', $end));
+                });
+            })
+            ->orderBy('start_date')
+            ->get()
+            ->map(fn (ServiceOrder $order) => $this->serviceOrderEntryPayload($order));
+    }
+
+    private function serviceOrderEntryPayload(ServiceOrder $order): array
+    {
+        $animals = $order->animals
+            ->map(fn ($animal) => $animal->label ?: trim($animal->quantity.' '.mb_strtolower((string) $animal->category?->name)))
+            ->filter()
+            ->implode(', ');
+
+        return [
+            'id' => 'order-'.$order->id,
+            'entry_type' => 'service_order',
+            'name' => $animals ?: 'Питомцы без кличек',
+            'species' => null,
+            'client_name' => $order->client?->name,
+            'description' => $order->note ?: 'Клички питомцев пока не указаны',
+            'photo_url' => null,
+            'service_type' => $order->service_type,
+            'start_date' => $order->start_date->toDateString(),
+            'end_date' => $order->end_date->toDateString(),
         ];
     }
 }

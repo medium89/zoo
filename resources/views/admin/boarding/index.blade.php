@@ -14,6 +14,21 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    @if($serviceOrders->isNotEmpty())
+        <div class="card mb-3">
+            <div class="card-header d-flex align-items-center justify-content-between"><span>Заказы на дому</span><a class="btn btn-sm btn-outline-primary" href="{{ route('admin.service-orders.index') }}">Все заказы</a></div>
+            <div class="card-body py-2">
+                @foreach($serviceOrders as $order)
+                    <div class="d-flex gap-3 align-items-center justify-content-between py-2 border-bottom flex-wrap">
+                        <div><strong>{{ ucfirst($order->service_type) }}:</strong> {{ $order->animals->map(fn($animal) => $animal->quantity.' '.($animal->animal?->name ?: $animal->category?->name ?: $animal->label ?: 'животное'))->join(', ') ?: 'животные не указаны' }}</div>
+                        <div class="text-muted">{{ $order->start_date->locale('ru')->translatedFormat('j F') }} — {{ $order->end_date->locale('ru')->translatedFormat('j F') }}</div>
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.service-orders.index') }}">Открыть</a>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="card mb-3">
         <div class="card-header">Запись</div>
         <div class="card-body">

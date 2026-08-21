@@ -71,6 +71,10 @@ Route::middleware(['auth', 'no.cache'])->prefix('zooadmin')->name('admin.')->gro
     Route::delete('boarding/{boarding}', [App\Http\Controllers\BoardingController::class, 'destroy'])->name('boarding.destroy');
     Route::get('boarding/data', [App\Http\Controllers\BoardingController::class, 'data'])->name('boarding.data');
     Route::get('boarding/export', [App\Http\Controllers\BoardingController::class, 'export'])->name('boarding.export');
+    Route::get('service-orders', [App\Http\Controllers\ServiceOrderAdminController::class, 'index'])->name('service-orders.index');
+    Route::put('service-orders/{serviceOrder}', [App\Http\Controllers\ServiceOrderAdminController::class, 'update'])->name('service-orders.update');
+    Route::post('service-orders/{serviceOrder}/archive', [App\Http\Controllers\ServiceOrderAdminController::class, 'archive'])->name('service-orders.archive');
+    Route::delete('service-orders/{serviceOrder}', [App\Http\Controllers\ServiceOrderAdminController::class, 'destroy'])->name('service-orders.destroy');
     Route::resource('articles', App\Http\Controllers\ArticleAdminController::class);
     Route::delete('articles/{article}/images/{image}', [App\Http\Controllers\ArticleAdminController::class, 'destroyImage'])->name('articles.images.destroy');
     Route::post('articles/status', [App\Http\Controllers\ArticleAdminController::class, 'updateStatus'])->name('articles.status');
