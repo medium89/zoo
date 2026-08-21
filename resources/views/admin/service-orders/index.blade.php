@@ -7,6 +7,7 @@
         <button class="btn btn-primary orders-create js-new-service-order"><i class="fa fa-plus"></i> Новый заказ</button>
     </header>
     @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
+    @if(isset($errors) && $errors->any())<div class="alert alert-danger"><strong>Заказ не сохранён.</strong><ul class="mb-0 mt-2">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
     @forelse($orders as $order)
         @php
             $positions = $order->animals;

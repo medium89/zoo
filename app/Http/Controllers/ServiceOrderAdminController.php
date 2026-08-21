@@ -64,7 +64,7 @@ class ServiceOrderAdminController extends Controller
             'animals.*.animal_id' => 'nullable|exists:animals,id', 'animals.*.name' => 'nullable|string|max:255',
             'animals.*.category_id' => 'nullable|exists:categories,id', 'animals.*.quantity' => 'nullable|integer|min:1|max:99',
             'animals.*.note' => 'nullable|string|max:1000', 'animals.*.services' => 'required|array|min:1|max:3',
-            'animals.*.services.*.service_type' => 'required|distinct|in:передержка,выгул,уход',
+            'animals.*.services.*.service_type' => 'required|in:передержка,выгул,уход',
             'animals.*.services.*.units_per_day' => 'required|integer|min:1|max:24', 'animals.*.services.*.unit_price' => 'required|integer|min:0|max:100000',
         ]);
     }
