@@ -11,6 +11,15 @@
         <div class="service-orders-grid">@foreach($orders as $order)
             @php($animalLabel = $order->animals->map(fn($position) => $position->quantity.' '.($position->animal?->name ?: $position->category?->name ?: $position->label ?: 'животное'))->join(', '))
             @php($servicesLabel = $order->services->pluck('service_type')->map(fn($type) => ucfirst($type))->join(' · '))
+            @php
+                $orderPayload = [
+                    'id' => $order->id, 'client_id' => $order->client_id,
+                    'start' => $order->start_date->toDateString(), 'end' => $order->end_date->toDateString(),
+                    'address' => $order->address, 'note' => $order->note,
+                    'services' => $order->services->map(fn ($service) => ['service_type' => $service->service_type, 'units_per_day' => $service->units_per_day, 'unit_price' => $service->unit_price])->values(),
+                    'animals' => $order->animals->map(fn ($position) => ['animal_id' => $position->animal_id, 'name' => $position->animal?->name ?: $position->label, 'category_id' => $position->category_id, 'quantity' => $position->quantity, 'note' => $position->note])->values(),
+                ];
+            @endphp
             <article class="service-order-card">
                 <div class="service-order-card__top"><span class="service-order-card__type">{{ $servicesLabel ?: ucfirst($order->service_type) }}</span><span class="badge {{ $order->end_date->lessThan(today()) ? 'text-bg-secondary' : ($order->start_date->isFuture() ? 'text-bg-primary' : 'text-bg-success') }}">{{ $order->end_date->lessThan(today()) ? 'Прошёл' : ($order->start_date->isFuture() ? 'Запланирован' : 'Сейчас') }}</span></div>
                 <h2 class="service-order-card__animals">{{ $animalLabel ?: 'Состав животных не указан' }}</h2>
@@ -20,7 +29,7 @@
                 <p class="service-order-card__dates">{{ $order->start_date->locale('ru')->translatedFormat('j F') }} — {{ $order->end_date->locale('ru')->translatedFormat('j F') }}</p>
                 <dl class="service-order-card__details"><div><dt>Клиент</dt><dd>{{ $order->client?->name ?: 'Не указан' }}</dd></div><div><dt>В день</dt><dd>{{ number_format($order->daily_price, 0, '.', ' ') }} ₽</dd></div>@if($order->address)<div><dt>Адрес</dt><dd>{{ $order->address }}</dd></div>@endif @if($order->note)<div><dt>Комментарий</dt><dd>{{ $order->note }}</dd></div>@endif</dl>
                 <div class="service-order-card__actions">
-                    <button type="button" class="btn btn-primary js-edit-service-order" data-order='@json(["id"=>$order->id,"client_id"=>$order->client_id,"start"=>$order->start_date->toDateString(),"end"=>$order->end_date->toDateString(),"address"=>$order->address,"note"=>$order->note,"services"=>$order->services->map(fn($service)=>["service_type"=>$service->service_type,"units_per_day"=>$service->units_per_day,"unit_price"=>$service->unit_price])->values(),"animals"=>$order->animals->map(fn($position)=>["animal_id"=>$position->animal_id,"name"=>$position->animal?->name ?: $position->label,"category_id"=>$position->category_id,"quantity"=>$position->quantity,"note"=>$position->note])->values()])'>Редактировать</button>
+                    <button type="button" class="btn btn-primary js-edit-service-order" data-order='@json($orderPayload)'>Редактировать</button>
                     <form method="POST" action="{{ route('admin.service-orders.archive', $order) }}">@csrf<button class="btn btn-outline-secondary">В архив</button></form><form method="POST" action="{{ route('admin.service-orders.destroy', $order) }}" class="js-delete-form" data-confirm="Удалить заказ?">@csrf @method('DELETE')<button class="btn btn-outline-danger" aria-label="Удалить"><i class="fa fa-trash"></i></button></form>
                 </div>
             </article>
