@@ -34,7 +34,7 @@
                         </div>
                         <div class="work-animal__services">
                             <div class="work-animal__service-list">@foreach($position->services as $service)
-                                <div class="service-chip"><span>{{ ucfirst($service->service_type) }}</span><small>{{ $service->units_per_day }} раз в день · {{ number_format($service->unit_price, 0, '.', ' ') }} ₽</small></div>
+                                <div class="service-chip"><span>{{ ucfirst($service->service_type) }}</span><small>@if($service->service_type !== 'передержка'){{ $service->units_per_day }} раз в день · @endif{{ number_format($service->unit_price, 0, '.', ' ') }} ₽</small></div>
                             @endforeach</div>
                         </div>
                         <strong class="work-animal__price">{{ number_format($positionPrice, 0, '.', ' ') }} ₽<small>в день</small></strong>
