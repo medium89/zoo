@@ -967,7 +967,7 @@ TEXT);
             $this->storeTelegramPhoto($animal, $fileId);
         }
 
-        return Boarding::create([
+        $boarding = Boarding::create([
             'client_id' => $client?->id ?: $animal->client_id,
             'animal_id' => $animal->id,
             'name' => $animal->name,
@@ -981,6 +981,24 @@ TEXT);
             'end_date' => $payload['end_date'],
             'confirmed_at' => now(),
         ]);
+
+        $order = ServiceOrder::create([
+            'legacy_boarding_id' => $boarding->id,
+            'client_id' => $boarding->client_id,
+            'service_type' => $boarding->service_type,
+            'units_per_day' => $boarding->units_per_day,
+            'daily_price' => $boarding->unit_price * $boarding->units_per_day,
+            'start_date' => $boarding->start_date,
+            'end_date' => $boarding->end_date,
+            'note' => $boarding->note,
+            'source' => $boarding->source,
+            'status' => $boarding->status,
+            'confirmed_at' => $boarding->confirmed_at,
+        ]);
+        $order->services()->create(['service_type' => $boarding->service_type, 'units_per_day' => $boarding->units_per_day, 'unit_price' => $boarding->unit_price]);
+        $order->animals()->create(['animal_id' => $animal->id, 'category_id' => $animal->category_id, 'label' => $animal->name, 'quantity' => 1, 'note' => $boarding->description]);
+
+        return $boarding;
     }
 
     private function sendBookingsList(int|string $chatId, array $intent): void
@@ -990,6 +1008,7 @@ TEXT);
 
         $rows = Boarding::with(['animal.client', 'client'])
             ->whereNull('archived_at')
+            ->doesntHave('serviceOrder')
             ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('start_date', [$start, $end])
                     ->orWhereBetween('end_date', [$start, $end])
@@ -1041,6 +1060,7 @@ TEXT);
         $monthEnd = $month->copy()->endOfMonth();
         $bookings = Boarding::with('animal')
             ->whereNull('archived_at')
+            ->doesntHave('serviceOrder')
             ->whereDate('start_date', '<=', $monthEnd)
             ->whereDate('end_date', '>=', $month)
             ->orderBy('start_date')

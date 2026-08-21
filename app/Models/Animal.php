@@ -40,6 +40,11 @@ class Animal extends Model
         return $this->hasMany(Boarding::class);
     }
 
+    public function serviceOrderAnimals()
+    {
+        return $this->hasMany(ServiceOrderAnimal::class);
+    }
+
     public function legacyBoardings()
     {
         return $this->hasMany(Boarding::class, 'name', 'name');

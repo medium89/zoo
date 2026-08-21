@@ -29,4 +29,9 @@ class Client extends Model
     {
         return $this->hasMany(Boarding::class);
     }
+
+    public function serviceOrders()
+    {
+        return $this->hasMany(ServiceOrder::class);
+    }
 }

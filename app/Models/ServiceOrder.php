@@ -11,7 +11,7 @@ class ServiceOrder extends Model
 
     protected $fillable = [
         'client_id', 'service_type', 'units_per_day', 'daily_price', 'start_date', 'end_date',
-        'address', 'note', 'source', 'status', 'confirmed_at', 'archived_at',
+        'legacy_boarding_id', 'address', 'note', 'source', 'status', 'confirmed_at', 'archived_at',
     ];
 
     protected $casts = [
@@ -31,5 +31,10 @@ class ServiceOrder extends Model
     public function animals()
     {
         return $this->hasMany(ServiceOrderAnimal::class);
+    }
+
+    public function services()
+    {
+        return $this->hasMany(ServiceOrderService::class);
     }
 }

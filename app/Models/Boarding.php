@@ -49,4 +49,9 @@ class Boarding extends Model
     {
         return $this->hasMany(BoardingTask::class);
     }
+
+    public function serviceOrder()
+    {
+        return $this->hasOne(ServiceOrder::class, 'legacy_boarding_id');
+    }
 }

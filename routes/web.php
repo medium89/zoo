@@ -72,6 +72,7 @@ Route::middleware(['auth', 'no.cache'])->prefix('zooadmin')->name('admin.')->gro
     Route::get('boarding/data', [App\Http\Controllers\BoardingController::class, 'data'])->name('boarding.data');
     Route::get('boarding/export', [App\Http\Controllers\BoardingController::class, 'export'])->name('boarding.export');
     Route::get('service-orders', [App\Http\Controllers\ServiceOrderAdminController::class, 'index'])->name('service-orders.index');
+    Route::post('service-orders', [App\Http\Controllers\ServiceOrderAdminController::class, 'store'])->name('service-orders.store');
     Route::put('service-orders/{serviceOrder}', [App\Http\Controllers\ServiceOrderAdminController::class, 'update'])->name('service-orders.update');
     Route::post('service-orders/{serviceOrder}/archive', [App\Http\Controllers\ServiceOrderAdminController::class, 'archive'])->name('service-orders.archive');
     Route::delete('service-orders/{serviceOrder}', [App\Http\Controllers\ServiceOrderAdminController::class, 'destroy'])->name('service-orders.destroy');

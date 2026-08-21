@@ -74,7 +74,8 @@ class BoardingController extends Controller
         $data['units_per_day'] = (int) ($data['units_per_day'] ?? 1);
         $data['unit_price'] = $data['unit_price'] ?? $pricing->defaultRate($data['service_type'], $animal?->species, $animal?->dog_size);
 
-        Boarding::create($data);
+        $boarding = Boarding::create($data);
+        $this->syncServiceOrderFromBoarding($boarding);
 
         return back()->with('success', 'Запись добавлена');
     }
@@ -103,6 +104,7 @@ class BoardingController extends Controller
         $data['unit_price'] = $data['unit_price'] ?? $boarding->unit_price ?? $pricing->defaultRate($data['service_type'], $animal?->species, $animal?->dog_size);
 
         $boarding->update($data);
+        $this->syncServiceOrderFromBoarding($boarding->fresh());
 
         return back()->with('success', 'Запись обновлена');
     }
@@ -161,6 +163,7 @@ class BoardingController extends Controller
     {
         $boarding->archived_at = now();
         $boarding->save();
+        $this->syncServiceOrderFromBoarding($boarding);
 
         return back()->with('success', 'Запись перенесена в архив');
     }
@@ -169,12 +172,14 @@ class BoardingController extends Controller
     {
         $boarding->archived_at = null;
         $boarding->save();
+        $this->syncServiceOrderFromBoarding($boarding);
 
         return back()->with('success', 'Запись восстановлена');
     }
 
     public function destroy(Boarding $boarding)
     {
+        ServiceOrder::where('legacy_boarding_id', $boarding->id)->delete();
         $boarding->delete();
 
         return back()->with('success', 'Запись удалена');
@@ -230,47 +235,20 @@ class BoardingController extends Controller
         $start = Carbon::create($year, 1, 1);
         $end = Carbon::create($year, 12, 31);
 
-        $boardings = Boarding::whereNull('archived_at')
-            ->with(['animal.photos', 'animal.client', 'animal.category', 'client'])
-            ->where(function($q) use ($start, $end) {
-                $q->whereBetween('start_date', [$start, $end])
-                  ->orWhereBetween('end_date', [$start, $end])
-                  ->orWhere(function($sub) use ($start, $end) {
-                      $sub->where('start_date', '<=', $start)->where('end_date', '>=', $end);
-                  });
-            })
-            ->orderBy('start_date')
-            ->get()
-            ->map(fn ($item) => $this->entryPayload($item));
-
-        return $boardings
-            ->concat($this->serviceOrderEntries($start, $end))
-            ->sortBy('start_date')
-            ->values();
+        return $this->serviceOrderEntries($start, $end);
     }
 
     private function entriesAllActive()
     {
-        $boardings = Boarding::whereNull('archived_at')
-            ->with(['animal.photos', 'animal.client', 'animal.category', 'client'])
-            ->orderBy('start_date')
-            ->get()
-            ->map(fn ($item) => $this->entryPayload($item));
-
-        return $boardings
-            ->concat($this->serviceOrderEntries())
-            ->sortBy('start_date')
-            ->values();
+        return $this->serviceOrderEntries();
     }
 
     private function activeRange(): array
     {
         $minStart = collect([
-            Boarding::whereNull('archived_at')->min('start_date'),
             ServiceOrder::whereNull('archived_at')->min('start_date'),
         ])->filter()->min();
         $maxEnd = collect([
-            Boarding::whereNull('archived_at')->max('end_date'),
             ServiceOrder::whereNull('archived_at')->max('end_date'),
         ])->filter()->max();
         $nowYear = Carbon::now()->year;
@@ -379,10 +357,34 @@ class BoardingController extends Controller
         ];
     }
 
+    private function syncServiceOrderFromBoarding(Boarding $boarding): void
+    {
+        $order = ServiceOrder::updateOrCreate(
+            ['legacy_boarding_id' => $boarding->id],
+            [
+                'client_id' => $boarding->client_id,
+                'service_type' => $boarding->service_type,
+                'units_per_day' => $boarding->units_per_day,
+                'daily_price' => $boarding->unit_price * $boarding->units_per_day,
+                'start_date' => $boarding->start_date,
+                'end_date' => $boarding->end_date,
+                'note' => $boarding->note,
+                'source' => $boarding->source,
+                'status' => $boarding->status,
+                'confirmed_at' => $boarding->confirmed_at,
+                'archived_at' => $boarding->archived_at,
+            ]
+        );
+        $order->services()->delete();
+        $order->services()->create(['service_type' => $boarding->service_type, 'units_per_day' => $boarding->units_per_day, 'unit_price' => $boarding->unit_price]);
+        $order->animals()->delete();
+        $order->animals()->create(['animal_id' => $boarding->animal_id, 'category_id' => $boarding->animal?->category_id, 'label' => $boarding->animal?->name ?: $boarding->name, 'quantity' => 1, 'note' => $boarding->description]);
+    }
+
     private function serviceOrderEntries(?Carbon $start = null, ?Carbon $end = null)
     {
         return ServiceOrder::whereNull('archived_at')
-            ->with(['animals.category', 'client'])
+            ->with(['animals.category', 'animals.animal.photos', 'client', 'services'])
             ->when($start && $end, function ($query) use ($start, $end) {
                 $query->where(function ($sub) use ($start, $end) {
                     $sub->whereBetween('start_date', [$start, $end])
@@ -398,7 +400,7 @@ class BoardingController extends Controller
     private function serviceOrderEntryPayload(ServiceOrder $order): array
     {
         $animals = $order->animals
-            ->map(fn ($animal) => $animal->label ?: trim($animal->quantity.' '.mb_strtolower((string) $animal->category?->name)))
+            ->map(fn ($animal) => $animal->animal?->name ?: $animal->label ?: trim($animal->quantity.' '.mb_strtolower((string) $animal->category?->name)))
             ->filter()
             ->implode(', ');
 
@@ -406,11 +408,11 @@ class BoardingController extends Controller
             'id' => 'order-'.$order->id,
             'entry_type' => 'service_order',
             'name' => $animals ?: 'Питомцы без кличек',
-            'species' => null,
+            'species' => $order->animals->first()?->animal?->category?->name ?: $order->animals->first()?->category?->name,
             'client_name' => $order->client?->name,
             'description' => $order->note ?: 'Клички питомцев пока не указаны',
-            'photo_url' => null,
-            'service_type' => $order->service_type,
+            'photo_url' => $order->animals->first()?->animal?->photos->first() ? url(\Illuminate\Support\Facades\Storage::url($order->animals->first()->animal->photos->first()->path)) : null,
+            'service_type' => $order->services->pluck('service_type')->map(fn ($type) => ucfirst($type))->implode(', ') ?: $order->service_type,
             'start_date' => $order->start_date->toDateString(),
             'end_date' => $order->end_date->toDateString(),
         ];

@@ -2,82 +2,50 @@
 
 @section('content')
 <div class="container-fluid service-orders-page">
-    <div class="mb-4">
-        <div class="admin-breadcrumbs mb-2"><a href="{{ route('admin.dashboard') }}">Админка</a><span>/</span><span>Заказы на дому</span></div>
-        <h1 class="mb-1">Заказы на дому</h1>
-        <p class="text-muted mb-0">Здесь хранятся уходы и выгулы с несколькими животными, когда клички пока неизвестны.</p>
+    <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-4">
+        <div><div class="admin-breadcrumbs mb-2"><a href="{{ route('admin.dashboard') }}">Админка</a><span>/</span><span>Заказы и работа</span></div><h1 class="mb-1">Заказы и работа</h1><p class="text-muted mb-0">Один заказ — один клиент, период и любое количество услуг и питомцев.</p></div>
+        <button class="btn btn-primary js-new-service-order"><i class="fa fa-plus me-1"></i>Добавить заказ</button>
     </div>
-
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if($orders->isEmpty())
-        <div class="card"><div class="card-body text-muted">Активных заказов пока нет.</div></div>
-    @else
-        <div class="service-orders-grid">
-            @foreach($orders as $order)
-                @php
-                    $animals = $order->animals->map(fn ($animal) => $animal->quantity.' '.($animal->animal?->name ?: $animal->category?->name ?: $animal->label ?: 'животное'))->join(', ');
-                    $isUpcoming = $order->start_date->isFuture();
-                    $isCurrent = !$isUpcoming && $order->end_date->greaterThanOrEqualTo(today());
-                @endphp
-                <article class="service-order-card">
-                    <div class="service-order-card__top">
-                        <span class="service-order-card__type">{{ ucfirst($order->service_type) }}</span>
-                        <span class="badge {{ $isCurrent ? 'text-bg-success' : ($isUpcoming ? 'text-bg-primary' : 'text-bg-secondary') }}">{{ $isCurrent ? 'Сейчас' : ($isUpcoming ? 'Запланирован' : 'Прошёл') }}</span>
-                    </div>
-                    <h2 class="service-order-card__animals">{{ $animals ?: 'Состав животных не указан' }}</h2>
-                    <p class="service-order-card__dates">{{ $order->start_date->locale('ru')->translatedFormat('j F') }} — {{ $order->end_date->locale('ru')->translatedFormat('j F') }}</p>
-                    <dl class="service-order-card__details">
-                        <div><dt>Клиент</dt><dd>{{ $order->client?->name ?: 'Не указан' }}</dd></div>
-                        <div><dt>Цена в день</dt><dd>{{ number_format($order->daily_price, 0, '.', ' ') }} ₽</dd></div>
-                        @if($order->address)<div><dt>Адрес</dt><dd>{{ $order->address }}</dd></div>@endif
-                        @if($order->note)<div><dt>Комментарий</dt><dd>{{ $order->note }}</dd></div>@endif
-                    </dl>
-                    <div class="service-order-card__actions">
-                        <button type="button" class="btn btn-primary js-edit-service-order"
-                            data-id="{{ $order->id }}" data-client-id="{{ $order->client_id }}" data-service-type="{{ $order->service_type }}"
-                            data-units="{{ $order->units_per_day }}" data-price="{{ $order->daily_price }}"
-                            data-start="{{ $order->start_date->toDateString() }}" data-end="{{ $order->end_date->toDateString() }}"
-                            data-address="{{ $order->address }}" data-note="{{ $order->note }}"
-                            data-animals='@json($order->animals->map(fn ($animal) => ["label" => $animal->animal?->name ?: $animal->category?->name ?: $animal->label, "quantity" => $animal->quantity])->values())'>Редактировать</button>
-                        <form method="POST" action="{{ route('admin.service-orders.archive', $order) }}">@csrf<button class="btn btn-outline-secondary">В архив</button></form>
-                        <form method="POST" action="{{ route('admin.service-orders.destroy', $order) }}" class="js-delete-form" data-confirm="Удалить этот заказ?">@csrf @method('DELETE')<button class="btn btn-outline-danger" aria-label="Удалить"><i class="fa fa-trash"></i></button></form>
-                    </div>
-                </article>
-            @endforeach
-        </div>
+    @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
+    @if($orders->isEmpty())<div class="card"><div class="card-body text-muted">Заказов пока нет.</div></div>@else
+        <div class="service-orders-grid">@foreach($orders as $order)
+            @php($animalLabel = $order->animals->map(fn($position) => $position->quantity.' '.($position->animal?->name ?: $position->category?->name ?: $position->label ?: 'животное'))->join(', '))
+            @php($servicesLabel = $order->services->pluck('service_type')->map(fn($type) => ucfirst($type))->join(' · '))
+            <article class="service-order-card">
+                <div class="service-order-card__top"><span class="service-order-card__type">{{ $servicesLabel ?: ucfirst($order->service_type) }}</span><span class="badge {{ $order->end_date->lessThan(today()) ? 'text-bg-secondary' : ($order->start_date->isFuture() ? 'text-bg-primary' : 'text-bg-success') }}">{{ $order->end_date->lessThan(today()) ? 'Прошёл' : ($order->start_date->isFuture() ? 'Запланирован' : 'Сейчас') }}</span></div>
+                <h2 class="service-order-card__animals">{{ $animalLabel ?: 'Состав животных не указан' }}</h2>
+                @if($order->animals->contains(fn ($position) => $position->animal))
+                    <div class="service-order-card__animal-links">@foreach($order->animals->filter(fn ($position) => $position->animal) as $position)<a href="{{ route('admin.animals.show', $position->animal) }}"><i class="fa fa-paw me-1"></i>{{ $position->animal->name }}</a>@endforeach</div>
+                @endif
+                <p class="service-order-card__dates">{{ $order->start_date->locale('ru')->translatedFormat('j F') }} — {{ $order->end_date->locale('ru')->translatedFormat('j F') }}</p>
+                <dl class="service-order-card__details"><div><dt>Клиент</dt><dd>{{ $order->client?->name ?: 'Не указан' }}</dd></div><div><dt>В день</dt><dd>{{ number_format($order->daily_price, 0, '.', ' ') }} ₽</dd></div>@if($order->address)<div><dt>Адрес</dt><dd>{{ $order->address }}</dd></div>@endif @if($order->note)<div><dt>Комментарий</dt><dd>{{ $order->note }}</dd></div>@endif</dl>
+                <div class="service-order-card__actions">
+                    <button type="button" class="btn btn-primary js-edit-service-order" data-order='@json(["id"=>$order->id,"client_id"=>$order->client_id,"start"=>$order->start_date->toDateString(),"end"=>$order->end_date->toDateString(),"address"=>$order->address,"note"=>$order->note,"services"=>$order->services->map(fn($service)=>["service_type"=>$service->service_type,"units_per_day"=>$service->units_per_day,"unit_price"=>$service->unit_price])->values(),"animals"=>$order->animals->map(fn($position)=>["animal_id"=>$position->animal_id,"name"=>$position->animal?->name ?: $position->label,"category_id"=>$position->category_id,"quantity"=>$position->quantity,"note"=>$position->note])->values()])'>Редактировать</button>
+                    <form method="POST" action="{{ route('admin.service-orders.archive', $order) }}">@csrf<button class="btn btn-outline-secondary">В архив</button></form><form method="POST" action="{{ route('admin.service-orders.destroy', $order) }}" class="js-delete-form" data-confirm="Удалить заказ?">@csrf @method('DELETE')<button class="btn btn-outline-danger" aria-label="Удалить"><i class="fa fa-trash"></i></button></form>
+                </div>
+            </article>
+        @endforeach</div>
     @endif
 </div>
 
-<div class="modal fade" id="serviceOrderModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg"><form method="POST" class="modal-content" id="serviceOrderForm">
-        @csrf @method('PUT')
-        <div class="modal-header"><h5 class="modal-title">Заказ на дому</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body"><div class="row g-3">
-            <div class="col-md-6"><label class="form-label">Клиент</label><select class="form-select" name="client_id" id="orderClient"><option value="">Не указан</option>@foreach($clients as $client)<option value="{{ $client->id }}">{{ $client->name }}</option>@endforeach</select></div>
-            <div class="col-md-3"><label class="form-label">Услуга</label><select class="form-select" name="service_type" id="orderService"><option value="уход">Уход</option><option value="выгул">Выгул</option><option value="передержка">Передержка</option></select></div>
-            <div class="col-md-3"><label class="form-label">Раз в день</label><input class="form-control" type="number" name="units_per_day" id="orderUnits" min="1" max="24"></div>
-            <div class="col-md-4"><label class="form-label">Начало</label><input class="form-control" type="date" name="start_date" id="orderStart" required></div>
-            <div class="col-md-4"><label class="form-label">Окончание</label><input class="form-control" type="date" name="end_date" id="orderEnd" required></div>
-            <div class="col-md-4"><label class="form-label">Цена в день, ₽</label><input class="form-control" type="number" name="daily_price" id="orderPrice" min="0" required></div>
-            <div class="col-12"><label class="form-label">Животные</label><div id="orderAnimals" class="d-grid gap-2"></div><button class="btn btn-sm btn-outline-primary mt-2" type="button" id="addOrderAnimal">Добавить животное</button><div class="form-text">Например: «кошка», «собака» или «Пухля». Количество указывается рядом.</div></div>
-            <div class="col-md-6"><label class="form-label">Адрес</label><textarea class="form-control" name="address" id="orderAddress" rows="2"></textarea></div>
-            <div class="col-md-6"><label class="form-label">Комментарий</label><textarea class="form-control" name="note" id="orderNote" rows="2"></textarea></div>
-        </div></div>
-        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button><button class="btn btn-success">Сохранить</button></div>
-    </form></div>
-</div>
+<div class="modal fade" id="serviceOrderModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl"><form method="POST" class="modal-content" id="serviceOrderForm">@csrf <input type="hidden" id="orderMethod" name="_method" value="POST">
+    <div class="modal-header"><div><h5 class="modal-title mb-0" id="orderModalTitle">Новый заказ</h5><small class="text-muted">Клиент может быть не указан — это нормально.</small></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><div class="row g-3">
+        <div class="col-md-6"><label class="form-label">Клиент</label><select class="form-select" name="client_id" id="orderClient"><option value="">Не указан</option>@foreach($clients as $client)<option value="{{ $client->id }}">{{ $client->name }}</option>@endforeach</select></div>
+        <div class="col-md-3"><label class="form-label">Начало</label><input class="form-control" type="date" name="start_date" id="orderStart" required></div><div class="col-md-3"><label class="form-label">Окончание</label><input class="form-control" type="date" name="end_date" id="orderEnd" required></div>
+        <div class="col-12"><label class="form-label">Услуги</label><div class="service-picker" id="servicePicker"><button type="button" data-type="передержка">Передержка</button><button type="button" data-type="выгул">Выгул</button><button type="button" data-type="уход">Уход</button></div><div id="orderServices" class="mt-2 d-grid gap-2"></div></div>
+        <div class="col-12"><div class="d-flex justify-content-between align-items-center"><label class="form-label mb-0">Питомцы</label><button type="button" class="btn btn-sm btn-outline-primary" id="addOrderAnimal"><i class="fa fa-plus me-1"></i>Добавить питомца</button></div><p class="form-text mt-1">Выберите сохранённого питомца или впишите нового — он будет создан и добавлен к клиенту.</p><div id="orderAnimals" class="d-grid gap-2"></div></div>
+        <div class="col-md-6"><label class="form-label">Адрес</label><textarea class="form-control" name="address" id="orderAddress" rows="2"></textarea></div><div class="col-md-6"><label class="form-label">Комментарий</label><textarea class="form-control" name="note" id="orderNote" rows="2"></textarea></div>
+    </div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button><button class="btn btn-success">Сохранить заказ</button></div>
+</form></div></div>
 
-@push('styles')
-<style>
-.service-orders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}.service-order-card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:20px;box-shadow:0 4px 18px rgba(28,39,64,.05)}.service-order-card__top,.service-order-card__actions{display:flex;gap:8px;align-items:center;justify-content:space-between}.service-order-card__type{font-weight:700;color:#925e16;text-transform:capitalize}.service-order-card__animals{font-size:1.2rem;margin:18px 0 4px}.service-order-card__dates{color:#667085;margin:0 0 18px}.service-order-card__details{margin:0;border-top:1px solid #eef0f4;padding-top:12px}.service-order-card__details div{display:flex;gap:12px;margin:6px 0}.service-order-card__details dt{color:#7b8492;font-weight:500;min-width:95px}.service-order-card__details dd{margin:0}.service-order-card__actions{justify-content:flex-start;margin-top:18px;flex-wrap:wrap}.service-order-card__actions form{margin:0}.order-animal-row{display:grid;grid-template-columns:1fr 110px auto;gap:8px}@media(max-width:480px){.service-orders-grid{grid-template-columns:1fr}.service-order-card{padding:16px}.order-animal-row{grid-template-columns:1fr 80px auto}}
-</style>
-@endpush
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded',()=>{const modal=new bootstrap.Modal(document.getElementById('serviceOrderModal')),form=document.getElementById('serviceOrderForm'),animals=document.getElementById('orderAnimals');const add=(animal={})=>{const index=animals.children.length;const row=document.createElement('div');row.className='order-animal-row';row.innerHTML=`<input class="form-control" name="animals[${index}][label]" placeholder="Кошка, собака или кличка" value="${String(animal.label||'').replaceAll('&','&amp;').replaceAll('"','&quot;')}"><input class="form-control" type="number" name="animals[${index}][quantity]" min="1" value="${animal.quantity||1}"><button class="btn btn-outline-danger" type="button" aria-label="Удалить"><i class="fa fa-xmark"></i></button>`;row.querySelector('button').addEventListener('click',()=>row.remove());animals.append(row)};document.getElementById('addOrderAnimal').addEventListener('click',()=>add());document.querySelectorAll('.js-edit-service-order').forEach(button=>button.addEventListener('click',()=>{form.action=`{{ url('/zooadmin/service-orders') }}/${button.dataset.id}`;document.getElementById('orderClient').value=button.dataset.clientId||'';document.getElementById('orderService').value=button.dataset.serviceType;document.getElementById('orderUnits').value=button.dataset.units;document.getElementById('orderPrice').value=button.dataset.price;document.getElementById('orderStart').value=button.dataset.start;document.getElementById('orderEnd').value=button.dataset.end;document.getElementById('orderAddress').value=button.dataset.address;document.getElementById('orderNote').value=button.dataset.note;animals.innerHTML='';JSON.parse(button.dataset.animals||'[]').forEach(add);if(!animals.children.length)add();modal.show()}));});
-</script>
-@endpush
+@push('styles')<style>
+.service-orders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}.service-order-card{background:#fff;border:1px solid #e6e9ef;border-radius:16px;padding:20px;box-shadow:0 4px 18px rgba(28,39,64,.05)}.service-order-card__top,.service-order-card__actions{display:flex;gap:8px;align-items:center;justify-content:space-between}.service-order-card__type{font-weight:700;color:#925e16}.service-order-card__animals{font-size:1.2rem;margin:18px 0 4px}.service-order-card__dates{color:#667085;margin:0 0 18px}.service-order-card__details{margin:0;border-top:1px solid #eef0f4;padding-top:12px}.service-order-card__details div{display:flex;gap:12px;margin:6px 0}.service-order-card__details dt{color:#7b8492;font-weight:500;min-width:95px}.service-order-card__details dd{margin:0}.service-order-card__actions{justify-content:flex-start;margin-top:18px;flex-wrap:wrap}.service-order-card__actions form{margin:0}.service-picker{display:flex;gap:8px;flex-wrap:wrap}.service-picker button{border:1px solid #d7dde7;border-radius:999px;padding:8px 14px;background:#fff;color:#445063;font-weight:600}.service-picker button.is-selected{border-color:#0d6efd;background:#eaf3ff;color:#0754b8}.service-row{display:grid;grid-template-columns:150px 1fr 1fr auto;gap:8px;align-items:end;padding:10px;border:1px solid #e6e9ef;border-radius:10px;background:#f8fafc}.order-animal-row{display:grid;grid-template-columns:1.25fr 1fr 1fr 88px 1fr auto;gap:8px;align-items:end;padding:10px;border:1px solid #e6e9ef;border-radius:10px}@media(max-width:767px){.service-orders-grid{grid-template-columns:1fr}.service-row,.order-animal-row{grid-template-columns:1fr 1fr}.service-row button,.order-animal-row button{grid-column:2}.order-animal-row .animal-note{grid-column:1/-1}}
+</style>@endpush
+@push('scripts')<script>
+document.addEventListener('DOMContentLoaded',()=>{const modal=new bootstrap.Modal(document.getElementById('serviceOrderModal')),form=document.getElementById('serviceOrderForm'),services=document.getElementById('orderServices'),animals=document.getElementById('orderAnimals'),saved=@json($animals->map(fn($a)=>['id'=>$a->id,'name'=>$a->name,'category_id'=>$a->category_id,'client'=>$a->client?->name])->values()),cats=@json($categories->map(fn($c)=>['id'=>$c->id,'name'=>$c->name])->values()),escape=v=>String(v||'').replaceAll('&','&amp;').replaceAll('"','&quot;');
+const serviceRow=(s={})=>{let i=services.children.length,row=document.createElement('div');row.className='service-row';row.dataset.type=s.service_type;row.innerHTML=`<strong>${s.service_type||''}</strong><label class="small">Раз в день<input class="form-control" type="number" min="1" max="24" name="services[${i}][units_per_day]" value="${s.units_per_day||1}"></label><label class="small">Цена за услугу, ₽<input class="form-control" type="number" min="0" name="services[${i}][unit_price]" value="${s.unit_price||500}"><input type="hidden" name="services[${i}][service_type]" value="${s.service_type||''}"></label><button class="btn btn-outline-danger" type="button"><i class="fa fa-xmark"></i></button>`;row.querySelector('button').onclick=()=>{row.remove();document.querySelector(`[data-type="${s.service_type}"]`).classList.remove('is-selected')};services.append(row)};
+const animalRow=(p={})=>{let i=animals.children.length,row=document.createElement('div');row.className='order-animal-row';let options='<option value="">Выбрать сохранённого</option>'+saved.map(a=>`<option value="${a.id}" ${String(a.id)===String(p.animal_id)?'selected':''}>${escape(a.name)}${a.client?' · '+escape(a.client):''}</option>`).join(''), catOptions='<option value="">Категория</option>'+cats.map(c=>`<option value="${c.id}" ${String(c.id)===String(p.category_id)?'selected':''}>${escape(c.name)}</option>`).join('');row.innerHTML=`<label class="small">Сохранённый<select class="form-select animal-select" name="animals[${i}][animal_id]">${options}</select></label><label class="small">Или новый<input class="form-control" name="animals[${i}][name]" value="${escape(p.name)}" placeholder="Кличка или «3 кошки»"></label><label class="small">Вид<select class="form-select" name="animals[${i}][category_id]">${catOptions}</select></label><label class="small">Количество<input class="form-control" type="number" min="1" name="animals[${i}][quantity]" value="${p.quantity||1}"></label><label class="small animal-note">Комментарий<input class="form-control" name="animals[${i}][note]" value="${escape(p.note)}"></label><button class="btn btn-outline-danger" type="button"><i class="fa fa-xmark"></i></button>`;row.querySelector('button').onclick=()=>row.remove();row.querySelector('.animal-select').onchange=e=>{let a=saved.find(a=>a.id==e.target.value);if(a){row.querySelector('[name$="[name]"]').value=a.name;row.querySelector('[name$="[category_id]"]').value=a.category_id||''}};animals.append(row)};
+const open=data=>{form.action=data?.id?`{{ url('/zooadmin/service-orders') }}/${data.id}`:`{{ route('admin.service-orders.store') }}`;document.getElementById('orderMethod').value=data?.id?'PUT':'POST';document.getElementById('orderModalTitle').textContent=data?.id?'Редактировать заказ':'Новый заказ';document.getElementById('orderClient').value=data?.client_id||'';document.getElementById('orderStart').value=data?.start||'';document.getElementById('orderEnd').value=data?.end||'';document.getElementById('orderAddress').value=data?.address||'';document.getElementById('orderNote').value=data?.note||'';services.innerHTML='';animals.innerHTML='';document.querySelectorAll('.service-picker button').forEach(b=>b.classList.remove('is-selected'));(data?.services||[{service_type:'уход',units_per_day:1,unit_price:500}]).forEach(s=>{document.querySelector(`[data-type="${s.service_type}"]`).classList.add('is-selected');serviceRow(s)});(data?.animals||[{}]).forEach(animalRow);modal.show()};document.querySelector('.js-new-service-order').onclick=()=>open();document.querySelectorAll('.js-edit-service-order').forEach(b=>b.onclick=()=>open(JSON.parse(b.dataset.order)));document.querySelectorAll('.service-picker button').forEach(b=>b.onclick=()=>{if(b.classList.contains('is-selected'))return;b.classList.add('is-selected');serviceRow({service_type:b.dataset.type,units_per_day:1,unit_price:500})});document.getElementById('addOrderAnimal').onclick=()=>animalRow();});
+</script>@endpush
 @endsection
