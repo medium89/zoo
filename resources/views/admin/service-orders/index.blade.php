@@ -9,9 +9,9 @@
     @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
     @if($orders->isEmpty())<div class="card"><div class="card-body text-muted">Заказов пока нет.</div></div>@else
         <div class="service-orders-grid">@foreach($orders as $order)
-            @php($animalLabel = $order->animals->map(fn($position) => $position->quantity.' '.($position->animal?->name ?: $position->category?->name ?: $position->label ?: 'животное'))->join(', '))
-            @php($servicesLabel = $order->services->pluck('service_type')->map(fn($type) => ucfirst($type))->join(' · '))
             @php
+                $animalLabel = $order->animals->map(fn ($position) => $position->quantity.' '.($position->animal?->name ?: $position->category?->name ?: $position->label ?: 'животное'))->join(', ');
+                $servicesLabel = $order->services->pluck('service_type')->map(fn ($type) => ucfirst($type))->join(' · ');
                 $orderPayload = [
                     'id' => $order->id, 'client_id' => $order->client_id,
                     'start' => $order->start_date->toDateString(), 'end' => $order->end_date->toDateString(),
