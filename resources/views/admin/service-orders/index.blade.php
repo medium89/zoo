@@ -11,7 +11,9 @@
     <section class="orders-list-shell">
         <form class="orders-filters" method="GET" action="{{ route('admin.service-orders.index') }}">
             <label class="orders-filter orders-filter--search"><i class="fa fa-magnifying-glass"></i><input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Поиск по клиенту или питомцу"></label>
-            @php($statusValue = $filters['status'] ?? '')
+            @php
+                $statusValue = $filters['status'] ?? '';
+            @endphp
             <div class="orders-filter orders-filter--select orders-custom-select" data-filter-select>
                 <span>Статус</span><input type="hidden" name="status" value="{{ $statusValue }}">
                 <button class="orders-custom-select__toggle" type="button" aria-haspopup="listbox" aria-expanded="false"><span>{{ ['', 'active' => 'В работе', 'planned' => 'Запланирован', 'finished' => 'Прошёл'][$statusValue] ?? 'Все' }}</span><i class="fa fa-chevron-down" aria-hidden="true"></i></button>
@@ -22,7 +24,9 @@
                     <button type="button" role="option" aria-selected="{{ $statusValue === 'finished' ? 'true' : 'false' }}" data-value="finished">Прошёл</button>
                 </div>
             </div>
-            @php($serviceValue = $filters['service'] ?? '')
+            @php
+                $serviceValue = $filters['service'] ?? '';
+            @endphp
             <div class="orders-filter orders-filter--select orders-custom-select" data-filter-select>
                 <span>Услуга</span><input type="hidden" name="service" value="{{ $serviceValue }}">
                 <button class="orders-custom-select__toggle" type="button" aria-haspopup="listbox" aria-expanded="false"><span>{{ ['', 'передержка' => 'Передержка', 'выгул' => 'Выгул', 'уход' => 'Уход'][$serviceValue] ?? 'Все' }}</span><i class="fa fa-chevron-down" aria-hidden="true"></i></button>
