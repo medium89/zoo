@@ -38,7 +38,7 @@
                     <div class="orders-pet"><span class="orders-pet__image">@if($position->animal?->photos->first())<img src="{{ Storage::url($position->animal->photos->first()->path) }}" alt="{{ $animalName }}">@else<img src="{{ asset('images/animal-types/'.$categoryImage.'.png') }}" alt="{{ $categoryName }}">@endif</span><span><strong>{{ $position->quantity > 1 ? '×'.$position->quantity.' ' : '' }}{{ $animalName }}</strong><small>{{ mb_strtolower($categoryName) }}</small></span></div>
                 @endforeach
             </div>
-            <div class="orders-cell orders-cell--services">@foreach($positions as $position)@foreach($position->services as $service)<div><strong>{{ ucfirst($service->service_type) }}</strong>@if($service->service_type !== 'передержка')<small>{{ $service->units_per_day }} раз в день</small>@endif</div>@endforeach@endforeach</div>
+            <div class="orders-cell orders-cell--services">@foreach($positions as $position) @foreach($position->services as $service)<div><strong>{{ ucfirst($service->service_type) }}</strong>@if($service->service_type !== 'передержка')<small>{{ $service->units_per_day }} раз в день</small>@endif</div>@endforeach @endforeach</div>
             <div class="orders-cell orders-cell--period">{{ $order->start_date->locale('ru')->translatedFormat('j F') }}<br><span>—</span><br>{{ $order->end_date->locale('ru')->translatedFormat('j F') }}</div>
             <div class="orders-cell orders-cell--price">{{ number_format($order->daily_price, 0, '.', ' ') }} ₽</div>
             <div class="orders-cell"><span class="order-status {{ $status[1] }}">{{ $status[0] }}</span></div>
