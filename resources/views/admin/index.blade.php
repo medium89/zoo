@@ -649,10 +649,18 @@
         /* Общий reset сайта задаёт Inter всем <i>; возвращаем иконкам их шрифт. */
         i.fa, i.fa-classic, i.fa-sharp, i.fas, i.fa-solid, i.far, i.fa-regular {
             font-family: "Font Awesome 6 Free" !important;
+            font-style: normal !important;
+            font-weight: 900 !important;
+        }
+
+        i.far, i.fa-regular {
+            font-weight: 400 !important;
         }
 
         i.fab, i.fa-brands {
             font-family: "Font Awesome 6 Brands" !important;
+            font-style: normal !important;
+            font-weight: 400 !important;
         }
     </style>
     @stack('styles')
