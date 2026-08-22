@@ -15,39 +15,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BoardingController extends Controller
 {
-    public function index(Request $request, BoardingPricingService $pricing, ExpiredBoardingArchiver $archiver)
+    public function index(ExpiredBoardingArchiver $archiver)
     {
         $archiver->archive();
-        $yearParam = $request->query('year', 'all');
-        $year = $yearParam === 'all' ? 'all' : (int)$yearParam;
-        $range = $this->activeRange();
-        $this->hydrateAnimalsFromBoardings();
-        $entries = $year === 'all' ? $this->entriesAllActive() : $this->entriesForYear($year);
-        $latest = Boarding::with(['animal.photos', 'animal.client', 'animal.category', 'client'])
-            ->whereNull('archived_at')
-            ->orderByDesc('created_at')
-            ->take(20)
-            ->get();
-        $serviceOrders = ServiceOrder::with(['client', 'animals.category', 'animals.animal'])
-            ->whereNull('archived_at')
-            ->orderBy('start_date')
-            ->take(6)
-            ->get();
-        $animals = Animal::with(['client', 'photos', 'category'])->orderBy('name')->get();
-        $clients = Client::orderBy('name')->get();
-        $categories = Category::orderBy('name')->get();
 
         return view('admin.boarding.index', [
-            'year' => $year,
-            'entries' => $entries,
-            'latest' => $latest,
-            'serviceOrders' => $serviceOrders,
-            'animals' => $animals,
-            'clients' => $clients,
-            'categories' => $categories,
-            'minYear' => $range['min'],
-            'maxYear' => $range['max'],
-            'tariffs' => $pricing->tariffs(),
+            'entries' => $this->entriesAllActive(),
         ]);
     }
 

@@ -7,12 +7,14 @@ use App\Models\Boarding;
 use App\Models\Category;
 use App\Models\Client;
 use App\Models\ServiceOrder;
+use App\Services\ExpiredBoardingArchiver;
 use Illuminate\Http\Request;
 
 class ServiceOrderAdminController extends Controller
 {
-    public function index()
+    public function index(ExpiredBoardingArchiver $archiver)
     {
+        $archiver->archive();
         $animals = Animal::with(['client', 'category'])->orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
 
@@ -49,6 +51,35 @@ class ServiceOrderAdminController extends Controller
         return back()->with('success', 'Заказ перенесён в архив');
     }
 
+    public function updateAnimal(Request $request, Animal $animal)
+    {
+        $data = $request->validate([
+            'client_id' => 'nullable|exists:clients,id',
+            'name' => 'required|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
+            'description' => 'nullable|string|max:255',
+            'note' => 'nullable|string|max:5000',
+        ]);
+
+        $category = Category::find($data['category_id'] ?? null);
+        $animal->update($data + ['species' => $category?->name]);
+
+        return back()->with('success', 'Карточка питомца обновлена');
+    }
+
+    public function archiveIndex(ExpiredBoardingArchiver $archiver)
+    {
+        $archiver->archive();
+
+        $orders = ServiceOrder::with(['client', 'animals.services', 'animals.category', 'animals.animal.photos'])
+            ->whereNotNull('archived_at')
+            ->orderByDesc('archived_at')
+            ->orderByDesc('end_date')
+            ->get();
+
+        return view('admin.service-orders.archive', compact('orders'));
+    }
+
     public function destroy(ServiceOrder $serviceOrder)
     {
         $serviceOrder->delete();
@@ -57,16 +88,32 @@ class ServiceOrderAdminController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'client_id' => 'nullable|exists:clients,id',
+            'new_client.name' => 'nullable|string|max:255',
+            'new_client.phone' => 'nullable|string|max:255',
+            'new_client.note' => 'nullable|string|max:5000',
             'start_date' => 'required|date', 'end_date' => 'required|date|after_or_equal:start_date',
             'address' => 'nullable|string|max:2000', 'note' => 'nullable|string|max:5000', 'animals' => 'required|array|min:1',
             'animals.*.animal_id' => 'nullable|exists:animals,id', 'animals.*.name' => 'nullable|string|max:255',
             'animals.*.category_id' => 'nullable|exists:categories,id', 'animals.*.quantity' => 'nullable|integer|min:1|max:99',
-            'animals.*.note' => 'nullable|string|max:1000', 'animals.*.services' => 'required|array|min:1|max:3',
+            'animals.*.note' => 'nullable|string|max:1000', 'animals.*.services' => 'required|array|min:1',
             'animals.*.services.*.service_type' => 'required|in:передержка,выгул,уход',
             'animals.*.services.*.units_per_day' => 'required|integer|min:1|max:24', 'animals.*.services.*.unit_price' => 'required|integer|min:0|max:100000',
         ]);
+
+        if (filled($data['new_client']['name'] ?? null)) {
+            $client = Client::create([
+                'name' => trim($data['new_client']['name']),
+                'phone' => $data['new_client']['phone'] ?? null,
+                'note' => $data['new_client']['note'] ?? null,
+            ]);
+            $data['client_id'] = $client->id;
+        }
+
+        unset($data['new_client']);
+
+        return $data;
     }
 
     private function orderAttributes(array $data): array

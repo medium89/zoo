@@ -9,7 +9,7 @@ class ArchiveExpiredBoardings extends Command
 {
     protected $signature = 'boarding:archive-expired';
 
-    protected $description = 'Move boardings whose end date has passed to the archive';
+    protected $description = 'Move completed orders and legacy boardings to the archive';
 
     public function handle(ExpiredBoardingArchiver $archiver): int
     {

@@ -673,8 +673,9 @@
                 <a href="{{ route('admin.categories.index') }}" class="{{ request()->is('zooadmin/categories*') ? 'active' : '' }}"><i class="fa fa-tags me-2"></i>Категории животных</a>
                 <a href="{{ route('admin.feedbacks.index') }}" class="{{ request()->is('zooadmin/feedbacks*') ? 'active' : '' }}"><i class="fa fa-envelope me-2"></i>Обратная связь</a>
                 <a href="{{ route('admin.avito-reviews.index') }}" class="{{ request()->is('zooadmin/avito-reviews*') ? 'active' : '' }}"><i class="fa fa-star-half-stroke me-2"></i>Отзывы Avito</a>
-                <a href="{{ route('admin.boarding.index') }}" class="{{ request()->is('zooadmin/boarding*') ? 'active' : '' }}"><i class="fa fa-calendar-check me-2"></i>Календарь работы</a>
-                <a href="{{ route('admin.service-orders.index') }}" class="{{ request()->is('zooadmin/service-orders*') ? 'active' : '' }}"><i class="fa fa-briefcase me-2"></i>Заказы и работа</a>
+                <a href="{{ route('admin.boarding.index') }}" class="{{ request()->is('zooadmin/boarding*') ? 'active' : '' }}"><i class="fa fa-calendar-check me-2"></i>Календарь</a>
+                <a href="{{ route('admin.service-orders.index') }}" class="{{ request()->is('zooadmin/service-orders') ? 'active' : '' }}"><i class="fa fa-briefcase me-2"></i>Заказы и работа</a>
+                <a href="{{ route('admin.service-orders.archive.index') }}" class="{{ request()->is('zooadmin/service-orders/archive') ? 'active' : '' }}"><i class="fa fa-box-archive me-2"></i>Архив заказов</a>
             </div>
             <div class="sidebar-content__item px-3 text-uppercase text-muted small border-top pt-2 mt-2">Статьи</div>
             <div class="sidebar-content__item">
@@ -712,6 +713,7 @@
                 'animals' => ['Питомцы', route('admin.animals.index')],
                 'categories' => ['Категории животных', route('admin.categories.index')],
                 'boarding' => ['Передержка', route('admin.boarding.index')],
+                'service-orders' => ['Заказы и работа', route('admin.service-orders.index')],
                 'feedbacks' => ['Обратная связь', route('admin.feedbacks.index')],
                 'avito-reviews' => ['Отзывы Avito', route('admin.avito-reviews.index')],
                 'sliders' => ['Слайдер', route('admin.sliders.index')],
