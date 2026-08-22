@@ -1182,12 +1182,12 @@
         document.querySelectorAll('button, a').forEach((btn) => {
             if (btn.closest('.modal')) return;
             const txt = (btn.textContent || '').trim();
-            if (txt === 'Редактировать') {
+            if (txt === 'Редактировать' && !btn.matches('.order-actions-menu__item')) {
                 btn.innerHTML = '<i class="fa fa-pen"></i>';
                 btn.title = 'Редактировать';
                 btn.classList.add('btn-icon');
             }
-            if (txt === 'Удалить') {
+            if (txt === 'Удалить' && !btn.matches('.order-actions-menu__item')) {
                 if (btn.hasAttribute('onclick')) btn.removeAttribute('onclick');
                 btn.innerHTML = '<i class="fa fa-trash"></i>';
                 btn.title = 'Удалить';
