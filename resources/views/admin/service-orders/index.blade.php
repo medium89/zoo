@@ -8,6 +8,17 @@
     </header>
     @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
     @if(isset($errors) && $errors->any())<div class="alert alert-danger"><strong>Заказ не сохранён.</strong><ul class="mb-0 mt-2">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+    <section class="orders-list-shell">
+        <form class="orders-filters" method="GET" action="{{ route('admin.service-orders.index') }}">
+            <label class="orders-filter orders-filter--search"><i class="fa fa-magnifying-glass"></i><input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Поиск по клиенту или питомцу"></label>
+            <label class="orders-filter"><span>Статус:</span><select name="status"><option value="">Все</option><option value="active" @selected(($filters['status'] ?? '') === 'active')>В работе</option><option value="planned" @selected(($filters['status'] ?? '') === 'planned')>Запланирован</option><option value="finished" @selected(($filters['status'] ?? '') === 'finished')>Прошёл</option></select></label>
+            <label class="orders-filter"><span>Услуга:</span><select name="service"><option value="">Все</option><option value="передержка" @selected(($filters['service'] ?? '') === 'передержка')>Передержка</option><option value="выгул" @selected(($filters['service'] ?? '') === 'выгул')>Выгул</option><option value="уход" @selected(($filters['service'] ?? '') === 'уход')>Уход</option></select></label>
+            <label class="orders-filter orders-filter--date"><i class="fa fa-calendar-days"></i><span>Период:</span><input name="from" type="date" value="{{ $filters['from'] ?? '' }}" aria-label="С"><span>—</span><input name="to" type="date" value="{{ $filters['to'] ?? '' }}" aria-label="По"></label>
+            <button class="btn btn-outline-secondary orders-filter-reset" type="button" onclick="window.location='{{ route('admin.service-orders.index') }}'"><i class="fa fa-arrow-rotate-left"></i> Сбросить</button>
+            <button class="visually-hidden" type="submit">Применить</button>
+        </form>
+        <div class="orders-table" role="table">
+            <div class="orders-table__head" role="row"><span>Клиент</span><span>Питомцы</span><span>Услуга</span><span>Период</span><span>₽/день</span><span>Статус</span><span class="visually-hidden">Действия</span></div>
     @forelse($orders as $order)
         @php
             $positions = $order->animals;
@@ -15,45 +26,30 @@
                 'animals' => $positions->map(fn ($position) => ['animal_id' => $position->animal_id, 'name' => $position->animal?->name, 'label' => $position->label, 'category_id' => $position->category_id, 'quantity' => $position->quantity, 'note' => $position->note, 'services' => $position->services->map(fn ($service) => ['service_type' => $service->service_type, 'units_per_day' => $service->units_per_day, 'unit_price' => $service->unit_price])->values()])->values()];
             $status = $order->end_date->lessThan(today()) ? ['Прошёл', 'is-finished'] : ($order->start_date->isFuture() ? ['Запланирован', 'is-planned'] : ['В работе', 'is-active']);
         @endphp
-        <article class="order-card">
-            <div class="order-card__header">
-                <div class="order-card__identity"><h2><i class="fa fa-user"></i> {{ $order->client?->name ?: 'Клиент не указан' }}</h2></div>
-                <p class="order-card__period"><i class="fa fa-calendar-days"></i> {{ $order->start_date->locale('ru')->translatedFormat('j F') }} — {{ $order->end_date->locale('ru')->translatedFormat('j F') }}</p>
-                <strong class="order-card__total order-card__header-total">{{ number_format($order->daily_price, 0, '.', ' ') }} ₽<small>/ день</small></strong>
-                <span class="order-status {{ $status[1] }}">{{ $status[0] }}</span>
-            </div>
-            <div class="order-card__animals">
+        <article class="orders-table__row" role="row">
+            <div class="orders-cell orders-cell--client"><span class="orders-client-avatar"><i class="fa fa-user"></i></span><strong>{{ $order->client?->name ?: '—' }}</strong></div>
+            <div class="orders-cell orders-cell--animals">
                 @foreach($positions as $position)
                     @php
                         $animalName = $position->animal?->name ?: $position->label ?: 'Без клички';
-                        $positionPrice = $position->services->sum(fn ($service) => $position->quantity * $service->units_per_day * $service->unit_price);
-                        $petTags = collect($position->animal?->tags ?? [])->filter(fn ($tag) => !empty($tag['name']))->values();
-                        $petHint = trim(implode(' · ', array_filter([$position->animal?->description, $position->animal?->note])));
+                        $categoryName = $position->animal?->category?->name ?: $position->category?->name ?: 'Другие';
+                        $categoryImage = match(mb_strtolower($categoryName)) { 'кошки' => 'cat', 'собаки' => 'dog', 'грызуны' => 'rodent', 'птицы' => 'bird', 'рептилии' => 'reptile', 'рыбки' => 'fish', 'насекомые' => 'insect', 'пауки' => 'spider', default => 'other' };
                     @endphp
-                    <section class="work-animal">
-                        <div class="work-animal__photo">@if($position->animal?->photos->first())<img src="{{ Storage::url($position->animal->photos->first()->path) }}" alt="{{ $animalName }}">@else<i class="fa fa-paw"></i>@endif</div>
-                        <div class="work-animal__main">
-                            <div class="work-animal__title"><strong>{{ $position->quantity > 1 ? $position->quantity.' × ' : '' }}{{ $animalName }}</strong></div>
-                            <div class="work-animal__meta"><span class="work-animal__type">{{ $position->animal?->category?->name ?: $position->category?->name ?: 'Вид не указан' }}</span>
-                                @foreach($petTags->take(2) as $tag)<span class="work-animal__tag work-animal__tag--{{ ($tag['type'] ?? '') === 'positive' ? 'positive' : 'negative' }}">{{ $tag['name'] }}</span>@endforeach
-                                @if($petTags->count() > 2)<span class="work-animal__tag work-animal__tag--more">+{{ $petTags->count() - 2 }}</span>@endif
-                            </div>
-                            @if($position->note)<p class="work-animal__note">{{ $position->note }}</p>@endif
-                        </div>
-                        <div class="work-animal__services">
-                            <div class="work-animal__service-list">@foreach($position->services as $service)
-                                <div class="service-chip"><span>{{ ucfirst($service->service_type) }}</span><small>@if($service->service_type !== 'передержка'){{ $service->units_per_day }} раз в день · @endif{{ number_format($service->unit_price, 0, '.', ' ') }} ₽</small></div>
-                            @endforeach</div>
-                        </div>
-                        <strong class="work-animal__price" @if($petHint) title="{{ $petHint }}" @endif>{{ number_format($positionPrice, 0, '.', ' ') }} ₽<small>в день</small></strong>
-                    </section>
+                    <div class="orders-pet"><span class="orders-pet__image">@if($position->animal?->photos->first())<img src="{{ Storage::url($position->animal->photos->first()->path) }}" alt="{{ $animalName }}">@else<img src="{{ asset('images/animal-types/'.$categoryImage.'.png') }}" alt="{{ $categoryName }}">@endif</span><span><strong>{{ $position->quantity > 1 ? '×'.$position->quantity.' ' : '' }}{{ $animalName }}</strong><small>{{ mb_strtolower($categoryName) }}</small></span></div>
                 @endforeach
             </div>
-            <footer class="order-card__footer"><div class="order-card__context">@if($order->address)<span><i class="fa fa-location-dot"></i> {{ $order->address }}</span>@endif @if($order->note)<span><i class="fa fa-note-sticky"></i> {{ $order->note }}</span>@endif</div><div class="order-card__actions"><button class="btn btn-primary js-edit-service-order" type="button" data-order='@json($orderPayload)' title="Редактировать"><i class="fa fa-pen"></i></button><form method="POST" action="{{ route('admin.service-orders.archive', $order) }}">@csrf<button class="btn btn-outline-secondary" title="В архив" aria-label="В архив"><i class="fa fa-box-archive"></i></button></form><form method="POST" action="{{ route('admin.service-orders.destroy', $order) }}" class="js-delete-form" data-confirm="Удалить заказ?">@csrf @method('DELETE')<button class="btn btn-outline-danger" aria-label="Удалить"><i class="fa fa-trash"></i></button></form></div></footer>
+            <div class="orders-cell orders-cell--services">@foreach($positions as $position)@foreach($position->services as $service)<div><strong>{{ ucfirst($service->service_type) }}</strong>@if($service->service_type !== 'передержка')<small>{{ $service->units_per_day }} раз в день</small>@endif</div>@endforeach@endforeach</div>
+            <div class="orders-cell orders-cell--period">{{ $order->start_date->locale('ru')->translatedFormat('j F') }}<br><span>—</span><br>{{ $order->end_date->locale('ru')->translatedFormat('j F') }}</div>
+            <div class="orders-cell orders-cell--price">{{ number_format($order->daily_price, 0, '.', ' ') }} ₽</div>
+            <div class="orders-cell"><span class="order-status {{ $status[1] }}">{{ $status[0] }}</span></div>
+            <div class="orders-cell orders-cell--actions"><div class="order-actions-menu"><button class="btn btn-link order-actions-menu__toggle" type="button" aria-label="Действия заказа"><i class="fa fa-ellipsis"></i></button><div class="order-actions-menu__popup is-hidden"><button class="js-edit-service-order" type="button" data-order='@json($orderPayload)'><i class="fa fa-pen"></i> Редактировать</button><form method="POST" action="{{ route('admin.service-orders.archive', $order) }}">@csrf<button type="submit"><i class="fa fa-box-archive"></i> Архивировать</button></form><form method="POST" action="{{ route('admin.service-orders.destroy', $order) }}" class="js-delete-form" data-confirm="Удалить заказ?">@csrf @method('DELETE')<button class="is-danger" type="submit"><i class="fa fa-trash"></i> Удалить</button></form></div></div></div>
         </article>
     @empty
         <div class="orders-empty"><i class="fa fa-clipboard-list"></i><h2>Заказов пока нет</h2><p>Добавьте первый заказ, чтобы распределить работу по питомцам.</p></div>
     @endforelse
+        </div>
+        @if($orders->isNotEmpty())<footer class="orders-list-footer">Всего заказов: {{ $orders->count() }}</footer>@endif
+    </section>
 </div>
 
 <div class="modal fade" id="serviceOrderModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl"><form method="POST" class="modal-content" id="serviceOrderForm">@csrf<input type="hidden" name="_method" id="orderMethod" value="POST">
@@ -105,6 +101,16 @@
 .orders-page i.fa,.orders-page i.fa-classic,.orders-page i.fa-sharp,.orders-page i.fas,.orders-page i.fa-solid,#serviceOrderModal i.fa,#serviceOrderModal i.fa-classic,#serviceOrderModal i.fa-sharp,#serviceOrderModal i.fas,#serviceOrderModal i.fa-solid{font-family:"Font Awesome 6 Free"!important;font-style:normal!important;font-weight:900!important}
 .orders-page i.far,.orders-page i.fa-regular,#serviceOrderModal i.far,#serviceOrderModal i.fa-regular{font-family:"Font Awesome 6 Free"!important;font-style:normal!important;font-weight:400!important}
 .orders-page i.fab,.orders-page i.fa-brands,#serviceOrderModal i.fab,#serviceOrderModal i.fa-brands{font-family:"Font Awesome 6 Brands"!important;font-style:normal!important;font-weight:400!important}
+/* Список заказов: однообразная табличная сетка без вложенных карточек. */
+.orders-list-shell{background:#fff;border:1px solid #e4e9f0;border-radius:12px;overflow:visible;box-shadow:0 2px 9px rgba(31,45,61,.04)}
+.orders-filters{display:grid;grid-template-columns:minmax(240px,1.35fr) repeat(2,minmax(150px,.75fr)) minmax(230px,1.15fr) auto;gap:14px;align-items:center;padding:23px 16px 18px;border-bottom:1px solid #e7ebf0}
+.orders-filter{height:36px;display:flex;align-items:center;gap:7px;padding:0 10px;border:1px solid #dfe5ec;border-radius:7px;background:#fff;color:#7a8796;font-size:.83rem;white-space:nowrap}
+.orders-filter input,.orders-filter select{min-width:0;flex:1;border:0;outline:0;background:transparent;color:#4c5a6b;font:inherit}.orders-filter select{cursor:pointer}.orders-filter--search input{font-size:.85rem}.orders-filter--date{gap:5px}.orders-filter--date input{max-width:92px;font-size:.77rem;color:#627083}.orders-filter-reset{height:36px;white-space:nowrap;font-size:.82rem}
+.orders-table__head,.orders-table__row{display:grid;grid-template-columns:minmax(150px,1.05fr) minmax(190px,1.35fr) minmax(130px,1fr) minmax(128px,.9fr) minmax(88px,.65fr) minmax(116px,.85fr) 42px;column-gap:14px;align-items:center}
+.orders-table__head{min-height:60px;padding:0 20px;background:#fafbfd;border-bottom:1px solid #e7ebf0;color:#687586;font-size:.78rem;font-weight:700}.orders-table__head span{font-weight:700}
+.orders-table__row{position:relative;min-height:91px;padding:12px 20px;border-bottom:1px solid #e8ecf1;background:#fff}.orders-table__row:last-child{border-bottom:0}.orders-table__row:hover{background:#fcfdff}.orders-cell{min-width:0;color:#3e4d5e;font-size:.86rem}.orders-cell--client{display:flex;align-items:center;gap:10px}.orders-client-avatar{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:50%;background:#f0f3f7;color:#778698}.orders-cell strong{font-weight:600!important}.orders-cell small{display:block;margin-top:2px;color:#8793a1;font-size:.73rem;line-height:1.2}.orders-cell--animals,.orders-cell--services{display:grid;gap:7px}.orders-pet{display:flex;align-items:center;gap:9px;min-width:0}.orders-pet__image{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:#fff4d8;font-size:23px;line-height:1}.orders-pet__image img{width:100%;height:100%;object-fit:cover}.orders-cell--services>div{line-height:1.15}.orders-cell--period{line-height:1.05;color:#4a5969;font-size:.82rem}.orders-cell--period span{color:#9aa5b2}.orders-cell--price{font-weight:600!important;white-space:nowrap}.order-status{display:inline-block;height:auto;padding:5px 7px;border-radius:5px;font-size:.72rem;font-weight:600!important;white-space:nowrap}.orders-cell--actions{justify-self:end}.order-actions-menu{position:relative}.order-actions-menu__toggle{width:34px;height:34px;padding:0;border:0;color:#667586;text-decoration:none;display:grid;place-items:center;font-size:1.15rem}.order-actions-menu__toggle:hover{background:#f1f4f8;border-radius:7px}.order-actions-menu__popup{position:absolute;z-index:30;right:0;top:38px;width:176px;padding:6px;background:#fff;border:1px solid #dce4ed;border-radius:9px;box-shadow:0 12px 28px rgba(28,43,61,.16)}.order-actions-menu__popup.is-hidden{display:none}.order-actions-menu__popup form{margin:0}.order-actions-menu__popup button{display:flex;width:100%;align-items:center;gap:8px;padding:8px 9px;border:0;border-radius:6px;background:transparent;color:#48596c;font-size:.82rem;text-align:left}.order-actions-menu__popup button:hover{background:#f1f6fb;color:#1763b7}.order-actions-menu__popup .is-danger{color:#c03946}.order-actions-menu__popup .is-danger:hover{background:#fff0f1;color:#b4232f}.orders-list-footer{padding:20px;color:#8793a1;font-size:.8rem}
+@media(max-width:1050px){.orders-filters{grid-template-columns:1fr 1fr 1fr}.orders-filter--search{grid-column:span 2}.orders-table{overflow-x:auto}.orders-table__head,.orders-table__row{min-width:980px}}
+@media(max-width:640px){.orders-filters{grid-template-columns:1fr;padding:14px}.orders-filter--search{grid-column:auto}.orders-filter--date input{max-width:none}.orders-filter-reset{width:100%}.orders-table__head{display:none}.orders-table__row{display:grid;grid-template-columns:1fr auto;gap:12px;min-width:0;padding:15px}.orders-cell--client{grid-column:1}.orders-cell--actions{grid-column:2;grid-row:1}.orders-cell--animals{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr))}.orders-cell--services{grid-column:1}.orders-cell--period{grid-column:2}.orders-cell--price{grid-column:1}.orders-cell--price::before{content:'Стоимость в день: ';color:#8793a1;font-weight:400}.orders-cell--price+ .orders-cell{grid-column:2}.orders-list-footer{padding:15px}}
 </style>@endpush
 @push('scripts')<script>
 document.addEventListener('DOMContentLoaded',()=>{const modal=new bootstrap.Modal(document.getElementById('serviceOrderModal')),form=document.getElementById('serviceOrderForm'),positions=document.getElementById('orderAnimals'),saved=@json($animalsPayload),cats=@json($categoriesPayload),esc=v=>String(v||'').replaceAll('&','&amp;').replaceAll('"','&quot;'),types=['передержка','выгул','уход'];
@@ -133,5 +139,8 @@ document.addEventListener('DOMContentLoaded',()=>{const root=document.getElement
 </script>@endpush
 @push('scripts')<script>
 document.addEventListener('DOMContentLoaded',()=>{const root=document.getElementById('orderAnimals'),modalEl=document.getElementById('petCardModal');if(!root||!modalEl)return;const modal=new bootstrap.Modal(modalEl);root.addEventListener('click',event=>{let link=event.target.closest('.pet-action-menu__popup a');if(!link)return;event.preventDefault();event.stopImmediatePropagation();document.getElementById('petCardModalTitle').textContent=link.textContent.trim()==='Редактировать'?'Редактировать питомца':'Карточка питомца';document.getElementById('petCardModalFrame').src=link.href;modal.show()},true);modalEl.addEventListener('hidden.bs.modal',()=>document.getElementById('petCardModalFrame').src='')});
+</script>@endpush
+@push('scripts')<script>
+document.addEventListener('DOMContentLoaded',()=>{const close=()=>document.querySelectorAll('.order-actions-menu__popup').forEach(menu=>menu.classList.add('is-hidden'));document.querySelectorAll('.order-actions-menu__toggle').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();let menu=button.nextElementSibling,opening=menu.classList.contains('is-hidden');close();if(opening)menu.classList.remove('is-hidden')}));document.querySelectorAll('.order-actions-menu__popup').forEach(menu=>menu.addEventListener('click',event=>event.stopPropagation()));document.addEventListener('click',close);document.querySelectorAll('.orders-filters select,.orders-filters input[type="date"]').forEach(field=>field.addEventListener('change',()=>field.form.submit()));});
 </script>@endpush
 @endsection

@@ -12,19 +12,43 @@ use Illuminate\Http\Request;
 
 class ServiceOrderAdminController extends Controller
 {
-    public function index(ExpiredBoardingArchiver $archiver)
+    public function index(Request $request, ExpiredBoardingArchiver $archiver)
     {
         $archiver->archive();
         $animals = Animal::with(['client', 'category'])->orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'status' => 'nullable|in:active,planned,finished',
+            'service' => 'nullable|in:передержка,выгул,уход',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+        ]);
+        $orders = ServiceOrder::with(['client', 'animals.services', 'animals.category', 'animals.animal.photos'])
+            ->whereNull('archived_at')
+            ->when($filters['search'] ?? null, function ($query, string $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->whereHas('client', fn ($clients) => $clients->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('animals', fn ($animals) => $animals->where('label', 'like', "%{$search}%")
+                            ->orWhereHas('animal', fn ($animals) => $animals->where('name', 'like', "%{$search}%")));
+                });
+            })
+            ->when($filters['service'] ?? null, fn ($query, string $service) => $query->whereHas('animals.services', fn ($services) => $services->where('service_type', $service)))
+            ->when(($filters['status'] ?? null) === 'active', fn ($query) => $query->whereDate('start_date', '<=', today())->whereDate('end_date', '>=', today()))
+            ->when(($filters['status'] ?? null) === 'planned', fn ($query) => $query->whereDate('start_date', '>', today()))
+            ->when(($filters['status'] ?? null) === 'finished', fn ($query) => $query->whereDate('end_date', '<', today()))
+            ->when($filters['from'] ?? null, fn ($query, string $from) => $query->whereDate('end_date', '>=', $from))
+            ->when($filters['to'] ?? null, fn ($query, string $to) => $query->whereDate('start_date', '<=', $to))
+            ->orderBy('start_date')->orderByDesc('created_at')->get();
 
         return view('admin.service-orders.index', [
-            'orders' => ServiceOrder::with(['client', 'animals.services', 'animals.category', 'animals.animal.photos'])->whereNull('archived_at')->orderBy('start_date')->orderByDesc('created_at')->get(),
+            'orders' => $orders,
             'clients' => Client::orderBy('name')->get(),
             'animals' => $animals,
             'categories' => $categories,
             'animalsPayload' => $animals->map(fn (Animal $animal) => ['id' => $animal->id, 'name' => $animal->name, 'category_id' => $animal->category_id, 'client' => $animal->client?->name])->values()->all(),
             'categoriesPayload' => $categories->map(fn (Category $category) => ['id' => $category->id, 'name' => $category->name])->values()->all(),
+            'filters' => $filters,
         ]);
     }
 
