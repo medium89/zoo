@@ -645,6 +645,16 @@
         .form-range::-moz-range-track { background: #dfe3e8; }
     </style>
     @vite(['resources/js/app.js'])
+    <style>
+        /* Общий reset сайта задаёт Inter всем <i>; возвращаем иконкам их шрифт. */
+        i.fa, i.fa-classic, i.fa-sharp, i.fas, i.fa-solid, i.far, i.fa-regular {
+            font-family: "Font Awesome 6 Free" !important;
+        }
+
+        i.fab, i.fa-brands {
+            font-family: "Font Awesome 6 Brands" !important;
+        }
+    </style>
     @stack('styles')
 </head>
 <body>
