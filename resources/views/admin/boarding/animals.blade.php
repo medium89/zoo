@@ -17,14 +17,27 @@
             @if($animals->count())
                 <div class="boarding-animals-grid">
                     @foreach($animals as $animal)
-                        @php($last = $animal->boardings->first())
+                        @php
+                            $last = $animal->boardings->first();
+                            $categoryImage = match (mb_strtolower(trim($animal->category?->name ?: $animal->species ?: ''))) {
+                                'кошка', 'кошки', 'кот', 'коты' => 'cat',
+                                'собака', 'собаки', 'пёс', 'пес' => 'dog',
+                                'грызун', 'грызуны', 'хомяк', 'хомяки', 'кролик', 'кролики', 'морская свинка' => 'rodent',
+                                'птица', 'птицы' => 'bird',
+                                'рыба', 'рыбы', 'аквариумные рыбы' => 'fish',
+                                'рептилия', 'рептилии', 'черепаха', 'черепахи', 'ящерица', 'ящерицы' => 'reptile',
+                                'паук', 'пауки', 'паукообразные' => 'spider',
+                                'насекомое', 'насекомые' => 'insect',
+                                default => 'other',
+                            };
+                        @endphp
                         <article class="boarding-animal-card">
                             <div class="boarding-animal-card__top">
                                 <div class="boarding-animal-card__identity">
                                     @if($animal->photos->first())
                                         <img src="{{ Storage::url($animal->photos->first()->path) }}" alt="{{ $animal->name }}" class="boarding-animal-card__photo">
                                     @else
-                                        <span class="boarding-animal-card__photo boarding-animal-card__photo--empty"><i class="fa fa-paw"></i></span>
+                                        <img src="{{ asset('images/animal-types/'.$categoryImage.'.png') }}" alt="{{ $animal->category?->name ?: 'Тип животного' }}" class="boarding-animal-card__photo boarding-animal-card__photo--type">
                                     @endif
                                     <div>
                                         <a href="{{ route('admin.animals.show', $animal) }}" class="boarding-animal-card__name">{{ $animal->name }}</a>
@@ -81,6 +94,7 @@
     .boarding-animal-card__top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
     .boarding-animal-card__identity { display:flex; min-width:0; align-items:center; gap:12px; }
     .boarding-animal-card__photo { display:grid; flex:0 0 52px; width:52px; height:52px; place-items:center; border:1px solid #dbe2e8; border-radius:14px; object-fit:cover; color:#7a89a0; background:#f4f7f9; }
+    .boarding-animal-card__photo--type { padding:4px; object-fit:contain; background:linear-gradient(145deg, #f7fbff, #eff5f8); }
     .boarding-animal-card__name { display:block; overflow:hidden; color:#263541; font-size:1.06rem; font-weight:800; line-height:1.25; text-decoration:none; text-overflow:ellipsis; white-space:nowrap; }
     .boarding-animal-card__name:hover { color:#0d6efd; }
     .boarding-animal-card__identity p { margin:4px 0 0; color:#788697; font-size:.78rem; line-height:1.35; }
