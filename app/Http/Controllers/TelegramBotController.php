@@ -110,6 +110,11 @@ class TelegramBotController extends Controller
             return;
         }
 
+        if (in_array($calendarCommand, ['заказы', '/orders', 'мои заказы', 'заказы и работа'], true)) {
+            $this->sendServiceOrdersMenu($chatId);
+            return;
+        }
+
         if ($tasks = $this->taskInstructionParser->parse($text)) {
             $this->startBoardingTaskCreation($chatId, $fromId, $tasks);
             return;
@@ -158,6 +163,91 @@ class TelegramBotController extends Controller
             } catch (Throwable) {
                 $this->sendMessage($chatId, 'Не удалось открыть календарь. Отправьте «календарь» ещё раз.');
             }
+            return;
+        }
+
+        if (preg_match('/^orders:open:(\d+)$/', $data, $matches)) {
+            $this->showServiceOrderMenu($chatId, (int) $matches[1]);
+            return;
+        }
+
+        if ($data === 'orders:list') {
+            $this->sendServiceOrdersMenu($chatId);
+            return;
+        }
+
+        if (preg_match('/^order:(archive|delete):(\d+)$/', $data, $matches)) {
+            $this->askServiceOrderDestructiveConfirmation($chatId, $fromId, (int) $matches[2], $matches[1]);
+            return;
+        }
+
+        if (preg_match('/^order:(archive|delete):(\d+):confirm$/', $data, $matches)) {
+            $this->confirmServiceOrderDestructiveAction($chatId, $fromId, (int) $matches[2], $matches[1]);
+            return;
+        }
+
+        if (preg_match('/^order:edit:(\d+)$/', $data, $matches)) {
+            $this->showServiceOrderEditMenu($chatId, (int) $matches[1]);
+            return;
+        }
+
+        if (preg_match('/^order:field:(\d+):(dates|address|note|client)$/', $data, $matches)) {
+            $this->startServiceOrderFieldEdit($chatId, $fromId, (int) $matches[1], $matches[2]);
+            return;
+        }
+
+        if (preg_match('/^order:pets:(\d+)$/', $data, $matches)) {
+            $this->showServiceOrderPetsMenu($chatId, (int) $matches[1]);
+            return;
+        }
+
+        if (preg_match('/^order:addpet:(\d+)$/', $data, $matches)) {
+            $this->startServiceOrderPetAdd($chatId, $fromId, (int) $matches[1]);
+            return;
+        }
+
+        if (preg_match('/^order:pet:(\d+):(\d+)$/', $data, $matches)) {
+            $this->showServiceOrderPetMenu($chatId, (int) $matches[1], (int) $matches[2]);
+            return;
+        }
+
+        if (preg_match('/^order:petqty:(\d+):(\d+):(plus|minus)$/', $data, $matches)) {
+            $this->changeServiceOrderPetQuantity($chatId, (int) $matches[1], (int) $matches[2], $matches[3]);
+            return;
+        }
+
+        if (preg_match('/^order:petdelete:(\d+):(\d+)$/', $data, $matches)) {
+            $this->askServiceOrderPetDeletion($chatId, $fromId, (int) $matches[1], (int) $matches[2]);
+            return;
+        }
+
+        if (preg_match('/^order:petdelete:(\d+):(\d+):confirm$/', $data, $matches)) {
+            $this->confirmServiceOrderPetDeletion($chatId, $fromId, (int) $matches[1], (int) $matches[2]);
+            return;
+        }
+
+        if (preg_match('/^order:serviceadd:(\d+):(\d+):(\p{L}+)$/u', $data, $matches)) {
+            $this->addServiceToOrderPet($chatId, (int) $matches[1], (int) $matches[2], $matches[3]);
+            return;
+        }
+
+        if (preg_match('/^order:service:(\d+):(\d+):(\d+)$/', $data, $matches)) {
+            $this->showServiceOrderPetServiceMenu($chatId, (int) $matches[1], (int) $matches[2], (int) $matches[3]);
+            return;
+        }
+
+        if (preg_match('/^order:serviceunits:(\d+):(\d+):(\d+):(\d+)$/', $data, $matches)) {
+            $this->changeServiceOrderPetServiceUnits($chatId, (int) $matches[1], (int) $matches[2], (int) $matches[3], (int) $matches[4]);
+            return;
+        }
+
+        if (preg_match('/^order:servicedelete:(\d+):(\d+):(\d+)$/', $data, $matches)) {
+            $this->askServiceOrderPetServiceDeletion($chatId, $fromId, (int) $matches[1], (int) $matches[2], (int) $matches[3]);
+            return;
+        }
+
+        if (preg_match('/^order:servicedelete:(\d+):(\d+):(\d+):confirm$/', $data, $matches)) {
+            $this->confirmServiceOrderPetServiceDeletion($chatId, $fromId, (int) $matches[1], (int) $matches[2], (int) $matches[3]);
             return;
         }
 
@@ -448,6 +538,70 @@ class TelegramBotController extends Controller
             $payload['owner_asked'] = true;
 
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+            return true;
+        }
+
+        if (in_array($session->state, ['waiting_order_dates', 'waiting_order_address', 'waiting_order_note', 'waiting_order_client'], true)) {
+            $order = ServiceOrder::whereNull('archived_at')->find((int) ($payload['order_id'] ?? 0));
+            if (!$order) {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Заказ не найден или уже в архиве.');
+                return true;
+            }
+
+            if ($session->state === 'waiting_order_dates') {
+                if (!preg_match('/(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4})\s*(?:—|-|до|по)\s*(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4})/u', $text, $dates)) {
+                    $this->sendMessage($chatId, 'Напишите период так: 22.08.2026 — 25.08.2026');
+                    return true;
+                }
+                try {
+                    $start = Carbon::createFromFormat('d.m.Y', str_replace(['/', '-'], '.', $dates[1]))->startOfDay();
+                    $end = Carbon::createFromFormat('d.m.Y', str_replace(['/', '-'], '.', $dates[2]))->startOfDay();
+                    if ($end->lt($start)) { throw new \InvalidArgumentException(); }
+                    $order->update(['start_date' => $start, 'end_date' => $end]);
+                } catch (Throwable) {
+                    $this->sendMessage($chatId, 'Не удалось распознать даты. Пример: 22.08.2026 — 25.08.2026');
+                    return true;
+                }
+            } elseif ($session->state === 'waiting_order_address') {
+                $order->update(['address' => trim($text)]);
+            } elseif ($session->state === 'waiting_order_note') {
+                $order->update(['note' => trim($text)]);
+            } else {
+                $client = Client::whereRaw('LOWER(name) = ?', [mb_strtolower(trim($text))])->first();
+                if (!$client) {
+                    $client = Client::create(['name' => trim($text)]);
+                }
+                $order->update(['client_id' => $client->id]);
+            }
+
+            $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Готово: заказ обновлён.');
+            $this->showServiceOrderMenu($chatId, $order->id);
+            return true;
+        }
+
+        if ($session->state === 'waiting_order_add_pet') {
+            $order = ServiceOrder::whereNull('archived_at')->find((int) ($payload['order_id'] ?? 0));
+            $parts = array_map('trim', explode(',', $text));
+            if (!$order || count($parts) < 3) {
+                $this->sendMessage($chatId, 'Напишите: Кличка, вид, количество, услуга. Например: Мурка, кошки, 1, уход');
+                return true;
+            }
+            [$name, $species, $quantity, $serviceType] = array_pad($parts, 4, 'уход');
+            $category = $this->categoryFromText($this->normalizeSpecies($species));
+            $serviceType = $this->normalizeServiceType($serviceType) ?: 'уход';
+            if (!$category || !in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) {
+                $this->sendMessage($chatId, 'Не распознал вид или услугу. Пример: Мурка, кошки, 1, уход');
+                return true;
+            }
+            $quantity = max(1, min(99, (int) $quantity));
+            $animal = Animal::firstOrCreate(['name' => $name, 'client_id' => $order->client_id], ['category_id' => $category->id, 'species' => $category->name, 'order' => (int) Animal::max('order') + 1]);
+            $position = $order->animals()->create(['animal_id' => $animal->id, 'category_id' => $category->id, 'label' => $animal->name, 'quantity' => $quantity]);
+            $position->services()->create(['service_order_id' => $order->id, 'service_type' => $serviceType, 'units_per_day' => 1, 'unit_price' => $this->pricing->defaultRate($serviceType, $category->name, $animal->dog_size)]);
+            $this->refreshServiceOrderPrice($order); $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
+            $this->clearSession($fromId); $this->sendMessage($chatId, 'Питомец добавлен в заказ.'); $this->showServiceOrderPetsMenu($chatId, $order->id);
             return true;
         }
 
@@ -822,6 +976,7 @@ class TelegramBotController extends Controller
 • «Удали запись Пухли с 22 по 25 августа» — отмена записи.
 • «Бобик не передержка, а выгул» — исправление услуги в записи.
 • «С 22 по 25 августа уход: три кошки и собака, кличек пока не знаю» — заказ без карточек питомцев.
+• «Заказы» — открыть список активных и будущих заказов. Внутри можно изменить период, клиента, адрес и комментарий; менять количество питомцев и добавлять услуги; архивировать или удалить заказ с подтверждением.
 
 Можно писать голосовыми: я сначала покажу распознанный текст. Для отмены текущего диалога — «отмена».
 TEXT);
@@ -1005,6 +1160,242 @@ TEXT);
         $orderAnimal->services()->create(['service_order_id' => $order->id, 'service_type' => $boarding->service_type, 'units_per_day' => $boarding->units_per_day, 'unit_price' => $boarding->unit_price]);
 
         return $boarding;
+    }
+
+    private function sendServiceOrdersMenu(int|string $chatId): void
+    {
+        $orders = ServiceOrder::with(['animals.category', 'animals.animal'])
+            ->whereNull('archived_at')->whereDate('end_date', '>=', today())
+            ->orderBy('start_date')->limit(12)->get();
+
+        if ($orders->isEmpty()) {
+            $this->sendMessage($chatId, 'Активных и предстоящих заказов нет.');
+            return;
+        }
+
+        $buttons = $orders->map(fn (ServiceOrder $order) => [[
+            'text' => '#'.$order->id.' · '.$this->serviceOrderAnimalsLabel($order).' · '.$order->start_date->format('d.m').'–'.$order->end_date->format('d.m'),
+            'callback_data' => 'orders:open:'.$order->id,
+        ]])->all();
+        $this->sendMessage($chatId, 'Заказы: выберите заказ для просмотра или изменения.', ['inline_keyboard' => $buttons]);
+    }
+
+    private function serviceOrderForBot(int $orderId): ?ServiceOrder
+    {
+        return ServiceOrder::with(['client', 'animals.category', 'animals.animal', 'animals.services'])
+            ->whereNull('archived_at')->find($orderId);
+    }
+
+    private function showServiceOrderMenu(int|string $chatId, int $orderId): void
+    {
+        $order = $this->serviceOrderForBot($orderId);
+        if (!$order) {
+            $this->sendMessage($chatId, 'Заказ не найден или уже в архиве.');
+            return;
+        }
+
+        $text = "Заказ #{$order->id}\n";
+        $text .= 'Период: '.$this->russianDatePeriod($order->start_date, $order->end_date)."\n";
+        $text .= 'Клиент: '.($order->client?->name ?: 'не указан')."\n";
+        if ($order->address) { $text .= 'Адрес: '.$order->address."\n"; }
+        $text .= "\nПитомцы и услуги:\n";
+        foreach ($order->animals as $position) {
+            $name = $position->animal?->name ?: $position->label ?: $this->anonymousAnimalLabel($position->category?->name, $position->quantity);
+            $services = $position->services->map(fn ($service) => $service->service_type.($service->service_type === 'передержка' ? '' : ' · '.$service->units_per_day.' р/д'))->implode(', ');
+            $text .= '• '.($position->quantity > 1 ? $position->quantity.' × ' : '').$name.' — '.$services."\n";
+        }
+        if ($order->note) { $text .= "\nКомментарий: {$order->note}"; }
+
+        $this->sendMessage($chatId, trim($text), ['inline_keyboard' => [
+            [['text' => 'Редактировать', 'callback_data' => 'order:edit:'.$order->id], ['text' => 'Питомцы и услуги', 'callback_data' => 'order:pets:'.$order->id]],
+            [['text' => 'В архив', 'callback_data' => 'order:archive:'.$order->id], ['text' => 'Удалить', 'callback_data' => 'order:delete:'.$order->id]],
+            [['text' => 'К списку заказов', 'callback_data' => 'orders:list']],
+        ]]);
+    }
+
+    private function showServiceOrderEditMenu(int|string $chatId, int $orderId): void
+    {
+        if (!$this->serviceOrderForBot($orderId)) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        $this->sendMessage($chatId, 'Что изменить в заказе?', ['inline_keyboard' => [
+            [['text' => 'Период', 'callback_data' => 'order:field:'.$orderId.':dates'], ['text' => 'Клиента', 'callback_data' => 'order:field:'.$orderId.':client']],
+            [['text' => 'Адрес', 'callback_data' => 'order:field:'.$orderId.':address'], ['text' => 'Комментарий', 'callback_data' => 'order:field:'.$orderId.':note']],
+            [['text' => 'Питомцев и услуги', 'callback_data' => 'order:pets:'.$orderId]],
+            [['text' => 'Назад к заказу', 'callback_data' => 'orders:open:'.$orderId]],
+        ]]);
+    }
+
+    private function startServiceOrderFieldEdit(int|string $chatId, string $fromId, int $orderId, string $field): void
+    {
+        if (!$this->serviceOrderForBot($orderId)) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        $prompts = ['dates' => 'Введите период: 22.08.2026 — 25.08.2026', 'address' => 'Введите новый адрес.', 'note' => 'Введите комментарий к заказу.', 'client' => 'Введите имя клиента. Если такого клиента нет, он будет создан.'];
+        $this->saveSession($fromId, $chatId, 'waiting_order_'.$field, ['order_id' => $orderId]);
+        $this->sendMessage($chatId, $prompts[$field]);
+    }
+
+    private function askServiceOrderDestructiveConfirmation(int|string $chatId, string $fromId, int $orderId, string $action): void
+    {
+        $order = $this->serviceOrderForBot($orderId);
+        if (!$order) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        $verb = $action === 'archive' ? 'перенесён в архив' : 'удалён';
+        $this->saveSession($fromId, $chatId, 'waiting_order_'.$action.'_confirmation', ['order_id' => $order->id]);
+        $this->sendMessage($chatId, "Заказ #{$order->id} будет {$verb}. Подтвердить?", ['inline_keyboard' => [[
+            ['text' => $action === 'archive' ? 'В архив' : 'Удалить', 'callback_data' => 'order:'.$action.':'.$order->id.':confirm'],
+            ['text' => 'Отмена', 'callback_data' => 'cancel'],
+        ]]]);
+    }
+
+    private function confirmServiceOrderDestructiveAction(int|string $chatId, string $fromId, int $orderId, string $action): void
+    {
+        $order = $this->serviceOrderForBot($orderId);
+        if (!$order) { $this->clearSession($fromId); $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        if ($action === 'archive') { $order->update(['archived_at' => now(), 'status' => 'archived']); $this->syncLegacyBoardingForServiceOrder($order); }
+        else { $order->delete(); }
+        $this->clearSession($fromId);
+        $this->sendMessage($chatId, $action === 'archive' ? 'Заказ перенесён в архив.' : 'Заказ удалён.');
+        $this->sendServiceOrdersMenu($chatId);
+    }
+
+    private function showServiceOrderPetsMenu(int|string $chatId, int $orderId): void
+    {
+        $order = $this->serviceOrderForBot($orderId);
+        if (!$order) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        $buttons = $order->animals->map(fn ($position) => [[
+            'text' => ($position->animal?->name ?: $position->label ?: 'Без клички').' · '.$position->quantity.' шт.',
+            'callback_data' => 'order:pet:'.$order->id.':'.$position->id,
+        ]])->all();
+        $buttons[] = [['text' => '+ Добавить питомца', 'callback_data' => 'order:addpet:'.$order->id]];
+        $buttons[] = [['text' => 'Назад к заказу', 'callback_data' => 'orders:open:'.$order->id]];
+        $this->sendMessage($chatId, 'Выберите питомца, чтобы изменить количество или услуги.', ['inline_keyboard' => $buttons]);
+    }
+
+    private function startServiceOrderPetAdd(int|string $chatId, string $fromId, int $orderId): void
+    {
+        if (!$this->serviceOrderForBot($orderId)) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        $this->saveSession($fromId, $chatId, 'waiting_order_add_pet', ['order_id' => $orderId]);
+        $this->sendMessage($chatId, 'Введите питомца одной строкой: «Кличка, вид, количество, услуга». Например: «Мурка, кошки, 1, уход». Если такой питомец уже есть, бот использует его карточку.');
+    }
+
+    private function showServiceOrderPetMenu(int|string $chatId, int $orderId, int $positionId): void
+    {
+        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        if (!$position) { $this->sendMessage($chatId, 'Питомец в заказе не найден.'); return; }
+        $name = $position->animal?->name ?: $position->label ?: 'Без клички';
+        $services = $position->services->map(fn ($service) => $service->service_type.' · '.$service->units_per_day.' р/д · '.$service->unit_price.' ₽')->implode("\n• ");
+        $keyboard = [
+            [['text' => '− Количество', 'callback_data' => 'order:petqty:'.$orderId.':'.$positionId.':minus'], ['text' => '+ Количество', 'callback_data' => 'order:petqty:'.$orderId.':'.$positionId.':plus']],
+        ];
+        foreach ($position->services as $service) {
+            $keyboard[] = [['text' => 'Изменить: '.$this->serviceLabel($service->service_type), 'callback_data' => 'order:service:'.$orderId.':'.$positionId.':'.$service->id]];
+        }
+        $keyboard = array_merge($keyboard, [
+            [['text' => '+ Передержка', 'callback_data' => 'order:serviceadd:'.$orderId.':'.$positionId.':передержка'], ['text' => '+ Выгул', 'callback_data' => 'order:serviceadd:'.$orderId.':'.$positionId.':выгул']],
+            [['text' => '+ Уход', 'callback_data' => 'order:serviceadd:'.$orderId.':'.$positionId.':уход'], ['text' => 'Удалить питомца', 'callback_data' => 'order:petdelete:'.$orderId.':'.$positionId]],
+            [['text' => 'Назад к питомцам', 'callback_data' => 'order:pets:'.$orderId]],
+        ]);
+        $this->sendMessage($chatId, "{$name}, количество: {$position->quantity}\nУслуги:\n• {$services}", ['inline_keyboard' => $keyboard]);
+    }
+
+    private function changeServiceOrderPetQuantity(int|string $chatId, int $orderId, int $positionId, string $direction): void
+    {
+        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        if (!$position) { $this->sendMessage($chatId, 'Питомец в заказе не найден.'); return; }
+        $position->update(['quantity' => max(1, min(99, $position->quantity + ($direction === 'plus' ? 1 : -1)))]);
+        $this->refreshServiceOrderPrice($order); $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
+        $this->showServiceOrderPetMenu($chatId, $orderId, $positionId);
+    }
+
+    private function addServiceToOrderPet(int|string $chatId, int $orderId, int $positionId, string $serviceType): void
+    {
+        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        if (!$position || !in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) { $this->sendMessage($chatId, 'Не удалось добавить услугу.'); return; }
+        if ($position->services->contains('service_type', $serviceType)) { $this->sendMessage($chatId, 'Эта услуга уже есть у питомца.'); return; }
+        $species = $position->animal?->category?->name ?: $position->category?->name;
+        $position->services()->create(['service_order_id' => $order->id, 'service_type' => $serviceType, 'units_per_day' => 1, 'unit_price' => $this->pricing->defaultRate($serviceType, $species, $position->animal?->dog_size)]);
+        $this->refreshServiceOrderPrice($order); $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
+        $this->showServiceOrderPetMenu($chatId, $orderId, $positionId);
+    }
+
+    private function showServiceOrderPetServiceMenu(int|string $chatId, int $orderId, int $positionId, int $serviceId): void
+    {
+        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        $service = $position?->services->firstWhere('id', $serviceId);
+        if (!$service) { $this->sendMessage($chatId, 'Услуга не найдена.'); return; }
+        $this->sendMessage($chatId, $this->serviceLabel($service->service_type)."\nКратность: {$service->units_per_day} раз в день\nЦена: {$service->unit_price} ₽ за услугу", ['inline_keyboard' => [
+            [[
+                ['text' => '1 раз', 'callback_data' => 'order:serviceunits:'.$orderId.':'.$positionId.':'.$serviceId.':1'],
+                ['text' => '2 раза', 'callback_data' => 'order:serviceunits:'.$orderId.':'.$positionId.':'.$serviceId.':2'],
+                ['text' => '3 раза', 'callback_data' => 'order:serviceunits:'.$orderId.':'.$positionId.':'.$serviceId.':3'],
+            ]],
+            [['text' => 'Удалить услугу', 'callback_data' => 'order:servicedelete:'.$orderId.':'.$positionId.':'.$serviceId]],
+            [['text' => 'Назад к питомцу', 'callback_data' => 'order:pet:'.$orderId.':'.$positionId]],
+        ]]);
+    }
+
+    private function changeServiceOrderPetServiceUnits(int|string $chatId, int $orderId, int $positionId, int $serviceId, int $units): void
+    {
+        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        $service = $position?->services->firstWhere('id', $serviceId);
+        if (!$service || $units < 1 || $units > 24) { $this->sendMessage($chatId, 'Не удалось изменить кратность услуги.'); return; }
+        $service->update(['units_per_day' => $units]); $this->refreshServiceOrderPrice($order);
+        $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
+        $this->showServiceOrderPetServiceMenu($chatId, $orderId, $positionId, $serviceId);
+    }
+
+    private function askServiceOrderPetServiceDeletion(int|string $chatId, string $fromId, int $orderId, int $positionId, int $serviceId): void
+    {
+        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        if (!$position?->services->firstWhere('id', $serviceId)) { $this->sendMessage($chatId, 'Услуга не найдена.'); return; }
+        $this->saveSession($fromId, $chatId, 'waiting_order_service_delete_confirmation', ['order_id' => $orderId, 'position_id' => $positionId, 'service_id' => $serviceId]);
+        $this->sendMessage($chatId, 'Удалить услугу у этого питомца?', ['inline_keyboard' => [[
+            ['text' => 'Удалить', 'callback_data' => 'order:servicedelete:'.$orderId.':'.$positionId.':'.$serviceId.':confirm'], ['text' => 'Отмена', 'callback_data' => 'cancel'],
+        ]]]);
+    }
+
+    private function confirmServiceOrderPetServiceDeletion(int|string $chatId, string $fromId, int $orderId, int $positionId, int $serviceId): void
+    {
+        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        $service = $position?->services->firstWhere('id', $serviceId);
+        if (!$service) { $this->clearSession($fromId); $this->sendMessage($chatId, 'Услуга не найдена.'); return; }
+        if ($position->services->count() < 2) { $this->sendMessage($chatId, 'У питомца должна остаться хотя бы одна услуга. Удалите питомца или весь заказ, если он больше не нужен.'); return; }
+        $service->delete(); $this->refreshServiceOrderPrice($order);
+        $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
+        $this->clearSession($fromId); $this->sendMessage($chatId, 'Услуга удалена.'); $this->showServiceOrderPetMenu($chatId, $orderId, $positionId);
+    }
+
+    private function askServiceOrderPetDeletion(int|string $chatId, string $fromId, int $orderId, int $positionId): void
+    {
+        $order = $this->serviceOrderForBot($orderId);
+        if (!$order || !$order->animals->contains('id', $positionId)) { $this->sendMessage($chatId, 'Питомец в заказе не найден.'); return; }
+        $this->saveSession($fromId, $chatId, 'waiting_order_pet_delete_confirmation', ['order_id' => $orderId, 'position_id' => $positionId]);
+        $this->sendMessage($chatId, 'Удалить питомца и его услуги из заказа?', ['inline_keyboard' => [[
+            ['text' => 'Удалить', 'callback_data' => 'order:petdelete:'.$orderId.':'.$positionId.':confirm'], ['text' => 'Отмена', 'callback_data' => 'cancel'],
+        ]]]);
+    }
+
+    private function confirmServiceOrderPetDeletion(int|string $chatId, string $fromId, int $orderId, int $positionId): void
+    {
+        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        if (!$position) { $this->clearSession($fromId); $this->sendMessage($chatId, 'Питомец в заказе не найден.'); return; }
+        if ($order->animals->count() < 2) { $this->sendMessage($chatId, 'В заказе должен остаться хотя бы один питомец. Удалите весь заказ, если он больше не нужен.'); return; }
+        $position->services()->delete(); $position->delete(); $this->refreshServiceOrderPrice($order);
+        $this->clearSession($fromId); $this->sendMessage($chatId, 'Питомец удалён из заказа.'); $this->showServiceOrderPetsMenu($chatId, $orderId);
+    }
+
+    private function refreshServiceOrderPrice(ServiceOrder $order): void
+    {
+        $order->load('animals.services'); $first = $order->animals->first()?->services->first();
+        $order->update(['daily_price' => $order->animals->sum(fn ($position) => $position->quantity * $position->services->sum(fn ($service) => $service->units_per_day * $service->unit_price)),
+            'service_type' => $first?->service_type ?: $order->service_type, 'units_per_day' => $first?->units_per_day ?: $order->units_per_day]);
+    }
+
+    private function syncLegacyBoardingForServiceOrder(ServiceOrder $order): void
+    {
+        if (!$order->legacy_boarding_id || !($boarding = Boarding::find($order->legacy_boarding_id))) { return; }
+        $position = $order->animals->first(); $service = $position?->services->first();
+        $boarding->update(['client_id' => $order->client_id, 'animal_id' => $position?->animal_id, 'name' => $position?->animal?->name ?: $position?->label ?: $boarding->name,
+            'service_type' => $service?->service_type ?: $order->service_type, 'units_per_day' => $service?->units_per_day ?: $order->units_per_day,
+            'unit_price' => $service?->unit_price ?: $order->daily_price, 'start_date' => $order->start_date, 'end_date' => $order->end_date,
+            'note' => $order->note, 'archived_at' => $order->archived_at]);
     }
 
     private function sendBookingsList(int|string $chatId, array $intent): void
@@ -1353,6 +1744,10 @@ TEXT);
         $text .= 'Хозяин: '.($animal->client?->name ?: 'не указан')."\n";
         $text .= 'Описание: '.($animal->description ?: '—')."\n";
         $text .= 'Заметки: '.($animal->note ?: '—')."\n";
+        $tags = collect($animal->tags ?? [])->filter(fn ($tag) => is_array($tag) && filled($tag['name'] ?? null));
+        if ($tags->isNotEmpty()) {
+            $text .= "Теги:\n".$tags->map(fn (array $tag) => (($tag['type'] ?? '') === 'positive' ? '🟢 ' : '🔴 ').trim($tag['name']))->implode("\n")."\n";
+        }
         $text .= 'Всего записей: '.$animal->boardings->count();
 
         if ($last) {
