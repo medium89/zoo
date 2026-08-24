@@ -15,7 +15,7 @@ class ServiceOrderAdminController extends Controller
     public function index(Request $request, ExpiredBoardingArchiver $archiver)
     {
         $archiver->archive();
-        $animals = Animal::with(['client', 'category'])->orderBy('name')->get();
+        $animals = Animal::with(['client', 'category', 'photos'])->orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
         $filters = $request->validate([
             'search' => 'nullable|string|max:255',
@@ -46,7 +46,7 @@ class ServiceOrderAdminController extends Controller
             'clients' => Client::orderBy('name')->get(),
             'animals' => $animals,
             'categories' => $categories,
-            'animalsPayload' => $animals->map(fn (Animal $animal) => ['id' => $animal->id, 'name' => $animal->name, 'category_id' => $animal->category_id, 'client' => $animal->client?->name])->values()->all(),
+            'animalsPayload' => $animals->map(fn (Animal $animal) => ['id' => $animal->id, 'name' => $animal->name, 'category_id' => $animal->category_id, 'client' => $animal->client?->name, 'photo' => $animal->photos->first()?->path ? \Illuminate\Support\Facades\Storage::url($animal->photos->first()->path) : null])->values()->all(),
             'categoriesPayload' => $categories->map(fn (Category $category) => ['id' => $category->id, 'name' => $category->name])->values()->all(),
             'filters' => $filters,
         ]);
