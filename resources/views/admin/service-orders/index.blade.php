@@ -253,4 +253,28 @@ document.addEventListener('DOMContentLoaded',()=>{const root=document.getElement
 #serviceOrderModal .order-summary strong{font-size:.86rem}
 #serviceOrderModal .order-modal__footer .btn{font-size:.8rem}
 </style>@endpush
+@push('styles')<style>
+/* The editor now uses a comfortable desktop scale instead of a compressed sheet. */
+#serviceOrderModal .modal-dialog{max-width:980px}
+#serviceOrderModal .order-modal__body{padding:16px 18px 18px}
+#serviceOrderModal .order-client-summary{min-height:50px;padding:0 14px}
+#serviceOrderModal .order-details__grid{padding:12px 14px 14px;gap:12px}
+#serviceOrderModal .order-client__controls{grid-template-columns:minmax(0,1fr) 148px;gap:10px}
+#serviceOrderModal .order-client .form-select,#serviceOrderModal .order-client__new,#serviceOrderModal .order-dates .form-control{height:36px;line-height:1.25}
+#serviceOrderModal .order-dates{grid-template-columns:160px 160px minmax(0,1fr);gap:10px}
+#serviceOrderModal .animal-editor__identity{min-height:50px;padding:8px 14px}
+#serviceOrderModal .animal-editor__identity .animal-editor__avatar{width:34px!important;height:34px!important;flex-basis:34px!important}
+#serviceOrderModal .animal-editor__fields{padding:11px 14px!important;gap:10px!important}
+#serviceOrderModal .animal-editor__fields .form-control,#serviceOrderModal .animal-editor__fields .form-select{height:36px;line-height:1.25}
+#serviceOrderModal .animal-editor__quick-actions .btn,#serviceOrderModal .animal-editor__remove{width:36px!important;height:36px!important}
+#serviceOrderModal .animal-editor__services{padding:10px 14px 13px!important}
+#serviceOrderModal .animal-service-add .btn,#serviceOrderModal .order-add-pet>#addOrderAnimal{height:31px!important;padding:0 10px!important}
+#serviceOrderModal .animal-service-row{grid-template-columns:150px 150px 165px minmax(96px,1fr) 36px!important;gap:9px;padding-top:8px!important}
+#serviceOrderModal .animal-service-type,#serviceOrderModal .animal-service-row .form-control,#serviceOrderModal .animal-service-row .form-select,#serviceOrderModal .animal-service-row>button{height:36px!important;line-height:1.25}
+#serviceOrderModal .order-comment{padding:4px 14px 0!important}
+#serviceOrderModal .order-comment .form-control{min-height:46px;padding:9px 10px}
+#serviceOrderModal .order-summary{min-height:38px;margin-top:12px}
+#serviceOrderModal .order-modal__footer{padding:13px 18px}
+@media(max-width:767px){#serviceOrderModal .modal-dialog{max-width:none}.order-client__controls,.order-dates{grid-template-columns:1fr!important}.animal-editor__fields{padding:10px!important}.animal-service-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px!important}.animal-service-type{grid-column:1/-1}}
+</style>@endpush
 @endsection
