@@ -974,7 +974,7 @@
                 '/zooadmin/personal-data-consent',
             ];
             const usesFullPageEditor = /^\/zooadmin\/articles(?:\/create|\/[^/]+\/edit)$/.test(path)
-                || path === '/zooadmin/personal-data-consent';
+                || ['/zooadmin/about', '/zooadmin/personal-data-consent'].includes(path);
 
             if (usesFullPageEditor) return false;
 
