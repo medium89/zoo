@@ -11,6 +11,22 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    @if($mapClients->isNotEmpty())
+        <section class="card mb-4 client-map-card">
+            <div class="card-header d-flex justify-content-between align-items-center gap-2">
+                <span>Клиенты на карте</span>
+                <span class="badge text-bg-light">{{ $mapClients->count() }}</span>
+            </div>
+            <div class="card-body p-0">
+                @if($yandexMapsKey)
+                    <div id="clientsMap" class="client-map" aria-label="Карта клиентов"></div>
+                @else
+                    <div class="p-3 text-muted">Чтобы показать адреса на карте, добавьте <code>YANDEX_MAPS_API_KEY</code> в файл <code>.env</code>.</div>
+                @endif
+            </div>
+        </section>
+    @endif
+
     @if($clients->count())
         <div class="admin-grid" style="--grid-cols: 80px 1.3fr 1fr 120px 120px 170px;">
             <div class="admin-grid-header">
@@ -52,4 +68,48 @@
         <div class="text-muted">Клиентов пока нет.</div>
     @endif
 </div>
+
+@if($mapClients->isNotEmpty() && $yandexMapsKey)
+    @push('styles')
+    <style>.client-map{height:420px;width:100%;border-radius:0 0 .375rem .375rem;overflow:hidden}@media(max-width:767px){.client-map{height:320px}}</style>
+    @endpush
+    @push('scripts')
+    <script src="https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($yandexMapsKey) }}&lang=ru_RU" defer></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const clients = @json($mapClients->map(fn ($client) => ['id' => $client->id, 'name' => $client->name, 'address' => $client->address, 'phone' => $client->phone])->values());
+        const start = () => {
+            if (!window.ymaps || !document.getElementById('clientsMap')) return;
+            ymaps.ready(() => {
+                const map = new ymaps.Map('clientsMap', {center: [53.3474, 83.7783], zoom: 10, controls: ['zoomControl', 'fullscreenControl']});
+                const cluster = new ymaps.Clusterer({preset: 'islands#blueClusterIcons'});
+                const points = [];
+                let completed = 0;
+                clients.forEach((client) => {
+                    ymaps.geocode(client.address, {results: 1}).then((result) => {
+                        const geoObject = result.geoObjects.get(0);
+                        if (!geoObject) return;
+                        const point = new ymaps.Placemark(geoObject.geometry.getCoordinates(), {
+                            balloonContentHeader: client.name,
+                            balloonContentBody: `${client.address}${client.phone ? `<br>${client.phone}` : ''}`,
+                            hintContent: client.name,
+                        });
+                        points.push(point);
+                        cluster.add(point);
+                    }).catch(() => {}).finally(() => {
+                        completed += 1;
+                        if (completed === clients.length && points.length) {
+                            map.geoObjects.add(cluster);
+                            map.setBounds(cluster.getBounds(), {checkZoomRange: true, zoomMargin: 36});
+                        }
+                    });
+                });
+            });
+        };
+        const waitForMaps = () => window.ymaps ? start() : window.setTimeout(waitForMaps, 100);
+        waitForMaps();
+    });
+    </script>
+    @endpush
+@endif
 @endsection

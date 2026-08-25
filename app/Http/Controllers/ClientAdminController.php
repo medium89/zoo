@@ -14,8 +14,14 @@ class ClientAdminController extends Controller
         $clients = Client::withCount(['animals', 'boardings'])
             ->orderBy('name')
             ->paginate(20);
+        $mapClients = Client::query()
+            ->whereNotNull('address')
+            ->where('address', '!=', '')
+            ->orderBy('name')
+            ->get(['id', 'name', 'address', 'phone']);
+        $yandexMapsKey = config('services.yandex.maps_api_key');
 
-        return view('admin.clients.index', compact('clients'));
+        return view('admin.clients.index', compact('clients', 'mapClients', 'yandexMapsKey'));
     }
 
     public function create()
@@ -112,6 +118,7 @@ class ClientAdminController extends Controller
         return $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:1000',
             'note' => 'nullable|string',
             'tags' => 'nullable|array',
             'tags.*.name' => 'nullable|string|max:60',

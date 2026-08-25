@@ -36,6 +36,10 @@ return [
         'secret' => env('RECAPTCHA_SECRET'),
     ],
 
+    'yandex' => [
+        'maps_api_key' => env('YANDEX_MAPS_API_KEY'),
+    ],
+
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
         'chat_ids' => array_filter([

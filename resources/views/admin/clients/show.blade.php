@@ -20,6 +20,7 @@
                 <div class="card-header">Информация</div>
                 <div class="card-body">
                     <p><strong>Телефон:</strong> {{ $client->phone ?: '—' }}</p>
+                    <p><strong>Адрес:</strong> {{ $client->address ?: '—' }}</p>
                     @if(!empty($client->tags))
                         <div class="mb-3"><strong>Теги:</strong>@include('admin.partials.tags-list', ['tags' => $client->tags])</div>
                     @endif
