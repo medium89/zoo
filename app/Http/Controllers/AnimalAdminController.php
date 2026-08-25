@@ -50,7 +50,9 @@ class AnimalAdminController extends Controller
             'boardings' => fn ($query) => $query->latest('start_date'),
         ]);
 
-        return view('admin.animals.show', compact('animal'));
+        $clients = Client::orderBy('name')->get(['id', 'name', 'phone']);
+
+        return view('admin.animals.show', compact('animal', 'clients'));
     }
 
     public function edit(Animal $animal)
@@ -77,6 +79,34 @@ class AnimalAdminController extends Controller
         $animal->delete();
 
         return redirect()->route('admin.animals.index')->with('success', 'Питомец удален');
+    }
+
+    public function assignClient(Request $request, Animal $animal)
+    {
+        $data = $request->validate([
+            'client_id' => 'nullable|exists:clients,id',
+            'new_client_name' => 'nullable|string|max:255',
+            'new_client_phone' => 'nullable|string|max:255',
+            'new_client_note' => 'nullable|string|max:5000',
+        ]);
+
+        if (!empty($data['client_id'])) {
+            $animal->update(['client_id' => $data['client_id']]);
+            return back()->with('success', 'Хозяин назначен');
+        }
+
+        $name = trim((string) ($data['new_client_name'] ?? ''));
+        if ($name === '') {
+            return back()->withErrors(['new_client_name' => 'Выберите существующего клиента или укажите имя нового.']);
+        }
+
+        $client = Client::firstOrCreate(['name' => $name], [
+            'phone' => $data['new_client_phone'] ?? null,
+            'note' => $data['new_client_note'] ?? null,
+        ]);
+        $animal->update(['client_id' => $client->id]);
+
+        return back()->with('success', 'Хозяин создан и назначен');
     }
 
     public function destroyPhoto(Animal $animal, AnimalPhoto $photo)

@@ -50,8 +50,10 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
     Route::post('images/revert', [App\Http\Controllers\ImageManagerController::class, 'revert'])->name('images.revert');
     Route::resource('socials', App\Http\Controllers\SocialController::class);
     Route::post('socials/status', [App\Http\Controllers\SocialController::class, 'updateStatus'])->name('socials.status');
+    Route::post('clients/{client}/animals', [App\Http\Controllers\ClientAdminController::class, 'attachAnimal'])->name('clients.animals.attach');
     Route::resource('clients', App\Http\Controllers\ClientAdminController::class);
     Route::delete('animals/{animal}/photos/{photo}', [App\Http\Controllers\AnimalAdminController::class, 'destroyPhoto'])->name('animals.photos.destroy');
+    Route::post('animals/{animal}/client', [App\Http\Controllers\AnimalAdminController::class, 'assignClient'])->name('animals.client.assign');
     Route::resource('animals', App\Http\Controllers\AnimalAdminController::class);
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::resource('feedbacks', FeedbackController::class)->except(['create', 'show']);

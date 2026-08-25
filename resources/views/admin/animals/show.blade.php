@@ -5,6 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>{{ $animal->name }}</h1>
         <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#animalClientModal">Назначить хозяина</button>
             <a href="{{ route('admin.animals.edit', $animal) }}" class="btn btn-primary">Редактировать</a>
         </div>
     </div>
@@ -100,6 +101,57 @@
                 <div class="text-muted">Записей пока нет.</div>
             @endif
         </div>
+    </div>
+</div>
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const existing = document.getElementById('animal-existing-client');
+    const fresh = document.getElementById('animal-new-client-name');
+    fresh?.addEventListener('input', () => { if (fresh.value.trim()) existing.value = ''; });
+    existing?.addEventListener('change', () => { if (existing.value) fresh.value = ''; });
+});
+</script>
+@endpush
+
+<div class="modal fade" id="animalClientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="POST" action="{{ route('admin.animals.client.assign', $animal) }}">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title">Хозяин питомца {{ $animal->name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" for="animal-existing-client">Сохранённый клиент</label>
+                <select class="form-select" name="client_id" id="animal-existing-client">
+                    <option value="">Выберите из базы</option>
+                    @foreach($clients as $client)
+                        <option value="{{ $client->id }}" @selected($animal->client_id === $client->id)>{{ $client->name }}{{ $client->phone ? ' · '.$client->phone : '' }}</option>
+                    @endforeach
+                </select>
+
+                <div class="border-top mt-3 pt-3">
+                    <div class="fw-semibold mb-2">Или создать нового</div>
+                    <div class="mb-3">
+                        <label class="form-label" for="animal-new-client-name">Имя / ФИО</label>
+                        <input class="form-control" name="new_client_name" id="animal-new-client-name" maxlength="255">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="animal-new-client-phone">Телефон</label>
+                        <input class="form-control" name="new_client_phone" id="animal-new-client-phone" maxlength="255">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="animal-new-client-note">Заметка</label>
+                        <textarea class="form-control" name="new_client_note" id="animal-new-client-note" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                <button class="btn btn-primary">Сохранить</button>
+            </div>
+        </form>
     </div>
 </div>
 
