@@ -12,6 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        $schedule->command('queue:work database --queue=telegram --stop-when-empty --max-time=50 --tries=3')
+            ->everyMinute()
+            ->withoutOverlapping();
+
         $schedule->command('telegram:send-tomorrow-bookings')
             ->everyMinute()
             ->withoutOverlapping();

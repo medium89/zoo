@@ -10,12 +10,15 @@ use App\Models\Client;
 use App\Models\Category;
 use App\Models\ServiceOrder;
 use App\Models\TelegramBotSession;
+use App\Models\TelegramWebhookUpdate;
+use App\Jobs\ProcessTelegramUpdate;
 use App\Services\AitunnelService;
 use App\Services\BoardingPricingService;
 use App\Services\BoardingTaskInstructionParser;
 use App\Services\TelegramCalendarImageService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -39,7 +42,31 @@ class TelegramBotController extends Controller
         }
 
         $update = $request->all();
+        $updateId = data_get($update, 'update_id');
+        if ($updateId === null) {
+            return response()->json(['ok' => false], 422);
+        }
 
+        try {
+            $received = TelegramWebhookUpdate::firstOrCreate(
+                ['update_id' => (int) $updateId],
+                ['payload' => $update]
+            );
+        } catch (QueryException) {
+            // Telegram may retry the same update in parallel; the unique index
+            // makes the already accepted update the single source of truth.
+            return response()->json(['ok' => true]);
+        }
+
+        if ($received->wasRecentlyCreated) {
+            ProcessTelegramUpdate::dispatch($received->id)->onQueue('telegram');
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function processUpdate(array $update): void
+    {
         try {
             if (isset($update['callback_query'])) {
                 $this->handleCallback($update['callback_query']);
@@ -53,8 +80,6 @@ class TelegramBotController extends Controller
                 $this->sendMessage($chatId, 'Не понял сообщение. Напишите, например: «Запиши кошку Пухлю с 22 по 25 августа, уход» — или уточните, что нужно сделать.');
             }
         }
-
-        return response()->json(['ok' => true]);
     }
 
     private function handleMessage(array $message): void
