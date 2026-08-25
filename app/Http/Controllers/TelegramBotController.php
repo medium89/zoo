@@ -294,6 +294,45 @@ class TelegramBotController extends Controller
 
         $payload = $session->payload ?: [];
 
+        if (preg_match('/^pet_photo:choose:(\d+)$/', $data, $matches)) {
+            if ($session->state !== 'waiting_pet_photo_selection' || !in_array((int) $matches[1], $payload['animal_ids'] ?? [], true)) {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Список питомцев устарел. Отправьте фото ещё раз.');
+                return;
+            }
+
+            $animal = Animal::with('client')->find((int) $matches[1]);
+            if (!$animal) {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Питомец не найден. Отправьте фото ещё раз.');
+                return;
+            }
+
+            $this->askPetPhotoConfirmation($chatId, $fromId, $animal, (string) ($payload['file_id'] ?? ''));
+            return;
+        }
+
+        if ($data === 'pet_photo:confirm') {
+            if ($session->state !== 'waiting_pet_photo_confirmation') {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Подтверждение устарело. Отправьте фото ещё раз.');
+                return;
+            }
+
+            $animal = Animal::find((int) ($payload['animal_id'] ?? 0));
+            $fileId = (string) ($payload['file_id'] ?? '');
+            if (!$animal || $fileId === '') {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Не удалось сохранить фото. Отправьте его ещё раз.');
+                return;
+            }
+
+            $this->storeTelegramPhoto($animal, $fileId);
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Фото добавлено в профиль питомца '.$animal->name.'.');
+            return;
+        }
+
         if (preg_match('/^pet_owner:choose:(\d+)$/', $data, $matches)) {
             if ($session->state !== 'waiting_pet_owner_selection' || !in_array((int) $matches[1], $payload['animal_ids'] ?? [], true)) {
                 $this->clearSession($fromId);
@@ -1969,20 +2008,66 @@ TEXT);
         }
 
         $intent = $this->aitunnel->extractIntent($caption);
-        $name = data_get($intent, 'animal.name');
+        $name = $this->animalNameFromPhotoCaption($caption) ?: data_get($intent, 'animal.name');
         if (!$name) {
             $this->sendMessage($chatId, 'Не понял, к какому питомцу привязать фото. Укажите кличку в подписи.');
             return;
         }
 
-        $animal = Animal::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->first();
-        if (!$animal) {
+        $animals = Animal::with('client')
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->orderBy('id')
+            ->limit(8)
+            ->get();
+        if ($animals->isEmpty()) {
             $this->sendMessage($chatId, 'Питомец '.$name.' не найден. Сначала создайте запись или карточку питомца.');
             return;
         }
 
-        $this->storeTelegramPhoto($animal, $fileId);
-        $this->sendMessage($chatId, 'Фото привязано к питомцу '.$animal->name.'.');
+        if ($animals->count() === 1) {
+            $this->askPetPhotoConfirmation($chatId, $fromId, $animals->first(), $fileId);
+            return;
+        }
+
+        $this->saveSession($fromId, $chatId, 'waiting_pet_photo_selection', [
+            'file_id' => $fileId,
+            'animal_ids' => $animals->pluck('id')->map(fn ($id) => (int) $id)->all(),
+        ]);
+        $buttons = $animals->map(fn (Animal $animal) => [[
+            'text' => $animal->name.' · '.$this->animalOwnerLabel($animal),
+            'callback_data' => 'pet_photo:choose:'.$animal->id,
+        ]])->all();
+        $buttons[] = [['text' => 'Отмена', 'callback_data' => 'cancel']];
+        $this->sendMessage($chatId, 'Нашёл несколько питомцев с кличкой «'.$name.'». Кому добавить фото?', ['inline_keyboard' => $buttons]);
+    }
+
+    private function askPetPhotoConfirmation(int|string $chatId, string $fromId, Animal $animal, string $fileId): void
+    {
+        if ($fileId === '') {
+            $this->sendMessage($chatId, 'Не удалось получить фото. Отправьте его ещё раз.');
+            return;
+        }
+
+        $this->saveSession($fromId, $chatId, 'waiting_pet_photo_confirmation', [
+            'animal_id' => $animal->id,
+            'file_id' => $fileId,
+        ]);
+        $owner = $this->animalOwnerLabel($animal);
+        $this->sendMessage($chatId, 'Добавить это фото в профиль питомца '.$animal->name.' (хозяин: '.$owner.')?', [
+            'inline_keyboard' => [[
+                ['text' => 'Да, добавить', 'callback_data' => 'pet_photo:confirm'],
+                ['text' => 'Отмена', 'callback_data' => 'cancel'],
+            ]],
+        ]);
+    }
+
+    private function animalNameFromPhotoCaption(string $caption): ?string
+    {
+        if (preg_match('/^(?:это\s+)?(?:фото|фотография)\s+(.+?)[.!]?$/ui', trim($caption), $matches)) {
+            return trim($matches[1]);
+        }
+
+        return null;
     }
 
     private function transcribeVoice(array $voice): string

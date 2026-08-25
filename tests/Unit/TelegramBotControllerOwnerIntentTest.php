@@ -20,4 +20,13 @@ class TelegramBotControllerOwnerIntentTest extends TestCase
         $this->assertSame('Дейзи', $intent['animal']['name']);
         $this->assertSame('Анастасия', $intent['client']['name']);
     }
+
+    public function test_it_extracts_pet_name_from_photo_caption(): void
+    {
+        $controller = (new ReflectionClass(TelegramBotController::class))->newInstanceWithoutConstructor();
+        $method = new \ReflectionMethod($controller, 'animalNameFromPhotoCaption');
+        $method->setAccessible(true);
+
+        $this->assertSame('Дейзи', $method->invoke($controller, 'Это фото Дейзи'));
+    }
 }
