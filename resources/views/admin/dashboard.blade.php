@@ -24,7 +24,7 @@
 <div class="dashboard-page">
     <header class="dashboard-head">
         <div>
-            <h1>Сводка</h1>
+            <h1>Главная</h1>
         </div>
         <div class="dashboard-head__actions">
             <div class="dashboard-periods" aria-label="Период аналитики">

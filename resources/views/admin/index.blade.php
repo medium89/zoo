@@ -723,7 +723,7 @@
             $routeName = request()->route()?->getName() ?? '';
             $currentPath = trim(request()->path(), '/');
             $breadcrumbSections = [
-                'dashboard' => ['Сводка', route('admin.dashboard')],
+                'dashboard' => ['Главная', route('admin.dashboard')],
                 'settings' => ['Настройки', route('admin.settings')],
                 'telegram-bot-settings' => ['Telegram-бот', route('admin.telegram-bot-settings.edit')],
                 'personal-data-consent' => ['Согласие ПДн', route('admin.personal-data-consent.edit')],
@@ -750,7 +750,7 @@
                 ->first(fn ($key) => str_starts_with($currentPath, 'zooadmin/'.$key));
             $breadcrumbs = [];
             if ($sectionKey && $sectionKey !== 'dashboard') {
-                $breadcrumbs[] = ['Сводка', route('admin.dashboard'), false];
+                $breadcrumbs[] = ['Главная', route('admin.dashboard'), false];
                 $section = $breadcrumbSections[$sectionKey];
                 $isSectionRoot = in_array($routeName, ["admin.{$sectionKey}.index", 'admin.settings', 'admin.about.edit', 'admin.telegram-bot-settings.edit', 'admin.personal-data-consent.edit'], true);
                 $breadcrumbs[] = [$section[0], $isSectionRoot ? null : $section[1], $isSectionRoot];
