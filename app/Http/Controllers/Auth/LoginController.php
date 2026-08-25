@@ -26,7 +26,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/zooadmin/settings';
+    protected $redirectTo = '/zooadmin/dashboard';
 
     /**
      * Create a new controller instance.
