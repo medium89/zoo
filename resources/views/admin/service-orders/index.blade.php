@@ -234,4 +234,23 @@ document.addEventListener('DOMContentLoaded',()=>{const form=document.getElement
 @push('scripts')<script>
 document.addEventListener('DOMContentLoaded',()=>{const root=document.getElementById('orderAnimals');if(!root)return;const closeMenus=except=>root.querySelectorAll('.pet-action-menu__popup').forEach(menu=>{if(menu!==except)menu.classList.add('is-hidden')});root.addEventListener('click',event=>{const toggle=event.target.closest('.pet-action-menu__toggle');if(toggle){event.preventDefault();event.stopPropagation();const menu=toggle.closest('.pet-action-menu')?.querySelector('.pet-action-menu__popup');if(!menu)return;const opening=menu.classList.contains('is-hidden');closeMenus(menu);menu.classList.toggle('is-hidden',!opening);toggle.setAttribute('aria-expanded',String(opening));return}if(event.target.closest('.pet-action-menu__popup'))event.stopPropagation()});document.addEventListener('click',()=>closeMenus());root.addEventListener('input',event=>{if(!event.target.matches('.animal-search,.animal-name'))return;const row=event.target.closest('.animal-editor'),name=row?.querySelector('.animal-editor__identity-copy strong');if(name)name.textContent=event.target.value.trim()||'Новый питомец'});root.addEventListener('change',event=>{if(!event.target.matches('.animal-category'))return;const row=event.target.closest('.animal-editor'),text=event.target.selectedOptions[0]?.textContent||'Вид не выбран',category=row?.querySelector('.animal-editor__identity-copy small');if(category)category.textContent=text})});
 </script>@endpush
+@push('styles')<style>
+/* Readable type scale for the order editor. */
+#serviceOrderModal .order-modal__header .modal-title{font-size:1rem}
+#serviceOrderModal .order-client-summary{font-size:.86rem}
+#serviceOrderModal .order-client-summary__period{font-size:.78rem}
+#serviceOrderModal .order-client>.form-label,#serviceOrderModal .order-dates .form-label,#serviceOrderModal .animal-editor__fields>label{font-size:.74rem}
+#serviceOrderModal .order-client .form-select,#serviceOrderModal .order-client__new,#serviceOrderModal .order-dates .form-control,#serviceOrderModal .animal-editor__fields .form-control,#serviceOrderModal .animal-editor__fields .form-select{font-size:.84rem}
+#serviceOrderModal .animal-editor__identity-copy strong{font-size:.86rem}
+#serviceOrderModal .animal-editor__identity-copy small{font-size:.73rem}
+#serviceOrderModal .animal-services__head>strong,#serviceOrderModal .animal-service-row label,#serviceOrderModal .animal-service-row .small{font-size:.74rem!important}
+#serviceOrderModal .animal-service-row label:last-of-type::after{font-size:.74rem}
+#serviceOrderModal .animal-service-type,#serviceOrderModal .animal-service-row .form-control,#serviceOrderModal .animal-service-row .form-select{font-size:.82rem!important}
+#serviceOrderModal .animal-service-add .btn,#serviceOrderModal .order-add-pet>#addOrderAnimal{font-size:.78rem!important}
+#serviceOrderModal .order-comment .form-label{font-size:.76rem}
+#serviceOrderModal .order-comment .form-control{font-size:.84rem}
+#serviceOrderModal .order-summary{font-size:.76rem}
+#serviceOrderModal .order-summary strong{font-size:.86rem}
+#serviceOrderModal .order-modal__footer .btn{font-size:.8rem}
+</style>@endpush
 @endsection
