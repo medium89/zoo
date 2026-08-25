@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid orders-page">
     <header class="orders-head">
-        <div><div class="admin-breadcrumbs mb-2"><a href="{{ route('admin.dashboard') }}">Админка</a><span>/</span><span>Заказы и работа</span></div><h1>Заказы и работа</h1></div>
+        <div><h1>Заказы и работа</h1></div>
         <div class="d-flex gap-2"><a class="btn btn-outline-secondary" href="{{ route('admin.service-orders.archive.index') }}"><i class="fa fa-box-archive"></i> Архив</a><button class="btn btn-primary orders-create js-new-service-order"><i class="fa fa-plus"></i> Новый заказ</button></div>
     </header>
     @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
