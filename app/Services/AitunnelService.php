@@ -142,7 +142,7 @@ PROMPT,
 
 Схема:
 {
-  "intent": "create_booking|create_service_order|update_booking|list_bookings|delete_booking|show_pet|show_client|attach_pet_photo|answer_yes|answer_no|cancel|unknown",
+  "intent": "create_booking|create_service_order|update_booking|update_pet_owner|list_bookings|delete_booking|show_pet|show_client|attach_pet_photo|answer_yes|answer_no|cancel|unknown",
   "service_type": "передержка|выгул|уход|null",
   "units_per_day": "целое число 1-24|null",
   "start_date": "YYYY-MM-DD|null",
@@ -174,6 +174,7 @@ PROMPT,
 - Если просят показать хозяина или клиента — intent=show_client. Укажи client.name, а если хозяина ищут по питомцу (например, «покажи хозяина Луны») — укажи animal.name и оставь client.name=null.
 - Если просят удалить запись, отменить приём или убрать передержку — intent=delete_booking. Укажи кличку в animal.name, start_date и end_date. Для записи на один день обе даты одинаковые. Для записи на несколько дней укажи весь период; например, «удали Луну с 28 по 30 июля». Если просят все предстоящие/будущие записи конкретного питомца, установи delete_scope="upcoming" и укажи animal.name; даты в таком случае оставь null.
 - Если исправляют услугу уже созданной записи, например «Бобик не передержка, а выгул» или «измени Пухле уход на передержку», intent=update_booking. В service_type укажи новую услугу, в animal.name — кличку. Даты укажи, только если они названы.
+- Если назначают или меняют хозяина питомца, например «хозяйку Дейзи зовут Анастасия», «у Дейзи хозяин Сергей» или «поменяй хозяина Дейзи на Анастасию», intent=update_pet_owner. Укажи animal.name и client.name. Телефон и заметку заполни, только если они названы.
 - Если просят записать/принесут/будет питомец — intent=create_booking.
 - Короткая телеграфная запись с кличкой, периодом и услугой тоже означает intent=create_booking, даже без глагола. Пример: «Кошка Пухля с 22 по 25 августа уход» — это создание записи на уход.
 - Если в одной заявке несколько питомцев и хотя бы у части нет кличек, используй intent=create_service_order и заполни animals. Пример: «с 22 по 25 уход: три кошки и собака, кличек не знаю» — create_service_order, animals: три кошки и одна собака. Не придумывай клички.

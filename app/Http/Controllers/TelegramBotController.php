@@ -153,6 +153,9 @@ class TelegramBotController extends Controller
         }
 
         $intent = $this->aitunnel->extractIntent($text);
+        if ($ownerUpdateIntent = $this->ownerUpdateIntentFromText($text)) {
+            $intent = $ownerUpdateIntent;
+        }
         if ($anonymousOrderIntent = $this->anonymousOrderIntentFromText($text)) {
             $intent = $anonymousOrderIntent;
         }
@@ -290,6 +293,49 @@ class TelegramBotController extends Controller
         }
 
         $payload = $session->payload ?: [];
+
+        if (preg_match('/^pet_owner:choose:(\d+)$/', $data, $matches)) {
+            if ($session->state !== 'waiting_pet_owner_selection' || !in_array((int) $matches[1], $payload['animal_ids'] ?? [], true)) {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Список питомцев устарел. Повторите сообщение.');
+                return;
+            }
+
+            $animal = Animal::with('client')->find((int) $matches[1]);
+            if (!$animal) {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Питомец не найден. Повторите сообщение.');
+                return;
+            }
+
+            $this->askPetOwnerUpdateConfirmation($chatId, $fromId, $animal, $payload);
+            return;
+        }
+
+        if ($data === 'pet_owner:confirm') {
+            if ($session->state !== 'waiting_pet_owner_confirmation') {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Подтверждение устарело. Повторите сообщение.');
+                return;
+            }
+
+            $animal = Animal::with('client')->find((int) ($payload['animal_id'] ?? 0));
+            $clientName = trim((string) ($payload['client_name'] ?? ''));
+            if (!$animal || $clientName === '') {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Не удалось сохранить владельца. Повторите сообщение.');
+                return;
+            }
+
+            $client = Client::firstOrCreate(['name' => $clientName], array_filter([
+                'phone' => $payload['client_phone'] ?? null,
+                'note' => $payload['client_note'] ?? null,
+            ], fn ($value) => $value !== null && $value !== ''));
+            $animal->update(['client_id' => $client->id]);
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Готово: у '.$animal->name.' теперь хозяин '.$client->name.'.');
+            return;
+        }
 
         if (Str::startsWith($data, 'species:')) {
             $value = Str::after($data, 'species:');
@@ -662,6 +708,11 @@ class TelegramBotController extends Controller
             return;
         }
 
+        if ($type === 'update_pet_owner') {
+            $this->startPetOwnerUpdate($chatId, $fromId, $intent);
+            return;
+        }
+
         if ($type === 'create_service_order') {
             $this->startAnonymousServiceOrder($chatId, $fromId, $intent);
             return;
@@ -905,6 +956,94 @@ class TelegramBotController extends Controller
                 'daily_price' => $rate * $quantity,
             ];
         })->values()->all();
+    }
+
+    private function startPetOwnerUpdate(int|string $chatId, string $fromId, array $intent): void
+    {
+        $animalName = trim((string) data_get($intent, 'animal.name'));
+        $clientName = trim((string) data_get($intent, 'client.name'));
+        if ($animalName === '' || $clientName === '') {
+            $this->sendMessage($chatId, 'Укажите кличку питомца и имя хозяина. Например: «Хозяйку Дейзи зовут Анастасия».');
+            return;
+        }
+
+        $animals = Animal::with('client')
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($animalName)])
+            ->orderBy('id')
+            ->limit(8)
+            ->get();
+
+        if ($animals->isEmpty()) {
+            $this->sendMessage($chatId, 'Питомец «'.$animalName.'» не найден. Проверьте кличку.');
+            return;
+        }
+
+        $payload = [
+            'client_name' => $clientName,
+            'client_phone' => data_get($intent, 'client.phone'),
+            'client_note' => data_get($intent, 'client.note'),
+        ];
+
+        if ($animals->count() === 1) {
+            $this->askPetOwnerUpdateConfirmation($chatId, $fromId, $animals->first(), $payload);
+            return;
+        }
+
+        $this->saveSession($fromId, $chatId, 'waiting_pet_owner_selection', $payload + [
+            'animal_ids' => $animals->pluck('id')->map(fn ($id) => (int) $id)->all(),
+        ]);
+        $buttons = $animals->map(fn (Animal $animal) => [[
+            'text' => $animal->name.' · '.$this->animalOwnerLabel($animal),
+            'callback_data' => 'pet_owner:choose:'.$animal->id,
+        ]])->all();
+        $buttons[] = [['text' => 'Отмена', 'callback_data' => 'cancel']];
+        $this->sendMessage($chatId, 'Нашёл несколько питомцев с кличкой «'.$animalName.'». Выберите нужного:', ['inline_keyboard' => $buttons]);
+    }
+
+    private function askPetOwnerUpdateConfirmation(int|string $chatId, string $fromId, Animal $animal, array $payload): void
+    {
+        $clientName = trim((string) ($payload['client_name'] ?? ''));
+        $client = Client::whereRaw('LOWER(name) = ?', [mb_strtolower($clientName)])->first();
+        $target = $client ? $client->name : $clientName.' (новый клиент)';
+        $current = $animal->client?->name ?: 'не указан';
+
+        $this->saveSession($fromId, $chatId, 'waiting_pet_owner_confirmation', $payload + ['animal_id' => $animal->id]);
+        $this->sendMessage($chatId, 'У питомца '.$animal->name."\n"
+            .'Сейчас хозяин: '.$current."\n"
+            .'Новый хозяин: '.$target."\n\n"
+            .'Сохранить?', [
+                'inline_keyboard' => [[
+                    ['text' => 'Сохранить', 'callback_data' => 'pet_owner:confirm'],
+                    ['text' => 'Отмена', 'callback_data' => 'cancel'],
+                ]],
+            ]);
+    }
+
+    private function animalOwnerLabel(Animal $animal): string
+    {
+        return $animal->client?->name ?: 'без хозяина';
+    }
+
+    private function ownerUpdateIntentFromText(string $text): ?array
+    {
+        $text = trim($text);
+        $patterns = [
+            '/^(?:хозяина|хозяйку)\s+(.+?)\s+зовут\s+(.+?)\.?$/ui',
+            '/^у\s+(.+?)\s+(?:хозяин|хозяйка)\s+(.+?)\.?$/ui',
+            '/^(?:поменяй|измени)\s+(?:хозяина|хозяйку)\s+(.+?)\s+на\s+(.+?)\.?$/ui',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $text, $matches)) {
+                return [
+                    'intent' => 'update_pet_owner',
+                    'animal' => ['name' => trim($matches[1])],
+                    'client' => ['name' => trim($matches[2])],
+                ];
+            }
+        }
+
+        return null;
     }
 
     private function anonymousOrderIntentFromText(string $text): ?array
