@@ -81,7 +81,7 @@ class FeedbackConsentTest extends TestCase
 
     public function test_admin_can_save_personal_data_consent_document(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
 
         $this->actingAs($user);
 
@@ -95,4 +95,3 @@ class FeedbackConsentTest extends TestCase
         ]);
     }
 }
-

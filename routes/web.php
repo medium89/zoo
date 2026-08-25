@@ -24,7 +24,7 @@ Auth::routes(['register' => false]);
 Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 
 // Admin Routes
-Route::middleware(['auth', 'no.cache'])->prefix('zooadmin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('index');
     Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::post('dashboard/tariffs', [App\Http\Controllers\DashboardController::class, 'updateTariffs'])->name('dashboard.tariffs.update');

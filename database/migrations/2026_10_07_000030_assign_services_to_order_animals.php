@@ -15,7 +15,7 @@ return new class extends Migration
             });
         }
 
-        $indexes = collect(DB::select('SHOW INDEX FROM service_order_services'))->pluck('Key_name');
+        $indexes = $this->indexes();
         if (!$indexes->contains('service_order_services_order_id_index')) {
             Schema::table('service_order_services', function (Blueprint $table) {
                 $table->index('service_order_id', 'service_order_services_order_id_index');
@@ -34,7 +34,7 @@ return new class extends Migration
             }
         });
 
-        $indexes = collect(DB::select('SHOW INDEX FROM service_order_services'))->pluck('Key_name');
+        $indexes = $this->indexes();
         if (!$indexes->contains('sos_animal_service_unique')) {
             Schema::table('service_order_services', function (Blueprint $table) {
                 $table->unique(['service_order_animal_id', 'service_type'], 'sos_animal_service_unique');
@@ -49,5 +49,14 @@ return new class extends Migration
             $table->dropConstrainedForeignId('service_order_animal_id');
             $table->unique(['service_order_id', 'service_type']);
         });
+    }
+
+    private function indexes()
+    {
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return collect(DB::select("PRAGMA index_list('service_order_services')"))->pluck('name');
+        }
+
+        return collect(DB::select('SHOW INDEX FROM service_order_services'))->pluck('Key_name');
     }
 };

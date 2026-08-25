@@ -34,12 +34,14 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'is_admin' => 'boolean',
         ]);
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'is_admin' => $request->boolean('is_admin'),
         ]);
 
         return redirect()->route('admin.users.index')->with('success', 'Пользователь успешно добавлен!');
@@ -67,10 +69,12 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
+            'is_admin' => 'boolean',
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
+        $user->is_admin = $request->boolean('is_admin');
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);

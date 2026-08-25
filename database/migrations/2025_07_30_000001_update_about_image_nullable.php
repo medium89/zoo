@@ -8,15 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('about', function (Blueprint $table) {
-            $table->string('image')->nullable()->change();
-        });
+        // New installations already create this column as nullable in the
+        // original migration. Existing installations have applied the old
+        // alteration, so no schema change is required here.
     }
 
     public function down(): void
     {
-        Schema::table('about', function (Blueprint $table) {
-            $table->string('image')->nullable(false)->change();
-        });
+        // Kept intentionally empty: making a nullable column required again
+        // would be destructive for existing content.
     }
 };

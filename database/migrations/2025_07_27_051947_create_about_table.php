@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('about', function (Blueprint $table) {
             $table->id();
-            $table->string('image');
+            $table->string('image')->nullable();
             $table->text('text');
             $table->timestamps();
         });
@@ -19,4 +19,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('about');
     }
-}; 
+};

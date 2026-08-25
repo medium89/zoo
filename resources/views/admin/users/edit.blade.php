@@ -42,6 +42,11 @@
                     <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
                 </div>
 
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" value="1" id="is_admin" name="is_admin" @checked(old('is_admin', $user->is_admin))>
+                    <label class="form-check-label" for="is_admin">Разрешить доступ в админку</label>
+                </div>
+
                 <button type="submit" class="btn btn-success">Обновить пользователя</button>
             </form>
         </div>
