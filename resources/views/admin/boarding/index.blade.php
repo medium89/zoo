@@ -4,7 +4,6 @@
 <div class="container-fluid boarding-calendar-page">
     <header class="calendar-page__head">
         <h1>Календарь</h1>
-        <p>Текущий месяц и два следующих.</p>
     </header>
     <div id="calendarGrid" class="calendar-grid"></div>
 </div>
