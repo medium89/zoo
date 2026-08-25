@@ -5,7 +5,6 @@
     <header class="orders-archive-head">
         <div>
             <h1>Архив заказов</h1>
-            <p>Сюда автоматически попадают заказы на следующий день после даты окончания.</p>
         </div>
         <a href="{{ route('admin.service-orders.index') }}" class="btn btn-outline-primary"><i class="fa fa-arrow-left"></i> К заказам</a>
     </header>
