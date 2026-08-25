@@ -1994,7 +1994,8 @@ TEXT);
     private function validSecret(Request $request): bool
     {
         $secret = config('services.telegram.webhook_secret');
-        return !$secret || hash_equals($secret, (string)$request->header('X-Telegram-Bot-Api-Secret-Token'));
+        return is_string($secret) && $secret !== ''
+            && hash_equals($secret, (string) $request->header('X-Telegram-Bot-Api-Secret-Token'));
     }
 
     private function session(string $fromId): ?TelegramBotSession

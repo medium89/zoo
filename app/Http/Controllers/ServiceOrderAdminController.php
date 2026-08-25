@@ -9,6 +9,7 @@ use App\Models\Client;
 use App\Models\ServiceOrder;
 use App\Services\ExpiredBoardingArchiver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ServiceOrderAdminController extends Controller
 {
@@ -55,16 +56,20 @@ class ServiceOrderAdminController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
-        $order = ServiceOrder::create($this->orderAttributes($data));
-        $this->syncDetails($order, $data);
+        DB::transaction(function () use ($data): void {
+            $order = ServiceOrder::create($this->orderAttributes($data));
+            $this->syncDetails($order, $data);
+        });
         return back()->with('success', 'Заказ добавлен');
     }
 
     public function update(Request $request, ServiceOrder $serviceOrder)
     {
         $data = $this->validated($request);
-        $serviceOrder->update($this->orderAttributes($data));
-        $this->syncDetails($serviceOrder, $data);
+        DB::transaction(function () use ($serviceOrder, $data): void {
+            $serviceOrder->update($this->orderAttributes($data));
+            $this->syncDetails($serviceOrder, $data);
+        });
         return back()->with('success', 'Заказ обновлён');
     }
 
