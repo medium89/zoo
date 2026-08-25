@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded',()=>{const form=document.getElement
 .order-editor-head{display:none!important}
 .order-modal__body{padding:10px 12px 12px}
 .order-details{margin-bottom:9px!important}
-.animal-editor{padding:0!important;overflow:hidden}
+.animal-editor{padding:0!important;overflow:visible}
 .animal-editor__identity{display:flex;align-items:center;gap:8px;min-height:43px;padding:6px 10px;border-bottom:1px solid #e7edf4}
 .animal-editor__identity .animal-editor__avatar{display:grid!important;position:static!important;order:initial!important;width:28px!important;height:28px!important;flex:0 0 28px!important;align-self:center!important;margin:0!important;border-radius:50%!important}
 .animal-editor__identity-copy{display:grid;line-height:1.1;min-width:0}
@@ -215,6 +215,8 @@ document.addEventListener('DOMContentLoaded',()=>{const form=document.getElement
 .animal-editor__identity-link{margin-left:auto;font-size:.62rem;font-weight:700;color:#0d6efd;white-space:nowrap}
 .animal-editor__identity .animal-editor__quick-actions{order:initial!important;margin:0 0 0 2px!important;align-self:center!important}
 .animal-editor__identity .pet-action-menu .btn{height:27px!important;width:27px!important}
+.animal-editor__identity .pet-action-menu{position:relative;z-index:1090}
+.animal-editor__identity .pet-action-menu__popup,.animal-editor__services .animal-service-add__menu,.order-add-pet .add-animal-popover,.animal-search-field .animal-search-results{z-index:1091!important}
 .animal-editor__fields{padding:8px 10px!important;gap:8px!important}
 .animal-editor__fields>.animal-editor__avatar{display:none!important}
 .animal-editor__fields>label:has(.animal-search){flex:1 1 260px!important}
