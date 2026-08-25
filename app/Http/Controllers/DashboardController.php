@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Boarding;
 use App\Models\Client;
 use App\Models\Category;
+use App\Models\ServiceOrder;
 use App\Services\BoardingPricingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -25,40 +25,44 @@ class DashboardController extends Controller
         $categoryLabels['unassigned'] = 'Не указана';
         $categoryCounts = array_fill_keys(array_keys($categoryLabels), 0);
 
-        $boardings = Boarding::with('animal.category')
+        $orders = ServiceOrder::with(['animals.category', 'animals.animal.category', 'animals.services'])
             ->whereNull('archived_at')
             ->whereDate('start_date', '<=', $end)
             ->whereDate('end_date', '>=', $start)
             ->get();
 
-        $daily = $this->dailyLoad($start, $end, $boardings, $pricing, $tariffs);
+        $daily = $this->dailyLoad($start, $end, $orders);
         $today = now()->startOfDay();
-        $activeToday = Boarding::with('animal.category')
+        $activeToday = ServiceOrder::with(['animals.category', 'animals.animal.category'])
             ->whereNull('archived_at')
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
             ->get();
 
         $activeBySpecies = $categoryCounts;
-        foreach ($activeToday as $boarding) {
-            $categoryKey = $boarding->animal?->category_id ? (string) $boarding->animal->category_id : 'unassigned';
-            $activeBySpecies[$categoryKey]++;
+        foreach ($activeToday as $order) {
+            foreach ($order->animals as $animal) {
+                $categoryKey = $animal->animal?->category_id ?: $animal->category_id;
+                $activeBySpecies[$categoryKey ? (string) $categoryKey : 'unassigned'] += $animal->quantity;
+            }
         }
 
         $species = $categoryCounts;
         $seenAnimals = [];
-        foreach ($boardings as $boarding) {
-            $animalKey = $boarding->animal_id ? 'animal-'.$boarding->animal_id : 'boarding-'.$boarding->id;
-            if (isset($seenAnimals[$animalKey])) {
-                continue;
-            }
+        foreach ($orders as $order) {
+            foreach ($order->animals as $animal) {
+                $animalKey = $animal->animal_id ? 'animal-'.$animal->animal_id : 'position-'.$animal->id;
+                if (isset($seenAnimals[$animalKey])) {
+                    continue;
+                }
 
-            $seenAnimals[$animalKey] = true;
-            $categoryKey = $boarding->animal?->category_id ? (string) $boarding->animal->category_id : 'unassigned';
-            $species[$categoryKey]++;
+                $seenAnimals[$animalKey] = true;
+                $categoryKey = $animal->animal?->category_id ?: $animal->category_id;
+                $species[$categoryKey ? (string) $categoryKey : 'unassigned'] += $animal->quantity;
+            }
         }
 
-        $upcoming = Boarding::with('animal.category')
+        $upcoming = ServiceOrder::with(['animals.animal', 'animals.services'])
             ->whereNull('archived_at')
             ->where(function ($query) use ($today) {
                 $query->whereBetween('start_date', [$today, $today->copy()->addDays(7)])
@@ -67,14 +71,19 @@ class DashboardController extends Controller
             ->orderBy('start_date')
             ->limit(8)
             ->get()
-            ->map(function (Boarding $boarding) use ($today): array {
-                $isArrival = $boarding->start_date->greaterThanOrEqualTo($today);
+            ->map(function (ServiceOrder $order) use ($today): array {
+                $isArrival = $order->start_date->greaterThanOrEqualTo($today);
+                $animals = $order->animals
+                    ->map(fn ($animal) => $animal->animal?->name ?: $animal->label ?: 'Питомец')
+                    ->unique()->implode(', ');
+                $services = $order->animals->flatMap->services
+                    ->pluck('service_type')->unique()->implode(', ');
 
                 return [
-                    'date' => ($isArrival ? $boarding->start_date : $boarding->end_date)->locale('ru')->translatedFormat('j F'),
+                    'date' => ($isArrival ? $order->start_date : $order->end_date)->locale('ru')->translatedFormat('j F'),
                     'type' => $isArrival ? 'Заезд' : 'Выезд',
-                    'name' => $boarding->animal?->name ?: $boarding->name,
-                    'service' => $boarding->service_type,
+                    'name' => $animals,
+                    'service' => $services,
                 ];
             });
 
@@ -122,23 +131,27 @@ class DashboardController extends Controller
         };
     }
 
-    private function dailyLoad(Carbon $start, Carbon $end, $boardings, BoardingPricingService $pricing, array $tariffs): array
+    private function dailyLoad(Carbon $start, Carbon $end, $orders): array
     {
         $daily = [];
         for ($day = $start->copy()->startOfDay(); $day->lessThanOrEqualTo($end); $day->addDay()) {
             $daily[$day->toDateString()] = ['date' => $day->toDateString(), 'units' => 0, 'revenue' => 0];
         }
 
-        foreach ($boardings as $boarding) {
-            $from = $boarding->start_date->greaterThan($start) ? $boarding->start_date->copy() : $start->copy();
-            $to = $boarding->end_date->lessThan($end) ? $boarding->end_date->copy() : $end->copy();
-            $rate = $pricing->rateFor($boarding, $tariffs);
-            $units = $pricing->unitsPerDay($boarding);
+        foreach ($orders as $order) {
+            $from = $order->start_date->greaterThan($start) ? $order->start_date->copy() : $start->copy();
+            $to = $order->end_date->lessThan($end) ? $order->end_date->copy() : $end->copy();
 
             for ($day = $from->startOfDay(); $day->lessThanOrEqualTo($to); $day->addDay()) {
                 $key = $day->toDateString();
-                $daily[$key]['units'] += $units;
-                $daily[$key]['revenue'] += $rate * $units;
+                foreach ($order->animals as $animal) {
+                    foreach ($animal->services as $service) {
+                        $daily[$key]['revenue'] += $animal->quantity * $service->units_per_day * $service->unit_price;
+                        if ($service->service_type === 'передержка') {
+                            $daily[$key]['units'] += $animal->quantity;
+                        }
+                    }
+                }
             }
         }
 
