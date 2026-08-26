@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return response.json();
     });
     const applyZoom = value => {
-        zoom = Math.max(.6, Math.min(1.5, value));
+        zoom = Math.max(.25, Math.min(1.5, value));
         canvas.style.zoom = zoom;
         localStorage.setItem('zooland-client-map-zoom', zoom);
         document.getElementById('clientMapZoomReset').textContent = `${Math.round(zoom * 100)}%`;
@@ -142,8 +142,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const linkPath = (animal, client) => {
         const sx = animal.x + 94, sy = animal.y + 54, tx = client.x + 118, ty = client.y + 48;
-        const mid = (sx + tx) / 2, direction = ty >= sy ? 1 : -1, radius = Math.min(24, Math.abs(ty - sy) / 2);
-        return { d: `M ${sx} ${sy} H ${mid - radius} Q ${mid} ${sy} ${mid} ${sy + direction * radius} V ${ty - direction * radius} Q ${mid} ${ty} ${mid + radius} ${ty} H ${tx}`, x: mid, y: (sy + ty) / 2 };
+        const mid = (sx + tx) / 2;
+        const direction = ty >= sy ? 1 : -1;
+        const radius = Math.max(0, Math.min(52, Math.abs(ty - sy) / 2, Math.abs(tx - sx) / 4));
+        const firstSweep = direction > 0 ? 1 : 0;
+        const secondSweep = direction > 0 ? 0 : 1;
+        return { d: `M ${sx} ${sy} H ${mid - radius} A ${radius} ${radius} 0 0 ${firstSweep} ${mid} ${sy + direction * radius} V ${ty - direction * radius} A ${radius} ${radius} 0 0 ${secondSweep} ${mid + radius} ${ty} H ${tx}`, x: mid, y: (sy + ty) / 2 };
     };
     const renderLinks = () => {
         links.replaceChildren();
