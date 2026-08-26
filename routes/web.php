@@ -31,7 +31,9 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
     Route::post('tags/classify', App\Http\Controllers\TagClassificationController::class)->name('tags.classify');
     Route::get('client-map', [App\Http\Controllers\ClientMapController::class, 'index'])->name('client-map.index');
     Route::post('client-map/clients', [App\Http\Controllers\ClientMapController::class, 'storeClient'])->name('client-map.clients.store');
+    Route::patch('client-map/clients/{client}', [App\Http\Controllers\ClientMapController::class, 'updateClient'])->name('client-map.clients.update');
     Route::post('client-map/animals', [App\Http\Controllers\ClientMapController::class, 'storeAnimal'])->name('client-map.animals.store');
+    Route::patch('client-map/animals/{animal}', [App\Http\Controllers\ClientMapController::class, 'updateAnimal'])->name('client-map.animals.update');
     Route::post('client-map/positions', [App\Http\Controllers\ClientMapController::class, 'savePositions'])->name('client-map.positions.save');
     Route::post('client-map/animals/{animal}/clients/{client}', [App\Http\Controllers\ClientMapController::class, 'attachAnimal'])->name('client-map.animals.attach');
     Route::delete('client-map/animals/{animal}/client', [App\Http\Controllers\ClientMapController::class, 'detachAnimal'])->name('client-map.animals.detach');

@@ -43,5 +43,14 @@ class ClientMapTest extends TestCase
             ->deleteJson(route('admin.client-map.animals.detach', $animal))
             ->assertOk();
         $this->assertDatabaseHas('animals', ['id' => $animal->id, 'client_id' => null]);
+
+        $this->actingAs($admin)
+            ->patchJson(route('admin.client-map.clients.update', $client), ['name' => 'Анна', 'phone' => '+79990000000'])
+            ->assertOk()
+            ->assertJsonPath('name', 'Анна');
+        $this->actingAs($admin)
+            ->patchJson(route('admin.client-map.animals.update', $animal), ['name' => 'Дейзи-2'])
+            ->assertOk()
+            ->assertJsonPath('name', 'Дейзи-2');
     }
 }

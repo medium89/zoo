@@ -65,6 +65,36 @@ class ClientMapController extends Controller
         return response()->json($this->animalPayload($animal->fresh('photos')), 201);
     }
 
+    public function updateClient(Request $request, Client $client)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:1000',
+        ]);
+
+        $client->update($data);
+
+        return response()->json($this->clientPayload($client->fresh()));
+    }
+
+    public function updateAnimal(Request $request, Animal $animal)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
+        ]);
+        $category = Category::find($data['category_id'] ?? null);
+
+        $animal->update([
+            'name' => $data['name'],
+            'category_id' => $category?->id,
+            'species' => $category?->name,
+        ]);
+
+        return response()->json($this->animalPayload($animal->fresh('photos')));
+    }
+
     public function savePositions(Request $request)
     {
         $data = $request->validate([
@@ -99,12 +129,12 @@ class ClientMapController extends Controller
 
     private function clientPayload(Client $client): array
     {
-        return ['id' => $client->id, 'name' => $client->name, 'phone' => $client->phone, 'x' => $client->map_x, 'y' => $client->map_y];
+        return ['id' => $client->id, 'name' => $client->name, 'phone' => $client->phone, 'address' => $client->address, 'x' => $client->map_x, 'y' => $client->map_y];
     }
 
     private function animalPayload(Animal $animal): array
     {
-        return ['id' => $animal->id, 'name' => $animal->name, 'client_id' => $animal->client_id, 'x' => $animal->map_x, 'y' => $animal->map_y,
+        return ['id' => $animal->id, 'name' => $animal->name, 'category_id' => $animal->category_id, 'client_id' => $animal->client_id, 'x' => $animal->map_x, 'y' => $animal->map_y,
             'photo' => $animal->photos->first()?->path ? Storage::url($animal->photos->first()->path) : null];
     }
 }

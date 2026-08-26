@@ -95,12 +95,24 @@
         </form>
     </div>
 </div>
+<div class="modal fade" id="mapNodeEditorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered map-form-dialog">
+        <form class="modal-content map-form-modal" id="mapNodeEditorForm">
+            <div class="modal-header map-form-modal__header">
+                <div><div class="map-form-modal__eyebrow" id="mapNodeEditorEyebrow"></div><h5 class="modal-title" id="mapNodeEditorTitle">Редактировать карточку</h5></div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body map-form-modal__body" id="mapNodeEditorFields"></div>
+            <div class="modal-footer map-form-modal__footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button><button class="btn btn-primary"><i class="fa fa-check me-1"></i>Сохранить</button></div>
+        </form>
+    </div>
+</div>
 @endsection
 
 @push('styles')
 <style>
 .client-node-page{min-width:0}.client-node-toolbar{display:flex;flex-wrap:wrap;gap:18px;padding:10px 14px;border:1px solid #dfe7ef;border-bottom:0;border-radius:12px 12px 0 0;background:#fff;color:#6e7e90;font-size:.82rem}.client-node-viewport{height:calc(100vh - 245px);min-height:580px;overflow:hidden;position:relative;border:1px solid #dfe7ef;border-radius:0 0 12px 12px;background:#edf2f7;touch-action:none;cursor:grab}.client-node-viewport.is-panning{cursor:grabbing}.client-node-canvas{position:relative;width:2400px;height:1600px;transform-origin:0 0;will-change:transform;background-color:#f8fafc;background-image:radial-gradient(#cbd5e1 1px,transparent 1px);background-size:20px 20px}.client-node-links{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.client-node-link{fill:none;stroke:#91a4b7;stroke-width:3}.client-node-unlink{pointer-events:all;cursor:pointer}.client-node-unlink circle{fill:#fff;stroke:#e1626d;stroke-width:2}.client-node-unlink text{fill:#d6404d;font-size:16px;font-weight:800;text-anchor:middle;dominant-baseline:central}.client-node{position:absolute;width:236px;border:1px solid #d9e2eb;border-radius:12px;background:#fff;box-shadow:0 9px 22px rgba(47,65,83,.12);overflow:hidden;user-select:none}.client-node--client{border-top:4px solid #3178c6}.client-node--animal{width:188px;border-top:4px solid #d38a2f}.client-node__head{display:flex;align-items:center;gap:8px;padding:9px 11px;cursor:grab;font-size:.72rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase}.client-node--client .client-node__head{background:#edf6ff;color:#1f629e}.client-node--animal .client-node__head{background:#fff6e9;color:#aa6816}.client-node__body{padding:12px}.client-node__name{font-size:.94rem;font-weight:800;color:#35475a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.client-node__meta{margin-top:4px;color:#768699;font-size:.8rem}.client-node__photo{width:52px;height:52px;float:right;margin-left:10px;border-radius:10px;object-fit:cover;background:#fff4dc}.client-node__photo--empty{display:grid;place-items:center;font-size:23px}.client-node__hint{margin-top:8px;color:#91a0af;font-size:.72rem}.client-node.is-dragging{z-index:10;box-shadow:0 16px 32px rgba(38,62,87,.22);cursor:grabbing}.client-node.is-drop-target{outline:3px solid rgba(49,120,198,.38);outline-offset:4px}@media(max-width:767px){.client-node-viewport{height:calc(100vh - 230px);min-height:480px}.client-node-toolbar{gap:9px;font-size:.72rem}.client-node-page{padding-right:0;padding-left:0}}
-.client-node__head{touch-action:none;-webkit-user-select:none;user-select:none}.client-node__connect{margin-left:auto;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.9);color:inherit;font-size:19px;font-weight:700;line-height:24px;cursor:crosshair;touch-action:none;box-shadow:0 1px 4px rgba(38,62,87,.15)}.client-node__connect:active{transform:scale(.92)}.client-node-link--preview{stroke:#3178c6;stroke-width:3;stroke-dasharray:7 6}.client-node-confirm{position:absolute;z-index:30;display:flex;align-items:center;gap:7px;padding:8px 9px;border:1px solid #dce5ee;border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(38,62,87,.2);font-size:.78rem;font-weight:700;white-space:nowrap}.client-node-confirm[hidden]{display:none}.client-node-confirm .btn{padding:3px 7px;font-size:.74rem}.client-node-zoom{display:flex;gap:4px}.client-node-zoom .btn{min-width:34px;font-weight:700}.map-form-dialog{max-width:460px}.map-form-modal{overflow:hidden;border:0;border-radius:16px;box-shadow:0 24px 64px rgba(28,45,64,.2)}.map-form-modal__header{align-items:flex-start;padding:22px 24px 18px;border-bottom:1px solid #edf1f5}.map-form-modal__header .btn-close{margin:2px 0 0 auto}.map-form-modal__eyebrow{margin-bottom:5px;color:#768699;font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.map-form-modal__eyebrow i{margin-right:5px;color:#3178c6}.map-form-modal .modal-title{color:#2d3e50;font-size:1.28rem;font-weight:800}.map-form-modal__body{padding:20px 24px 24px}.map-form-modal__lead{margin:0 0 20px;color:#78889a;font-size:.88rem;line-height:1.45}.map-form-field{display:block;margin-top:16px}.map-form-field:first-of-type{margin-top:0}.map-form-field label{display:block;margin:0 0 7px;color:#435467;font-size:.82rem;font-weight:750}.map-form-field label span{color:#d9534f}.map-form-field .form-control,.map-form-field .form-select{min-height:44px;border-color:#d9e3ec;border-radius:9px;font-size:.94rem;box-shadow:none}.map-form-field .form-control:focus,.map-form-field .form-select:focus{border-color:#76a9dd;box-shadow:0 0 0 3px rgba(49,120,198,.12)}.map-form-modal__footer{display:flex;gap:9px;justify-content:flex-end;padding:15px 24px 20px;border-top:1px solid #edf1f5}.map-form-modal__footer .btn{min-height:40px;padding:8px 15px;font-weight:700}@media(max-width:575px){.map-form-dialog{margin:12px}.map-form-modal__header{padding:19px 19px 15px}.map-form-modal__body{padding:18px 19px 20px}.map-form-modal__footer{padding:14px 19px 18px}.map-form-modal__footer .btn{flex:1;padding-right:8px;padding-left:8px}}
+.client-node__head{touch-action:none;-webkit-user-select:none;user-select:none}.client-node__actions{display:flex;align-items:center;gap:5px;margin-left:auto}.client-node__connect,.client-node__edit{width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.9);color:inherit;font-size:13px;font-weight:700;line-height:24px;cursor:pointer;touch-action:none;box-shadow:0 1px 4px rgba(38,62,87,.15)}.client-node__connect{font-size:19px;cursor:crosshair}.client-node__connect:active,.client-node__edit:active{transform:scale(.92)}.client-node-link--preview{stroke:#3178c6;stroke-width:3;stroke-dasharray:7 6}.client-node-confirm{position:absolute;z-index:30;display:flex;align-items:center;gap:7px;padding:8px 9px;border:1px solid #dce5ee;border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(38,62,87,.2);font-size:.78rem;font-weight:700;white-space:nowrap}.client-node-confirm[hidden]{display:none}.client-node-confirm .btn{padding:3px 7px;font-size:.74rem}.client-node-zoom{display:flex;gap:4px}.client-node-zoom .btn{min-width:34px;font-weight:700}.map-form-dialog{max-width:460px}.map-form-modal{overflow:hidden;border:0;border-radius:16px;box-shadow:0 24px 64px rgba(28,45,64,.2)}.map-form-modal__header{align-items:flex-start;padding:22px 24px 18px;border-bottom:1px solid #edf1f5}.map-form-modal__header .btn-close{margin:2px 0 0 auto}.map-form-modal__eyebrow{margin-bottom:5px;color:#768699;font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.map-form-modal__eyebrow i{margin-right:5px;color:#3178c6}.map-form-modal .modal-title{color:#2d3e50;font-size:1.28rem;font-weight:800}.map-form-modal__body{padding:20px 24px 24px}.map-form-modal__lead{margin:0 0 20px;color:#78889a;font-size:.88rem;line-height:1.45}.map-form-field{display:block;margin-top:16px}.map-form-field:first-of-type{margin-top:0}.map-form-field label{display:block;margin:0 0 7px;color:#435467;font-size:.82rem;font-weight:750}.map-form-field label span{color:#d9534f}.map-form-field .form-control,.map-form-field .form-select{min-height:44px;border-color:#d9e3ec;border-radius:9px;font-size:.94rem;box-shadow:none}.map-form-field .form-control:focus,.map-form-field .form-select:focus{border-color:#76a9dd;box-shadow:0 0 0 3px rgba(49,120,198,.12)}.map-form-modal__footer{display:flex;gap:9px;justify-content:flex-end;padding:15px 24px 20px;border-top:1px solid #edf1f5}.map-form-modal__footer .btn{min-height:40px;padding:8px 15px;font-weight:700}@media(max-width:575px){.map-form-dialog{margin:12px}.map-form-modal__header{padding:19px 19px 15px}.map-form-modal__body{padding:18px 19px 20px}.map-form-modal__footer{padding:14px 19px 18px}.map-form-modal__footer .btn{flex:1;padding-right:8px;padding-left:8px}}
 </style>
 @endpush
 
@@ -109,11 +121,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     const clients = @json($clientsPayload);
     const animals = @json($animalsPayload);
+    const categories = @json($categories->map(fn ($category) => ['id' => $category->id, 'name' => $category->name])->values());
     const canvas = document.getElementById('clientNodeCanvas');
     const viewport = document.getElementById('clientNodeViewport');
     const layer = document.getElementById('clientNodeLayer');
     const links = document.getElementById('clientNodeLinks');
     const unlinkConfirm = document.getElementById('clientMapUnlinkConfirm');
+    const nodeEditorModal = document.getElementById('mapNodeEditorModal');
+    const nodeEditorForm = document.getElementById('mapNodeEditorForm');
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
     const urls = {
         positions: '{{ route('admin.client-map.positions.save') }}',
@@ -127,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let panning = null;
     let pan = {x: 0, y: 0};
     let pendingUnlink = null;
+    let editingNode = null;
     let zoom = Number(localStorage.getItem('zooland-client-map-zoom') || 1);
 
     const defaults = (type, index) => type === 'client'
@@ -174,15 +190,16 @@ document.addEventListener('DOMContentLoaded', () => {
         element.style.left = `${node.x}px`;
         element.style.top = `${node.y}px`;
         if (node.type === 'client') {
-            element.innerHTML = `<div class="client-node__head"><i class="fa fa-user"></i> Клиент<button class="client-node__connect" type="button" aria-label="Связать с питомцем">+</button></div><div class="client-node__body"><div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${escapeHtml(node.phone || 'Телефон не указан')}</div><div class="client-node__hint">Потяните + к питомцу</div></div>`;
+            element.innerHTML = `<div class="client-node__head"><i class="fa fa-user"></i> Клиент<div class="client-node__actions"><button class="client-node__edit" type="button" aria-label="Редактировать клиента"><i class="fa fa-pen"></i></button><button class="client-node__connect" type="button" aria-label="Связать с питомцем">+</button></div></div><div class="client-node__body"><div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${escapeHtml(node.phone || 'Телефон не указан')}</div><div class="client-node__hint">Потяните + к питомцу</div></div>`;
         } else {
             const photo = node.photo
                 ? `<img class="client-node__photo" src="${escapeHtml(node.photo)}" alt="">`
                 : '<span class="client-node__photo client-node__photo--empty">🐾</span>';
-            element.innerHTML = `<div class="client-node__head"><i class="fa fa-paw"></i> Питомец<button class="client-node__connect" type="button" aria-label="Связать с клиентом">+</button></div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${node.client_id ? 'Привязан к клиенту' : 'Без хозяина'}</div></div>`;
+            element.innerHTML = `<div class="client-node__head"><i class="fa fa-paw"></i> Питомец<div class="client-node__actions"><button class="client-node__edit" type="button" aria-label="Редактировать питомца"><i class="fa fa-pen"></i></button><button class="client-node__connect" type="button" aria-label="Связать с клиентом">+</button></div></div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${node.client_id ? 'Привязан к клиенту' : 'Без хозяина'}</div></div>`;
         }
         element.querySelector('.client-node__head').addEventListener('pointerdown', event => startDrag(event, node, element));
         element.querySelector('.client-node__connect').addEventListener('pointerdown', event => startLink(event, node));
+        element.querySelector('.client-node__edit').addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); openNodeEditor(node); });
         return element;
     };
     const linkPath = (animal, client) => {
@@ -240,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }) || null;
     };
     const startDrag = (event, node, element) => {
-        if (event.target.closest('.client-node__connect')) return;
+        if (event.target.closest('.client-node__connect, .client-node__edit')) return;
         event.preventDefault();
         const rect = canvas.getBoundingClientRect();
         dragged = {node, element, offset: {x: (event.clientX - rect.left) / zoom - node.x, y: (event.clientY - rect.top) / zoom - node.y}};
@@ -254,6 +271,34 @@ document.addEventListener('DOMContentLoaded', () => {
         event.currentTarget.setPointerCapture?.(event.pointerId);
         renderLinks();
     };
+    const openNodeEditor = node => {
+        editingNode = node;
+        const isClient = node.type === 'client';
+        document.getElementById('mapNodeEditorEyebrow').innerHTML = isClient ? '<i class="fa fa-user"></i> Клиент' : '<i class="fa fa-paw"></i> Питомец';
+        document.getElementById('mapNodeEditorTitle').textContent = isClient ? 'Редактировать клиента' : 'Редактировать питомца';
+        const fields = document.getElementById('mapNodeEditorFields');
+        if (isClient) {
+            fields.innerHTML = `<div class="map-form-field"><label for="mapEditName">Имя или ФИО <span>*</span></label><input id="mapEditName" class="form-control" name="name" value="${escapeHtml(node.name)}" required></div><div class="map-form-field"><label for="mapEditPhone">Телефон</label><input id="mapEditPhone" class="form-control" name="phone" value="${escapeHtml(node.phone)}"></div><div class="map-form-field"><label for="mapEditAddress">Адрес</label><input id="mapEditAddress" class="form-control" name="address" value="${escapeHtml(node.address)}"></div>`;
+        } else {
+            const options = ['<option value="">Не указана</option>', ...categories.map(category => `<option value="${category.id}" ${Number(node.category_id) === Number(category.id) ? 'selected' : ''}>${escapeHtml(category.name)}</option>`)].join('');
+            fields.innerHTML = `<div class="map-form-field"><label for="mapEditName">Кличка <span>*</span></label><input id="mapEditName" class="form-control" name="name" value="${escapeHtml(node.name)}" required></div><div class="map-form-field"><label for="mapEditCategory">Категория</label><select id="mapEditCategory" class="form-select" name="category_id">${options}</select></div>`;
+        }
+        bootstrap.Modal.getOrCreateInstance(nodeEditorModal).show();
+    };
+    nodeEditorForm.addEventListener('submit', event => {
+        event.preventDefault();
+        if (!editingNode) return;
+        const node = editingNode;
+        const data = new FormData(nodeEditorForm);
+        data.append('_method', 'PATCH');
+        const url = `${node.type === 'client' ? urls.clients : urls.animals}/${node.id}`;
+        request(url, 'POST', data).then(result => {
+            Object.assign(node, result);
+            bootstrap.Modal.getOrCreateInstance(nodeEditorModal).hide();
+            editingNode = null;
+            render();
+        });
+    });
     viewport.addEventListener('pointerdown', event => {
         if (event.target.closest('.client-node, .client-node-unlink, #clientMapUnlinkConfirm')) return;
         event.preventDefault();
