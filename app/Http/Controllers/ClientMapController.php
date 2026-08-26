@@ -18,7 +18,9 @@ class ClientMapController extends Controller
         $clientsPayload = $clients->map(fn (Client $client) => $this->clientPayload($client))->values()->all();
         $animalsPayload = $animals->map(fn (Animal $animal) => $this->animalPayload($animal))->values()->all();
 
-        return view('admin.client-map.index', compact('categories', 'clientsPayload', 'animalsPayload'));
+        // Передаём сами модели также: карта должна быть заполнена уже первым
+        // HTML-ответом, а JavaScript только добавляет перетаскивание и связи.
+        return view('admin.client-map.index', compact('categories', 'clients', 'animals', 'clientsPayload', 'animalsPayload'));
     }
 
     public function storeClient(Request $request)

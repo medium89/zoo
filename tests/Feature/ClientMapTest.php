@@ -18,6 +18,12 @@ class ClientMapTest extends TestCase
         $client = Client::create(['name' => 'Анастасия']);
         $animal = Animal::create(['name' => 'Дейзи', 'order' => 1]);
 
+        $this->actingAs($admin)
+            ->get(route('admin.client-map.index'))
+            ->assertOk()
+            ->assertSee('Анастасия')
+            ->assertSee('Дейзи');
+
         $this->actingAs($admin)->postJson(route('admin.client-map.positions.save'), [
             'nodes' => [
                 ['type' => 'client', 'id' => $client->id, 'x' => 180, 'y' => 240],

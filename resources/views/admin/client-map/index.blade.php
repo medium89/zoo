@@ -14,7 +14,37 @@
     <div class="client-node-viewport" id="clientNodeViewport">
         <div class="client-node-canvas" id="clientNodeCanvas">
             <svg class="client-node-links" id="clientNodeLinks" aria-hidden="true"></svg>
-            <div id="clientNodeLayer"></div>
+            <div id="clientNodeLayer">
+                @foreach($clients as $index => $client)
+                    @php($clientX = $client->map_x ?? (100 + ($index % 4) * 430))
+                    @php($clientY = $client->map_y ?? (100 + intdiv($index, 4) * 220))
+                    <article class="client-node client-node--client" data-type="client" data-id="{{ $client->id }}" style="left: {{ $clientX }}px; top: {{ $clientY }}px">
+                        <div class="client-node__head"><i class="fa fa-user"></i> Клиент</div>
+                        <div class="client-node__body">
+                            <div class="client-node__name">{{ $client->name }}</div>
+                            <div class="client-node__meta">{{ $client->phone ?: 'Телефон не указан' }}</div>
+                            <div class="client-node__hint">Перетащите сюда питомца</div>
+                        </div>
+                    </article>
+                @endforeach
+                @foreach($animals as $index => $animal)
+                    @php($animalX = $animal->map_x ?? (100 + ($index % 6) * 360))
+                    @php($animalY = $animal->map_y ?? (380 + intdiv($index, 6) * 190))
+                    @php($photo = $animal->photos->first()?->path)
+                    <article class="client-node client-node--animal" data-type="animal" data-id="{{ $animal->id }}" style="left: {{ $animalX }}px; top: {{ $animalY }}px">
+                        <div class="client-node__head"><i class="fa fa-paw"></i> Питомец</div>
+                        <div class="client-node__body">
+                            @if($photo)
+                                <img class="client-node__photo" src="{{ Storage::url($photo) }}" alt="">
+                            @else
+                                <span class="client-node__photo client-node__photo--empty">🐾</span>
+                            @endif
+                            <div class="client-node__name">{{ $animal->name }}</div>
+                            <div class="client-node__meta">{{ $animal->client_id ? 'Привязан к клиенту' : 'Без хозяина' }}</div>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
         </div>
     </div>
 </div>
@@ -31,6 +61,5 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded',()=>{const clients=@json($clientsPayload),animals=@json($animalsPayload),canvas=document.getElementById('clientNodeCanvas'),layer=document.getElementById('clientNodeLayer'),links=document.getElementById('clientNodeLinks'),csrf=document.querySelector('meta[name="csrf-token"]')?.content,urls={positions:'{{ route('admin.client-map.positions.save') }}',clients:'{{ route('admin.client-map.clients.store') }}',animals:'{{ route('admin.client-map.animals.store') }}',attach:'{{ url('/zooadmin/client-map/animals') }}'};let dragged=null,offset={x:0,y:0},saveTimer;const defaults=(type,index)=>type==='client'?{x:120+(index%4)*430,y:120+Math.floor(index/4)*260}:{x:210+(index%6)*340,y:760+Math.floor(index/6)*210};const point=(node)=>({x:Number(node.x??defaults(node.type,node.index).x),y:Number(node.y??defaults(node.type,node.index).y)});clients.forEach((node,index)=>Object.assign(node,{type:'client',index,...point({...node,type:'client',index})}));animals.forEach((node,index)=>Object.assign(node,{type:'animal',index,...point({...node,type:'animal',index})}));const esc=v=>String(v||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));const request=(url,method='POST',body=null)=>fetch(url,{method,body,headers:{'X-CSRF-TOKEN':csrf,'Accept':'application/json',...(typeof body==='string'?{'Content-Type':'application/json'}:{})}}).then(response=>{if(!response.ok)throw new Error('request');return response.json()});const scheduleSave=()=>{clearTimeout(saveTimer);saveTimer=setTimeout(()=>request(urls.positions,'POST',JSON.stringify({nodes:[...clients,...animals].map(n=>({type:n.type,id:n.id,x:Math.round(n.x),y:Math.round(n.y})))})),500)};const nodeEl=node=>{const el=document.createElement('article');el.className=`client-node client-node--${node.type}`;el.dataset.type=node.type;el.dataset.id=node.id;el.style.left=`${node.x}px`;el.style.top=`${node.y}px`;if(node.type==='client'){el.innerHTML=`<div class="client-node__head"><i class="fa fa-user"></i> Клиент</div><div class="client-node__body"><div class="client-node__name">${esc(node.name)}</div><div class="client-node__meta">${esc(node.phone||'Телефон не указан')}</div><div class="client-node__hint">Перетащите сюда питомца</div></div>`}else{let photo=node.photo?`<img class="client-node__photo" src="${esc(node.photo)}" alt="">`:`<span class="client-node__photo client-node__photo--empty">🐾</span>`;el.innerHTML=`<div class="client-node__head"><i class="fa fa-paw"></i> Питомец</div><div class="client-node__body">${photo}<div class="client-node__name">${esc(node.name)}</div><div class="client-node__meta">${node.client_id?'Привязан к клиенту':'Без хозяина'}</div></div>`}el.querySelector('.client-node__head').addEventListener('pointerdown',event=>startDrag(event,node,el));return el};const renderNodes=()=>{layer.replaceChildren(...[...clients,...animals].map(nodeEl));renderLinks()};const pathFor=(from,to)=>{const sx=from.x+94,sy=from.y+54,tx=to.x+118,ty=to.y+48,mid=(sx+tx)/2,dir=ty>=sy?1:-1,r=Math.min(24,Math.abs(ty-sy)/2);return {d:`M ${sx} ${sy} H ${mid-r} Q ${mid} ${sy} ${mid} ${sy+dir*r} V ${ty-dir*r} Q ${mid} ${ty} ${mid+r} ${ty} H ${tx}`,x:mid,y:(sy+ty)/2}};const renderLinks=()=>{links.replaceChildren();animals.filter(animal=>animal.client_id).forEach(animal=>{const client=clients.find(item=>item.id===animal.client_id);if(!client)return;const link=pathFor(animal,client),path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('class','client-node-link');path.setAttribute('d',link.d);links.append(path);const group=document.createElementNS('http://www.w3.org/2000/svg','g');group.setAttribute('class','client-node-unlink');group.setAttribute('transform',`translate(${link.x} ${link.y})`);group.innerHTML='<circle r="12"></circle><text y="1">×</text>';group.addEventListener('click',()=>detach(animal));links.append(group)})};const targetAt=event=>{dragged.el.style.pointerEvents='none';const target=document.elementFromPoint(event.clientX,event.clientY)?.closest('.client-node--client');dragged.el.style.pointerEvents='';return target};const startDrag=(event,node,el)=>{event.preventDefault();dragged={node,el};const rect=canvas.getBoundingClientRect();offset={x:event.clientX-rect.left-node.x,y:event.clientY-rect.top-node.y};el.classList.add('is-dragging');el.setPointerCapture?.(event.pointerId)};window.addEventListener('pointermove',event=>{if(!dragged)return;const rect=canvas.getBoundingClientRect(),node=dragged.node;node.x=Math.max(0,Math.min(2200,event.clientX-rect.left-offset.x));node.y=Math.max(0,Math.min(1500,event.clientY-rect.top-offset.y));dragged.el.style.left=`${node.x}px`;dragged.el.style.top=`${node.y}px`;renderLinks();const target=targetAt(event);layer.querySelectorAll('.client-node--client').forEach(el=>el.classList.toggle('is-drop-target',el===target))});window.addEventListener('pointerup',event=>{if(!dragged)return;const animal=dragged.node,target=targetAt(event);dragged.el.classList.remove('is-dragging');layer.querySelectorAll('.client-node--client').forEach(el=>el.classList.remove('is-drop-target'));if(animal.type==='animal'&&target){const client=clients.find(item=>String(item.id)===target.dataset.id);if(client&&animal.client_id!==client.id){animal.client_id=client.id;request(`${urls.attach}/${animal.id}/clients/${client.id}`).then(renderNodes)}}scheduleSave();dragged=null});const detach=animal=>{if(!confirm(`Отвязать ${animal.name} от клиента?`))return;request(`${urls.attach}/${animal.id}/client`,'DELETE').then(()=>{animal.client_id=null;renderNodes()})};const closeModal=id=>bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).hide();const addForm=(id,url,type)=>document.getElementById(id).addEventListener('submit',event=>{event.preventDefault();const data=new FormData(event.currentTarget),node=type==='client'?{x:160,y:180}:{x:320,y:760};data.append('map_x',node.x);data.append('map_y',node.y);request(url,'POST',data).then(result=>{Object.assign(result,{type,index:type==='client'?clients.length:animals.length,x:Number(result.x??node.x),y:Number(result.y??node.y)});(type==='client'?clients:animals).push(result);event.currentTarget.reset();closeModal(type==='client'?'newMapClientModal':'newMapAnimalModal');renderNodes()})});addForm('newMapClientForm',urls.clients,'client');addForm('newMapAnimalForm',urls.animals,'animal');renderNodes()});
 </script>
 @endpush
