@@ -77,7 +77,7 @@
     <script src="https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($yandexMapsKey) }}&lang=ru_RU" defer></script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const clients = @json($mapClients->map(fn ($client) => ['id' => $client->id, 'name' => $client->name, 'address' => $client->address, 'phone' => $client->phone])->values());
+        const clients = @json($mapClientsPayload);
         const start = () => {
             if (!window.ymaps || !document.getElementById('clientsMap')) return;
             ymaps.ready(() => {

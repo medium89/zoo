@@ -19,9 +19,15 @@ class ClientAdminController extends Controller
             ->where('address', '!=', '')
             ->orderBy('name')
             ->get(['id', 'name', 'address', 'phone']);
+        $mapClientsPayload = $mapClients->map(fn (Client $client) => [
+            'id' => $client->id,
+            'name' => $client->name,
+            'address' => $client->address,
+            'phone' => $client->phone,
+        ])->values()->all();
         $yandexMapsKey = config('services.yandex.maps_api_key');
 
-        return view('admin.clients.index', compact('clients', 'mapClients', 'yandexMapsKey'));
+        return view('admin.clients.index', compact('clients', 'mapClients', 'mapClientsPayload', 'yandexMapsKey'));
     }
 
     public function create()
