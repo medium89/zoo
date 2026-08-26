@@ -21,6 +21,7 @@ class ClientMapTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.client-map.index'))
             ->assertOk()
+            ->assertSee('csrf-token')
             ->assertSee('Анастасия')
             ->assertSee('Дейзи');
 
