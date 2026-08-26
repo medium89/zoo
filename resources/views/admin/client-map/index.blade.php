@@ -10,7 +10,14 @@
         </div>
     </div>
 
-    <div class="client-node-toolbar"><span><i class="fa fa-arrows-up-down-left-right"></i> Тяните ноды за шапку</span><span><i class="fa fa-link"></i> Крестик на линии разрывает связь</span></div>
+    <div class="client-node-toolbar">
+        <span><i class="fa fa-arrows-up-down-left-right"></i> Тяните ноды за шапку</span><span><i class="fa fa-link"></i> Крестик на линии разрывает связь</span>
+        <div class="client-node-zoom ms-sm-auto" aria-label="Масштаб карты">
+            <button class="btn btn-sm btn-light" type="button" id="clientMapZoomOut" aria-label="Уменьшить масштаб"><i class="fa fa-minus"></i></button>
+            <button class="btn btn-sm btn-light" type="button" id="clientMapZoomReset">100%</button>
+            <button class="btn btn-sm btn-light" type="button" id="clientMapZoomIn" aria-label="Увеличить масштаб"><i class="fa fa-plus"></i></button>
+        </div>
+    </div>
     <div class="client-node-viewport" id="clientNodeViewport">
         <div class="client-node-canvas" id="clientNodeCanvas">
             <svg class="client-node-links" id="clientNodeLinks" aria-hidden="true"></svg>
@@ -56,11 +63,156 @@
 @push('styles')
 <style>
 .client-node-page{min-width:0}.client-node-toolbar{display:flex;flex-wrap:wrap;gap:18px;padding:10px 14px;border:1px solid #dfe7ef;border-bottom:0;border-radius:12px 12px 0 0;background:#fff;color:#6e7e90;font-size:.82rem}.client-node-viewport{height:calc(100vh - 245px);min-height:580px;overflow:auto;border:1px solid #dfe7ef;border-radius:0 0 12px 12px;background:#edf2f7}.client-node-canvas{position:relative;width:2400px;height:1600px;background-color:#f8fafc;background-image:radial-gradient(#cbd5e1 1px,transparent 1px);background-size:20px 20px}.client-node-links{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.client-node-link{fill:none;stroke:#91a4b7;stroke-width:3}.client-node-unlink{pointer-events:all;cursor:pointer}.client-node-unlink circle{fill:#fff;stroke:#e1626d;stroke-width:2}.client-node-unlink text{fill:#d6404d;font-size:16px;font-weight:800;text-anchor:middle;dominant-baseline:central}.client-node{position:absolute;width:236px;border:1px solid #d9e2eb;border-radius:12px;background:#fff;box-shadow:0 9px 22px rgba(47,65,83,.12);overflow:hidden;user-select:none}.client-node--client{border-top:4px solid #3178c6}.client-node--animal{width:188px;border-top:4px solid #d38a2f}.client-node__head{display:flex;align-items:center;gap:8px;padding:9px 11px;cursor:grab;font-size:.72rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase}.client-node--client .client-node__head{background:#edf6ff;color:#1f629e}.client-node--animal .client-node__head{background:#fff6e9;color:#aa6816}.client-node__body{padding:12px}.client-node__name{font-size:.94rem;font-weight:800;color:#35475a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.client-node__meta{margin-top:4px;color:#768699;font-size:.8rem}.client-node__photo{width:52px;height:52px;float:right;margin-left:10px;border-radius:10px;object-fit:cover;background:#fff4dc}.client-node__photo--empty{display:grid;place-items:center;font-size:23px}.client-node__hint{margin-top:8px;color:#91a0af;font-size:.72rem}.client-node.is-dragging{z-index:10;box-shadow:0 16px 32px rgba(38,62,87,.22);cursor:grabbing}.client-node.is-drop-target{outline:3px solid rgba(49,120,198,.38);outline-offset:4px}@media(max-width:767px){.client-node-viewport{height:calc(100vh - 230px);min-height:480px}.client-node-toolbar{gap:9px;font-size:.72rem}.client-node-page{padding-right:0;padding-left:0}}
-.client-node__head{touch-action:none;-webkit-user-select:none;user-select:none}
+.client-node__head{touch-action:none;-webkit-user-select:none;user-select:none}.client-node-zoom{display:flex;gap:4px}.client-node-zoom .btn{min-width:34px;font-weight:700}
 </style>
 @endpush
 
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const clients = @json($clientsPayload);
+    const animals = @json($animalsPayload);
+    const canvas = document.getElementById('clientNodeCanvas');
+    const layer = document.getElementById('clientNodeLayer');
+    const links = document.getElementById('clientNodeLinks');
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+    const urls = {
+        positions: '{{ route('admin.client-map.positions.save') }}',
+        clients: '{{ route('admin.client-map.clients.store') }}',
+        animals: '{{ route('admin.client-map.animals.store') }}',
+        attach: '{{ url('/zooadmin/client-map/animals') }}',
+    };
+    let dragged = null;
+    let saveTimer;
+    let zoom = Number(localStorage.getItem('zooland-client-map-zoom') || 1);
+
+    const defaults = (type, index) => type === 'client'
+        ? { x: 100 + (index % 4) * 430, y: 100 + Math.floor(index / 4) * 220 }
+        : { x: 100 + (index % 6) * 360, y: 380 + Math.floor(index / 6) * 190 };
+    const normalise = (node, type, index) => Object.assign(node, {
+        type, index,
+        x: Number(node.x ?? defaults(type, index).x),
+        y: Number(node.y ?? defaults(type, index).y),
+    });
+    clients.forEach((node, index) => normalise(node, 'client', index));
+    animals.forEach((node, index) => normalise(node, 'animal', index));
+
+    const escapeHtml = value => String(value || '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[char]));
+    const request = (url, method = 'POST', body = null) => fetch(url, {
+        method, body,
+        headers: {
+            'X-CSRF-TOKEN': csrf,
+            'Accept': 'application/json',
+            ...(typeof body === 'string' ? {'Content-Type': 'application/json'} : {}),
+        },
+    }).then(response => {
+        if (!response.ok) throw new Error('request_failed');
+        return response.json();
+    });
+    const applyZoom = value => {
+        zoom = Math.max(.6, Math.min(1.5, value));
+        canvas.style.zoom = zoom;
+        localStorage.setItem('zooland-client-map-zoom', zoom);
+        document.getElementById('clientMapZoomReset').textContent = `${Math.round(zoom * 100)}%`;
+    };
+    document.getElementById('clientMapZoomOut').addEventListener('click', () => applyZoom(zoom - .1));
+    document.getElementById('clientMapZoomIn').addEventListener('click', () => applyZoom(zoom + .1));
+    document.getElementById('clientMapZoomReset').addEventListener('click', () => applyZoom(1));
+    applyZoom(zoom);
+
+    const nodeElement = node => {
+        const element = document.createElement('article');
+        element.className = `client-node client-node--${node.type}`;
+        element.dataset.type = node.type;
+        element.dataset.id = node.id;
+        element.style.left = `${node.x}px`;
+        element.style.top = `${node.y}px`;
+        if (node.type === 'client') {
+            element.innerHTML = `<div class="client-node__head"><i class="fa fa-user"></i> Клиент</div><div class="client-node__body"><div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${escapeHtml(node.phone || 'Телефон не указан')}</div><div class="client-node__hint">Перетащите сюда питомца</div></div>`;
+        } else {
+            const photo = node.photo
+                ? `<img class="client-node__photo" src="${escapeHtml(node.photo)}" alt="">`
+                : '<span class="client-node__photo client-node__photo--empty">🐾</span>';
+            element.innerHTML = `<div class="client-node__head"><i class="fa fa-paw"></i> Питомец</div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${node.client_id ? 'Привязан к клиенту' : 'Без хозяина'}</div></div>`;
+        }
+        element.querySelector('.client-node__head').addEventListener('pointerdown', event => startDrag(event, node, element));
+        return element;
+    };
+    const linkPath = (animal, client) => {
+        const sx = animal.x + 94, sy = animal.y + 54, tx = client.x + 118, ty = client.y + 48;
+        const mid = (sx + tx) / 2, direction = ty >= sy ? 1 : -1, radius = Math.min(24, Math.abs(ty - sy) / 2);
+        return { d: `M ${sx} ${sy} H ${mid - radius} Q ${mid} ${sy} ${mid} ${sy + direction * radius} V ${ty - direction * radius} Q ${mid} ${ty} ${mid + radius} ${ty} H ${tx}`, x: mid, y: (sy + ty) / 2 };
+    };
+    const renderLinks = () => {
+        links.replaceChildren();
+        animals.filter(animal => animal.client_id).forEach(animal => {
+            const client = clients.find(item => item.id === animal.client_id);
+            if (!client) return;
+            const link = linkPath(animal, client);
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('class', 'client-node-link'); path.setAttribute('d', link.d); links.append(path);
+            const remove = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            remove.setAttribute('class', 'client-node-unlink'); remove.setAttribute('transform', `translate(${link.x} ${link.y})`);
+            remove.innerHTML = '<circle r="12"></circle><text y="1">×</text>';
+            remove.addEventListener('click', () => detach(animal)); links.append(remove);
+        });
+    };
+    const render = () => { layer.replaceChildren(...[...clients, ...animals].map(nodeElement)); renderLinks(); };
+    const savePositions = () => {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => request(urls.positions, 'POST', JSON.stringify({nodes: [...clients, ...animals].map(node => ({type: node.type, id: node.id, x: Math.round(node.x), y: Math.round(node.y)}))})), 400);
+    };
+    const dropTarget = event => {
+        dragged.element.style.pointerEvents = 'none';
+        const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.client-node--client');
+        dragged.element.style.pointerEvents = '';
+        return target;
+    };
+    const startDrag = (event, node, element) => {
+        event.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        dragged = {node, element, offset: {x: (event.clientX - rect.left) / zoom - node.x, y: (event.clientY - rect.top) / zoom - node.y}};
+        element.classList.add('is-dragging');
+        element.setPointerCapture?.(event.pointerId);
+    };
+    window.addEventListener('pointermove', event => {
+        if (!dragged) return;
+        const rect = canvas.getBoundingClientRect(), node = dragged.node;
+        node.x = Math.max(0, Math.min(2200, (event.clientX - rect.left) / zoom - dragged.offset.x));
+        node.y = Math.max(0, Math.min(1500, (event.clientY - rect.top) / zoom - dragged.offset.y));
+        dragged.element.style.left = `${node.x}px`; dragged.element.style.top = `${node.y}px`;
+        renderLinks();
+        const target = dropTarget(event);
+        layer.querySelectorAll('.client-node--client').forEach(item => item.classList.toggle('is-drop-target', item === target));
+    });
+    window.addEventListener('pointerup', event => {
+        if (!dragged) return;
+        const {node, element} = dragged, target = dropTarget(event);
+        element.classList.remove('is-dragging');
+        layer.querySelectorAll('.client-node--client').forEach(item => item.classList.remove('is-drop-target'));
+        if (node.type === 'animal' && target) {
+            const client = clients.find(item => String(item.id) === target.dataset.id);
+            if (client && node.client_id !== client.id) request(`${urls.attach}/${node.id}/clients/${client.id}`).then(() => { node.client_id = client.id; render(); });
+        }
+        savePositions(); dragged = null;
+    });
+    const detach = animal => {
+        if (!confirm(`Отвязать ${animal.name} от клиента?`)) return;
+        request(`${urls.attach}/${animal.id}/client`, 'DELETE').then(() => { animal.client_id = null; render(); });
+    };
+    const addForm = (id, url, type) => document.getElementById(id).addEventListener('submit', event => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget), initial = defaults(type, type === 'client' ? clients.length : animals.length);
+        data.append('map_x', initial.x); data.append('map_y', initial.y);
+        request(url, 'POST', data).then(result => {
+            normalise(result, type, type === 'client' ? clients.length : animals.length);
+            (type === 'client' ? clients : animals).push(result);
+            event.currentTarget.reset(); bootstrap.Modal.getOrCreateInstance(document.getElementById(type === 'client' ? 'newMapClientModal' : 'newMapAnimalModal')).hide(); render();
+        });
+    });
+    addForm('newMapClientForm', urls.clients, 'client'); addForm('newMapAnimalForm', urls.animals, 'animal'); render();
+});
 </script>
 @endpush
