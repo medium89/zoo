@@ -104,17 +104,6 @@
         </div>
     </div>
 </div>
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const existing = document.getElementById('client-existing-animal');
-    const fresh = document.getElementById('client-new-animal');
-    fresh?.addEventListener('input', () => { if (fresh.value.trim()) existing.value = ''; });
-    existing?.addEventListener('change', () => { if (existing.value) fresh.value = ''; });
-});
-</script>
-@endpush
-
 <div class="modal fade admin-secondary-modal" id="clientAnimalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form class="modal-content" method="POST" action="{{ route('admin.clients.animals.attach', $client) }}">
@@ -124,21 +113,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <label class="form-label" for="client-existing-animal">Сохранённый питомец</label>
-                <select class="form-select" name="animal_id" id="client-existing-animal">
-                    <option value="">Выберите из базы</option>
-                    @foreach($availableAnimals as $animal)
-                        <option value="{{ $animal->id }}">{{ $animal->name }}{{ $animal->client ? ' · сейчас у '.$animal->client->name : '' }}</option>
-                    @endforeach
-                </select>
-                <div class="form-text mb-3">Выбранный питомец будет привязан к этому клиенту.</div>
+                <div class="mb-3 client-animal-search-field">
+                    <label class="form-label" for="client-animal-search">Питомец</label>
+                    <input class="form-control"
+                           id="client-animal-search"
+                           autocomplete="off"
+                           placeholder="Начните вводить кличку"
+                           data-client-animal-search
+                           data-animal-options='@json($availableAnimalsPayload, JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT)'>
+                    <input type="hidden" name="animal_id" id="client-existing-animal">
+                    <input type="hidden" name="new_animal_name" id="client-new-animal">
+                    <div class="client-animal-search-results is-hidden" aria-live="polite"></div>
+                    <div class="form-text">Выберите питомца из подсказок или введите новую кличку — он создастся и сразу привяжется.</div>
+                </div>
 
-                <div class="border-top pt-3">
-                    <div class="fw-semibold mb-2">Или создать нового</div>
-                    <div class="mb-3">
-                        <label class="form-label" for="client-new-animal">Кличка</label>
-                        <input class="form-control" name="new_animal_name" id="client-new-animal" maxlength="255">
-                    </div>
+                <div class="border-top pt-3 client-new-animal-details">
                     <div class="mb-3">
                         <label class="form-label" for="client-new-animal-category">Категория</label>
                         <select class="form-select" name="category_id" id="client-new-animal-category">

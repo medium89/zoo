@@ -58,9 +58,14 @@ class ClientAdminController extends Controller
             ->where(fn ($query) => $query->where('client_id', '!=', $client->id)->orWhereNull('client_id'))
             ->orderBy('name')
             ->get(['id', 'name', 'client_id']);
+        $availableAnimalsPayload = $availableAnimals->map(fn (Animal $animal) => [
+            'id' => $animal->id,
+            'name' => $animal->name,
+            'client' => $animal->client?->name,
+        ])->values()->all();
         $categories = Category::orderBy('name')->get(['id', 'name']);
 
-        return view('admin.clients.show', compact('client', 'availableAnimals', 'categories'));
+        return view('admin.clients.show', compact('client', 'availableAnimalsPayload', 'categories'));
     }
 
     public function edit(Client $client)

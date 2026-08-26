@@ -231,6 +231,29 @@
             z-index: 1080;
         }
 
+        .client-animal-search-field { position: relative; }
+        .client-animal-search-results {
+            position: absolute;
+            z-index: 1085;
+            top: 62px;
+            right: 0;
+            left: 0;
+            display: grid;
+            gap: 2px;
+            max-height: 210px;
+            overflow: auto;
+            padding: 6px;
+            border: 1px solid #d7e1ec;
+            border-radius: 9px;
+            background: #fff;
+            box-shadow: 0 12px 26px rgba(27, 39, 57, .18);
+        }
+
+        .client-animal-search-results.is-hidden { display: none; }
+        .client-animal-search-result { padding: 8px 9px; border: 0; border-radius: 6px; background: transparent; color: #34465a; text-align: left; font-size: .86rem; }
+        .client-animal-search-result:hover, .client-animal-search-result:focus { background: #edf5ff; color: #1763b7; outline: 0; }
+        .client-animal-search-empty { padding: 8px 9px; color: #788699; font-size: .8rem; }
+
         .admin-editor-modal .card {
             box-shadow: none;
         }
@@ -1047,6 +1070,58 @@
             }
         };
 
+        const initClientAnimalSearch = (popup) => {
+            const input = popup.querySelector('[data-client-animal-search]');
+            if (!input || input.dataset.searchReady === '1') return;
+
+            const selectedId = popup.querySelector('#client-existing-animal');
+            const newName = popup.querySelector('#client-new-animal');
+            const results = popup.querySelector('.client-animal-search-results');
+            const details = popup.querySelector('.client-new-animal-details');
+            if (!selectedId || !newName || !results) return;
+
+            input.dataset.searchReady = '1';
+            let options = [];
+            try { options = JSON.parse(input.dataset.animalOptions || '[]'); } catch (_) { options = []; }
+            const render = () => {
+                const query = input.value.trim().toLowerCase();
+                const matches = options.filter((animal) => !query || animal.name.toLowerCase().includes(query)).slice(0, 8);
+                results.replaceChildren();
+                if (!matches.length) {
+                    const empty = document.createElement('div');
+                    empty.className = 'client-animal-search-empty';
+                    empty.textContent = query ? 'Создать нового питомца с этой кличкой' : 'Сохранённых питомцев пока нет';
+                    results.append(empty);
+                } else {
+                    matches.forEach((animal) => {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'client-animal-search-result';
+                        button.textContent = animal.name + (animal.client ? ' · сейчас у ' + animal.client : '');
+                        button.addEventListener('mousedown', (event) => {
+                            event.preventDefault();
+                            input.value = animal.name;
+                            selectedId.value = animal.id;
+                            newName.value = '';
+                            if (details) details.hidden = true;
+                            results.classList.add('is-hidden');
+                        });
+                        results.append(button);
+                    });
+                }
+                results.classList.remove('is-hidden');
+            };
+
+            input.addEventListener('focus', render);
+            input.addEventListener('input', () => {
+                selectedId.value = '';
+                newName.value = input.value.trim();
+                if (details) details.hidden = false;
+                render();
+            });
+            input.addEventListener('blur', () => window.setTimeout(() => results.classList.add('is-hidden'), 150));
+        };
+
         document.addEventListener('click', (event) => {
             const trigger = event.target.closest('[data-admin-popup-target]');
             if (!trigger) return;
@@ -1060,6 +1135,7 @@
             if (popup.parentElement !== document.body) {
                 document.body.appendChild(popup);
             }
+            initClientAnimalSearch(popup);
             bootstrap.Modal.getOrCreateInstance(popup).show();
         });
 
