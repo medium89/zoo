@@ -4,7 +4,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Клиенты</h1>
-        <a href="{{ route('admin.clients.create') }}" class="btn btn-primary">Добавить</a>
+        <button type="button" class="btn btn-primary" id="newClientWithPets"><i class="fa fa-plus me-1"></i>Добавить клиента</button>
     </div>
 
     @if(session('success'))
@@ -69,6 +69,34 @@
     @endif
 </div>
 
+<div class="modal fade" id="clientCreateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered client-create-dialog">
+        <form class="modal-content client-create-modal" action="{{ route('admin.clients.store') }}" method="POST">
+            @csrf
+            <div class="modal-header client-create-modal__header">
+                <div><div class="client-create-modal__eyebrow"><i class="fa fa-user-plus"></i> Клиенты</div><h5 class="modal-title">Новый клиент</h5></div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body client-create-modal__body">
+                <section class="client-create-section">
+                    <div class="client-create-section__title">Данные клиента</div>
+                    <div class="client-create-fields">
+                        <label>Имя или ФИО <b>*</b><input class="form-control" name="name" required autocomplete="name" placeholder="Например, Анастасия Иванова"></label>
+                        <label>Телефон<input class="form-control" name="phone" autocomplete="tel" placeholder="+7 999 123-45-67"></label>
+                        <label class="client-create-fields__wide">Адрес<input class="form-control" name="address" autocomplete="street-address" placeholder="Улица, дом, квартира"></label>
+                        <label class="client-create-fields__wide">Комментарий<textarea class="form-control" name="note" rows="2" placeholder="Важные детали о клиенте"></textarea></label>
+                    </div>
+                </section>
+                <section class="client-create-section client-create-pets">
+                    <div class="client-create-pets__head"><div><div class="client-create-section__title mb-1">Питомцы</div><p>Добавьте одного или несколько питомцев сразу.</p></div><button type="button" class="btn btn-outline-primary btn-sm" id="addClientAnimal"><i class="fa fa-plus"></i> Питомец</button></div>
+                    <div id="clientCreateAnimals" class="client-create-pets__list"></div>
+                </section>
+            </div>
+            <div class="modal-footer client-create-modal__footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button><button class="btn btn-primary"><i class="fa fa-check me-1"></i>Создать клиента</button></div>
+        </form>
+    </div>
+</div>
+
 @if($mapClients->isNotEmpty() && $yandexMapsKey)
     @push('styles')
     <style>.client-map{height:420px;width:100%;border-radius:0 0 .375rem .375rem;overflow:hidden}@media(max-width:767px){.client-map{height:320px}}</style>
@@ -113,3 +141,87 @@
     @endpush
 @endif
 @endsection
+
+@push('styles')
+<style>
+#clientCreateModal .modal-dialog{max-width:780px}.client-create-modal{overflow:hidden;border:0;border-radius:16px;box-shadow:0 24px 64px rgba(28,45,64,.22)}.client-create-modal__header{align-items:flex-start;padding:20px 24px 17px;border-bottom:1px solid #e9eef4}.client-create-modal__header .btn-close{margin:2px 0 0 auto}.client-create-modal__eyebrow{margin-bottom:5px;color:#5d7893;font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.client-create-modal__eyebrow i{color:#3178c6}.client-create-modal .modal-title{color:#2e4054;font-size:1.22rem;font-weight:800}.client-create-modal__body{padding:20px 24px 22px}.client-create-section{padding:16px;border:1px solid #dfe7f0;border-radius:12px}.client-create-section+.client-create-section{margin-top:15px}.client-create-section__title{color:#304255;font-size:.86rem;font-weight:800}.client-create-fields{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:14px}.client-create-fields label,.client-animal-editor label{display:block;margin:0;color:#68788b;font-size:.76rem;font-weight:700}.client-create-fields b{color:#d9534f}.client-create-fields .form-control,.client-animal-editor .form-control,.client-animal-editor .form-select{height:39px;margin-top:5px;border-color:#d9e3ec;border-radius:8px;font-size:.84rem;box-shadow:none}.client-create-fields textarea.form-control{height:auto;min-height:58px;padding-top:8px}.client-create-fields__wide{grid-column:1/-1}.client-create-pets{background:#fbfcfe}.client-create-pets__head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.client-create-pets__head p{margin:0;color:#7d8c9d;font-size:.78rem}.client-create-pets__list{display:grid;gap:9px;margin-top:13px}.client-animal-editor{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(130px,.7fr) 34px;gap:10px;align-items:end;padding:11px;border:1px solid #e0e8f1;border-radius:10px;background:#fff}.client-animal-editor .btn{width:34px;height:39px;padding:0;display:grid;place-items:center}.client-animal-editor__hint{grid-column:1/-1;margin-top:-4px;color:#8b99a8;font-size:.7rem}.client-create-modal__footer{gap:9px;padding:14px 24px 19px;border-top:1px solid #e9eef4}.client-create-modal__footer .btn{min-height:39px;font-weight:700}@media(max-width:575px){#clientCreateModal .modal-dialog{margin:8px}.client-create-modal__header,.client-create-modal__body{padding-right:14px;padding-left:14px}.client-create-modal__footer{padding-right:14px;padding-left:14px}.client-create-fields{grid-template-columns:1fr}.client-create-fields__wide{grid-column:auto}.client-animal-editor{grid-template-columns:minmax(0,1fr) 34px}.client-animal-editor label:nth-child(2){grid-column:1/-1;grid-row:2}.client-animal-editor .btn{grid-column:2;grid-row:1}.client-create-modal__footer .btn{flex:1;padding-right:8px;padding-left:8px}}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modalElement = document.getElementById('clientCreateModal');
+    const openButton = document.getElementById('newClientWithPets');
+    const addButton = document.getElementById('addClientAnimal');
+    const root = document.getElementById('clientCreateAnimals');
+    if (!modalElement || !openButton || !addButton || !root) return;
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    const animals = @json($animalsPayload);
+    const categories = @json($categories->map(fn ($category) => ['id' => $category->id, 'name' => $category->name])->values());
+    const dataList = document.createElement('datalist');
+    dataList.id = 'clientAnimalsList';
+    animals.forEach(animal => dataList.append(new Option(animal.name)));
+    document.body.append(dataList);
+    let position = 0;
+
+    const field = (caption, input) => {
+        const label = document.createElement('label');
+        label.append(caption);
+        label.append(input);
+        return label;
+    };
+    const addAnimal = () => {
+        const index = position++;
+        const row = document.createElement('div');
+        row.className = 'client-animal-editor';
+        const name = document.createElement('input');
+        name.className = 'form-control js-client-animal-name';
+        name.name = 'animals[' + index + '][name]';
+        name.placeholder = 'Кличка или новый питомец';
+        name.autocomplete = 'off';
+        name.setAttribute('list', 'clientAnimalsList');
+        const animalId = document.createElement('input');
+        animalId.type = 'hidden';
+        animalId.name = 'animals[' + index + '][animal_id]';
+        const category = document.createElement('select');
+        category.className = 'form-select';
+        category.name = 'animals[' + index + '][category_id]';
+        category.append(new Option('Вид не указан', ''));
+        categories.forEach(item => category.append(new Option(item.name, item.id)));
+        const remove = document.createElement('button');
+        remove.className = 'btn btn-danger';
+        remove.type = 'button';
+        remove.setAttribute('aria-label', 'Убрать питомца');
+        remove.innerHTML = '<i class="fa fa-xmark"></i>';
+        const forceNew = document.createElement('input');
+        forceNew.type = 'checkbox';
+        forceNew.className = 'form-check-input me-1';
+        const forceNewLabel = document.createElement('label');
+        forceNewLabel.className = 'client-animal-editor__hint';
+        forceNewLabel.append(forceNew, ' Новый питомец, даже если кличка уже есть в базе');
+        const syncSavedAnimal = () => {
+            const needle = name.value.trim().toLocaleLowerCase();
+            const found = !forceNew.checked && animals.find(animal => animal.name.toLocaleLowerCase() === needle);
+            animalId.value = found ? found.id : '';
+            if (found && found.category_id) category.value = found.category_id;
+        };
+        name.addEventListener('input', syncSavedAnimal);
+        forceNew.addEventListener('change', syncSavedAnimal);
+        remove.addEventListener('click', () => row.remove());
+        row.append(field('Питомец', name), animalId, field('Вид', category), remove, forceNewLabel);
+        root.append(row);
+    };
+
+    addButton.addEventListener('click', addAnimal);
+    openButton.addEventListener('click', () => {
+        modalElement.querySelector('form').reset();
+        root.replaceChildren();
+        position = 0;
+        addAnimal();
+        modal.show();
+    });
+});
+</script>
+@endpush

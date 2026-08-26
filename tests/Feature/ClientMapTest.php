@@ -59,4 +59,22 @@ class ClientMapTest extends TestCase
             ->assertJsonPath('name', 'Дейзи-2');
     }
 
+    public function test_client_can_be_created_together_with_multiple_pets(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)->post(route('admin.clients.store'), [
+            'name' => 'Анастасия',
+            'phone' => '+79990000000',
+            'animals' => [
+                ['name' => 'Дейзи'],
+                ['name' => 'Пухля'],
+            ],
+        ])->assertRedirect(route('admin.clients.index'));
+
+        $client = Client::where('name', 'Анастасия')->firstOrFail();
+        $this->assertDatabaseHas('animals', ['name' => 'Дейзи', 'client_id' => $client->id]);
+        $this->assertDatabaseHas('animals', ['name' => 'Пухля', 'client_id' => $client->id]);
+    }
+
 }

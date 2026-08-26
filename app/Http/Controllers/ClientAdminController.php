@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\Animal;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ClientAdminController extends Controller
 {
@@ -27,7 +28,15 @@ class ClientAdminController extends Controller
         ])->values()->all();
         $yandexMapsKey = config('services.yandex.maps_api_key');
 
-        return view('admin.clients.index', compact('clients', 'mapClients', 'mapClientsPayload', 'yandexMapsKey'));
+        $categories = Category::orderBy('name')->get(['id', 'name']);
+        $animalsPayload = Animal::with('client')->orderBy('name')->get()->map(fn (Animal $animal) => [
+            'id' => $animal->id,
+            'name' => $animal->name,
+            'category_id' => $animal->category_id,
+            'client' => $animal->client?->name,
+        ])->values()->all();
+
+        return view('admin.clients.index', compact('clients', 'mapClients', 'mapClientsPayload', 'yandexMapsKey', 'categories', 'animalsPayload'));
     }
 
     public function create()
@@ -39,9 +48,34 @@ class ClientAdminController extends Controller
     {
         $data = $this->validated($request);
         $data['tags'] = $this->normalizeTags($data['tags'] ?? []);
-        $client = Client::create($data);
+        $animals = $data['animals'] ?? [];
+        unset($data['animals']);
 
-        return redirect()->route('admin.clients.show', $client)->with('success', 'Клиент добавлен');
+        $client = DB::transaction(function () use ($data, $animals) {
+            $client = Client::create($data);
+            foreach ($animals as $position) {
+                $name = trim((string) ($position['name'] ?? ''));
+                $animal = !empty($position['animal_id']) ? Animal::find($position['animal_id']) : null;
+                if ($animal) {
+                    $animal->update(['client_id' => $client->id]);
+                    continue;
+                }
+                if ($name === '') {
+                    continue;
+                }
+                $category = Category::find($position['category_id'] ?? null);
+                $client->animals()->create([
+                    'name' => $name,
+                    'category_id' => $category?->id,
+                    'species' => $category?->name,
+                    'order' => (int) Animal::max('order') + 1,
+                ]);
+            }
+
+            return $client;
+        });
+
+        return redirect()->route('admin.clients.index')->with('success', 'Клиент добавлен'.($client->animals()->exists() ? ' вместе с питомцами' : ''));
     }
 
     public function show(Client $client)
@@ -143,6 +177,10 @@ class ClientAdminController extends Controller
             'tags' => 'nullable|array',
             'tags.*.name' => 'nullable|string|max:60',
             'tags.*.type' => 'nullable|in:positive,negative',
+            'animals' => 'nullable|array|max:30',
+            'animals.*.animal_id' => 'nullable|exists:animals,id',
+            'animals.*.name' => 'nullable|string|max:255',
+            'animals.*.category_id' => 'nullable|exists:categories,id',
         ]);
     }
 
