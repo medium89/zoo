@@ -128,20 +128,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <label class="form-label" for="animal-existing-client">Сохранённый клиент</label>
-                <select class="form-select" name="client_id" id="animal-existing-client">
-                    <option value="">Выберите из базы</option>
-                    @foreach($clients as $client)
-                        <option value="{{ $client->id }}" @selected($animal->client_id === $client->id)>{{ $client->name }}{{ $client->phone ? ' · '.$client->phone : '' }}</option>
-                    @endforeach
-                </select>
+                <div class="mb-3 client-animal-search-field">
+                    <label class="form-label" for="animal-client-search">Хозяин</label>
+                    <input class="form-control"
+                           id="animal-client-search"
+                           autocomplete="off"
+                           placeholder="Начните вводить имя"
+                           data-animal-client-search
+                           data-client-options='@json($clientsPayload, JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT)'>
+                    <input type="hidden" name="client_id" id="animal-existing-client">
+                    <input type="hidden" name="new_client_name" id="animal-new-client-name">
+                    <div class="client-animal-search-results is-hidden" aria-live="polite"></div>
+                    <div class="form-text">Выберите клиента из подсказок или введите новое имя — клиент создастся и сразу станет хозяином питомца.</div>
+                </div>
 
-                <div class="border-top mt-3 pt-3">
-                    <div class="fw-semibold mb-2">Или создать нового</div>
-                    <div class="mb-3">
-                        <label class="form-label" for="animal-new-client-name">Имя / ФИО</label>
-                        <input class="form-control" name="new_client_name" id="animal-new-client-name" maxlength="255">
-                    </div>
+                <div class="border-top pt-3 animal-new-client-details">
                     <div class="mb-3">
                         <label class="form-label" for="animal-new-client-phone">Телефон</label>
                         <input class="form-control" name="new_client_phone" id="animal-new-client-phone" maxlength="255">

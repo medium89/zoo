@@ -50,9 +50,14 @@ class AnimalAdminController extends Controller
             'boardings' => fn ($query) => $query->latest('start_date'),
         ]);
 
-        $clients = Client::orderBy('name')->get(['id', 'name', 'phone']);
+        $clientsPayload = Client::orderBy('name')->get(['id', 'name', 'phone'])
+            ->map(fn (Client $client) => [
+                'id' => $client->id,
+                'name' => $client->name,
+                'phone' => $client->phone,
+            ])->values()->all();
 
-        return view('admin.animals.show', compact('animal', 'clients'));
+        return view('admin.animals.show', compact('animal', 'clientsPayload'));
     }
 
     public function edit(Animal $animal)

@@ -1122,6 +1122,58 @@
             input.addEventListener('blur', () => window.setTimeout(() => results.classList.add('is-hidden'), 150));
         };
 
+        const initAnimalClientSearch = (popup) => {
+            const input = popup.querySelector('[data-animal-client-search]');
+            if (!input || input.dataset.searchReady === '1') return;
+
+            const selectedId = popup.querySelector('#animal-existing-client');
+            const newName = popup.querySelector('#animal-new-client-name');
+            const results = popup.querySelector('.client-animal-search-results');
+            const details = popup.querySelector('.animal-new-client-details');
+            if (!selectedId || !newName || !results) return;
+
+            input.dataset.searchReady = '1';
+            let options = [];
+            try { options = JSON.parse(input.dataset.clientOptions || '[]'); } catch (_) { options = []; }
+            const render = () => {
+                const query = input.value.trim().toLowerCase();
+                const matches = options.filter((client) => !query || client.name.toLowerCase().includes(query)).slice(0, 8);
+                results.replaceChildren();
+                if (!matches.length) {
+                    const empty = document.createElement('div');
+                    empty.className = 'client-animal-search-empty';
+                    empty.textContent = query ? 'Создать нового клиента с этим именем' : 'Сохранённых клиентов пока нет';
+                    results.append(empty);
+                } else {
+                    matches.forEach((client) => {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'client-animal-search-result';
+                        button.textContent = client.name + (client.phone ? ' · ' + client.phone : '');
+                        button.addEventListener('mousedown', (event) => {
+                            event.preventDefault();
+                            input.value = client.name;
+                            selectedId.value = client.id;
+                            newName.value = '';
+                            if (details) details.hidden = true;
+                            results.classList.add('is-hidden');
+                        });
+                        results.append(button);
+                    });
+                }
+                results.classList.remove('is-hidden');
+            };
+
+            input.addEventListener('focus', render);
+            input.addEventListener('input', () => {
+                selectedId.value = '';
+                newName.value = input.value.trim();
+                if (details) details.hidden = false;
+                render();
+            });
+            input.addEventListener('blur', () => window.setTimeout(() => results.classList.add('is-hidden'), 150));
+        };
+
         document.addEventListener('click', (event) => {
             const trigger = event.target.closest('[data-admin-popup-target]');
             if (!trigger) return;
@@ -1136,6 +1188,7 @@
                 document.body.appendChild(popup);
             }
             initClientAnimalSearch(popup);
+            initAnimalClientSearch(popup);
             bootstrap.Modal.getOrCreateInstance(popup).show();
         });
 
