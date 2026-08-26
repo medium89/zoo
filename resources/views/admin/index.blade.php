@@ -722,6 +722,7 @@
             <div class="sidebar-content__item">
                 <a href="{{ route('admin.dashboard') }}" class="{{ request()->is('zooadmin/dashboard*') ? 'active' : '' }}"><i class="fa fa-chart-line me-2"></i>Дашборд</a>
                 <a href="{{ route('admin.clients.index') }}" class="{{ request()->is('zooadmin/clients*') ? 'active' : '' }}"><i class="fa fa-address-book me-2"></i>Клиенты</a>
+                <a href="{{ route('admin.linked-data.index') }}" class="{{ request()->is('zooadmin/linked-data*') ? 'active' : '' }}"><i class="fa fa-link me-2"></i>Связанные данные</a>
                 <a href="{{ route('admin.client-map.index') }}" class="{{ request()->is('zooadmin/client-map*') ? 'active' : '' }}"><i class="fa fa-diagram-project me-2"></i>Карта клиентов</a>
                 <a href="{{ route('admin.animals.index') }}" class="{{ request()->is('zooadmin/animals*') ? 'active' : '' }}"><i class="fa fa-paw me-2"></i>Питомцы</a>
                 <a href="{{ route('admin.categories.index') }}" class="{{ request()->is('zooadmin/categories*') ? 'active' : '' }}"><i class="fa fa-tags me-2"></i>Категории животных</a>
@@ -764,6 +765,7 @@
                 'telegram-bot-settings' => ['Telegram-бот', route('admin.telegram-bot-settings.edit')],
                 'personal-data-consent' => ['Согласие ПДн', route('admin.personal-data-consent.edit')],
                 'clients' => ['Клиенты', route('admin.clients.index')],
+                'linked-data' => ['Связанные данные', route('admin.linked-data.index')],
                 'client-map' => ['Карта клиентов', route('admin.client-map.index')],
                 'animals' => ['Питомцы', route('admin.animals.index')],
                 'categories' => ['Категории животных', route('admin.categories.index')],

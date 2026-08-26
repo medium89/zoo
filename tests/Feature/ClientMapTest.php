@@ -53,4 +53,24 @@ class ClientMapTest extends TestCase
             ->assertOk()
             ->assertJsonPath('name', 'Дейзи-2');
     }
+
+    public function test_linked_data_page_creates_client_and_attached_animal(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.linked-data.index'))
+            ->assertOk()
+            ->assertSee('Связанные данные');
+
+        $this->actingAs($admin)
+            ->post(route('admin.linked-data.clients.store'), ['name' => 'Ирина', 'phone' => '+7999'])
+            ->assertRedirect(route('admin.linked-data.index'));
+        $client = Client::where('name', 'Ирина')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->post(route('admin.linked-data.animals.store'), ['client_id' => $client->id, 'name' => 'Рыжик'])
+            ->assertRedirect(route('admin.linked-data.index'));
+        $this->assertDatabaseHas('animals', ['name' => 'Рыжик', 'client_id' => $client->id]);
+    }
 }

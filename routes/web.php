@@ -30,6 +30,9 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
     Route::post('dashboard/tariffs', [App\Http\Controllers\DashboardController::class, 'updateTariffs'])->name('dashboard.tariffs.update');
     Route::post('tags/classify', App\Http\Controllers\TagClassificationController::class)->name('tags.classify');
     Route::get('client-map', [App\Http\Controllers\ClientMapController::class, 'index'])->name('client-map.index');
+    Route::get('linked-data', [App\Http\Controllers\LinkedDataController::class, 'index'])->name('linked-data.index');
+    Route::post('linked-data/clients', [App\Http\Controllers\LinkedDataController::class, 'storeClient'])->name('linked-data.clients.store');
+    Route::post('linked-data/animals', [App\Http\Controllers\LinkedDataController::class, 'storeAnimal'])->name('linked-data.animals.store');
     Route::post('client-map/clients', [App\Http\Controllers\ClientMapController::class, 'storeClient'])->name('client-map.clients.store');
     Route::patch('client-map/clients/{client}', [App\Http\Controllers\ClientMapController::class, 'updateClient'])->name('client-map.clients.update');
     Route::post('client-map/animals', [App\Http\Controllers\ClientMapController::class, 'storeAnimal'])->name('client-map.animals.store');
