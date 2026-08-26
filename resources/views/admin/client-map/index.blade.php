@@ -63,7 +63,7 @@
 @push('styles')
 <style>
 .client-node-page{min-width:0}.client-node-toolbar{display:flex;flex-wrap:wrap;gap:18px;padding:10px 14px;border:1px solid #dfe7ef;border-bottom:0;border-radius:12px 12px 0 0;background:#fff;color:#6e7e90;font-size:.82rem}.client-node-viewport{height:calc(100vh - 245px);min-height:580px;overflow:auto;border:1px solid #dfe7ef;border-radius:0 0 12px 12px;background:#edf2f7}.client-node-canvas{position:relative;width:2400px;height:1600px;background-color:#f8fafc;background-image:radial-gradient(#cbd5e1 1px,transparent 1px);background-size:20px 20px}.client-node-links{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.client-node-link{fill:none;stroke:#91a4b7;stroke-width:3}.client-node-unlink{pointer-events:all;cursor:pointer}.client-node-unlink circle{fill:#fff;stroke:#e1626d;stroke-width:2}.client-node-unlink text{fill:#d6404d;font-size:16px;font-weight:800;text-anchor:middle;dominant-baseline:central}.client-node{position:absolute;width:236px;border:1px solid #d9e2eb;border-radius:12px;background:#fff;box-shadow:0 9px 22px rgba(47,65,83,.12);overflow:hidden;user-select:none}.client-node--client{border-top:4px solid #3178c6}.client-node--animal{width:188px;border-top:4px solid #d38a2f}.client-node__head{display:flex;align-items:center;gap:8px;padding:9px 11px;cursor:grab;font-size:.72rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase}.client-node--client .client-node__head{background:#edf6ff;color:#1f629e}.client-node--animal .client-node__head{background:#fff6e9;color:#aa6816}.client-node__body{padding:12px}.client-node__name{font-size:.94rem;font-weight:800;color:#35475a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.client-node__meta{margin-top:4px;color:#768699;font-size:.8rem}.client-node__photo{width:52px;height:52px;float:right;margin-left:10px;border-radius:10px;object-fit:cover;background:#fff4dc}.client-node__photo--empty{display:grid;place-items:center;font-size:23px}.client-node__hint{margin-top:8px;color:#91a0af;font-size:.72rem}.client-node.is-dragging{z-index:10;box-shadow:0 16px 32px rgba(38,62,87,.22);cursor:grabbing}.client-node.is-drop-target{outline:3px solid rgba(49,120,198,.38);outline-offset:4px}@media(max-width:767px){.client-node-viewport{height:calc(100vh - 230px);min-height:480px}.client-node-toolbar{gap:9px;font-size:.72rem}.client-node-page{padding-right:0;padding-left:0}}
-.client-node__head{touch-action:none;-webkit-user-select:none;user-select:none}.client-node-zoom{display:flex;gap:4px}.client-node-zoom .btn{min-width:34px;font-weight:700}
+.client-node__head{touch-action:none;-webkit-user-select:none;user-select:none}.client-node__connect{margin-left:auto;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.9);color:inherit;font-size:19px;font-weight:700;line-height:24px;cursor:crosshair;touch-action:none;box-shadow:0 1px 4px rgba(38,62,87,.15)}.client-node__connect:active{transform:scale(.92)}.client-node-link--preview{stroke:#3178c6;stroke-width:3;stroke-dasharray:7 6}.client-node-zoom{display:flex;gap:4px}.client-node-zoom .btn{min-width:34px;font-weight:700}
 </style>
 @endpush
 
@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         attach: '{{ url('/zooadmin/client-map/animals') }}',
     };
     let dragged = null;
+    let linking = null;
     let pinch = null;
     let zoom = Number(localStorage.getItem('zooland-client-map-zoom') || 1);
 
@@ -132,14 +133,15 @@ document.addEventListener('DOMContentLoaded', () => {
         element.style.left = `${node.x}px`;
         element.style.top = `${node.y}px`;
         if (node.type === 'client') {
-            element.innerHTML = `<div class="client-node__head"><i class="fa fa-user"></i> Клиент</div><div class="client-node__body"><div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${escapeHtml(node.phone || 'Телефон не указан')}</div><div class="client-node__hint">Перетащите сюда питомца</div></div>`;
+            element.innerHTML = `<div class="client-node__head"><i class="fa fa-user"></i> Клиент<button class="client-node__connect" type="button" aria-label="Связать с питомцем">+</button></div><div class="client-node__body"><div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${escapeHtml(node.phone || 'Телефон не указан')}</div><div class="client-node__hint">Потяните + к питомцу</div></div>`;
         } else {
             const photo = node.photo
                 ? `<img class="client-node__photo" src="${escapeHtml(node.photo)}" alt="">`
                 : '<span class="client-node__photo client-node__photo--empty">🐾</span>';
-            element.innerHTML = `<div class="client-node__head"><i class="fa fa-paw"></i> Питомец</div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${node.client_id ? 'Привязан к клиенту' : 'Без хозяина'}</div></div>`;
+            element.innerHTML = `<div class="client-node__head"><i class="fa fa-paw"></i> Питомец<button class="client-node__connect" type="button" aria-label="Связать с клиентом">+</button></div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${node.client_id ? 'Привязан к клиенту' : 'Без хозяина'}</div></div>`;
         }
         element.querySelector('.client-node__head').addEventListener('pointerdown', event => startDrag(event, node, element));
+        element.querySelector('.client-node__connect').addEventListener('pointerdown', event => startLink(event, node));
         return element;
     };
     const linkPath = (animal, client) => {
@@ -163,53 +165,94 @@ document.addEventListener('DOMContentLoaded', () => {
             remove.innerHTML = '<circle r="12"></circle><text y="1">×</text>';
             remove.addEventListener('click', () => detach(animal)); links.append(remove);
         });
+        if (linking) {
+            const startX = linking.node.x + (linking.node.type === 'animal' ? 94 : 118);
+            const startY = linking.node.y + 48;
+            const endX = linking.x, endY = linking.y;
+            const preview = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            preview.setAttribute('class', 'client-node-link client-node-link--preview');
+            preview.setAttribute('d', `M ${startX} ${startY} C ${startX + 90} ${startY}, ${endX - 90} ${endY}, ${endX} ${endY}`);
+            links.append(preview);
+        }
     };
     const render = () => { layer.replaceChildren(...[...clients, ...animals].map(nodeElement)); renderLinks(); };
     const savePositions = () => request(urls.positions, 'POST', JSON.stringify({
         nodes: [...clients, ...animals].map(node => ({type: node.type, id: node.id, x: Math.round(node.x), y: Math.round(node.y)})),
     })).catch(() => console.warn('Не удалось сохранить положение нод'));
-    const dropTarget = event => {
+    const localPoint = event => {
         const rect = canvas.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / zoom;
-        const y = (event.clientY - rect.top) / zoom;
-        return clients.find(client => x >= client.x && x <= client.x + 236 && y >= client.y && y <= client.y + 128) || null;
+        return {x: (event.clientX - rect.left) / zoom, y: (event.clientY - rect.top) / zoom};
+    };
+    const connectionTarget = (event, source) => {
+        const point = localPoint(event);
+        const candidates = source.type === 'animal' ? clients : animals;
+        return candidates.find(node => {
+            const width = node.type === 'client' ? 236 : 188;
+            return point.x >= node.x && point.x <= node.x + width && point.y >= node.y && point.y <= node.y + 128;
+        }) || null;
     };
     const startDrag = (event, node, element) => {
+        if (event.target.closest('.client-node__connect')) return;
         event.preventDefault();
         const rect = canvas.getBoundingClientRect();
         dragged = {node, element, offset: {x: (event.clientX - rect.left) / zoom - node.x, y: (event.clientY - rect.top) / zoom - node.y}};
         element.classList.add('is-dragging');
         element.setPointerCapture?.(event.pointerId);
     };
+    const startLink = (event, node) => {
+        event.preventDefault(); event.stopPropagation();
+        const point = localPoint(event);
+        linking = {node, x: point.x, y: point.y};
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        renderLinks();
+    };
     document.addEventListener('pointermove', event => {
         if (pinch) return;
+        if (linking) {
+            const point = localPoint(event);
+            linking.x = point.x; linking.y = point.y;
+            const target = connectionTarget(event, linking.node);
+            layer.querySelectorAll('.client-node').forEach(item => item.classList.toggle('is-drop-target', target && String(target.id) === item.dataset.id && target.type === item.dataset.type));
+            renderLinks();
+            return;
+        }
         if (!dragged) return;
         const rect = canvas.getBoundingClientRect(), node = dragged.node;
         node.x = Math.max(0, Math.min(2200, (event.clientX - rect.left) / zoom - dragged.offset.x));
         node.y = Math.max(0, Math.min(1500, (event.clientY - rect.top) / zoom - dragged.offset.y));
         dragged.element.style.left = `${node.x}px`; dragged.element.style.top = `${node.y}px`;
         renderLinks();
-        const target = dropTarget(event);
-        layer.querySelectorAll('.client-node--client').forEach(item => item.classList.toggle('is-drop-target', target && String(target.id) === item.dataset.id));
+        layer.querySelectorAll('.client-node').forEach(item => item.classList.remove('is-drop-target'));
     });
     document.addEventListener('pointerup', event => {
-        if (!dragged) return;
-        const {node, element} = dragged, target = dropTarget(event);
-        element.classList.remove('is-dragging');
-        layer.querySelectorAll('.client-node--client').forEach(item => item.classList.toggle('is-drop-target', target && String(target.id) === item.dataset.id));
-        if (node.type === 'animal' && target && node.client_id !== target.id) {
-            const previousClientId = node.client_id;
-            node.client_id = target.id;
-            render();
-            request(`${urls.attach}/${node.id}/clients/${target.id}`).catch(() => {
-                node.client_id = previousClientId;
+        if (linking) {
+            const source = linking.node, target = connectionTarget(event, source);
+            linking = null;
+            layer.querySelectorAll('.client-node').forEach(item => item.classList.remove('is-drop-target'));
+            if (target) {
+                const animal = source.type === 'animal' ? source : target;
+                const client = source.type === 'client' ? source : target;
+                const previousClientId = animal.client_id;
+                animal.client_id = client.id;
                 render();
-                alert('Не удалось сохранить связь. Попробуйте ещё раз.');
-            });
+                request(`${urls.attach}/${animal.id}/clients/${client.id}`).catch(() => {
+                    animal.client_id = previousClientId;
+                    render();
+                    alert('Не удалось сохранить связь. Попробуйте ещё раз.');
+                });
+            } else {
+                renderLinks();
+            }
+            return;
         }
+        if (!dragged) return;
+        const {element} = dragged;
+        element.classList.remove('is-dragging');
+        layer.querySelectorAll('.client-node').forEach(item => item.classList.remove('is-drop-target'));
         savePositions(); dragged = null;
     }, true);
     document.addEventListener('pointercancel', () => {
+        if (linking) { linking = null; renderLinks(); }
         if (!dragged) return;
         dragged.element.classList.remove('is-dragging');
         savePositions(); dragged = null;
