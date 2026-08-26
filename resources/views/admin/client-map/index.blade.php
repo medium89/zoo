@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clients = @json($clientsPayload);
     const animals = @json($animalsPayload);
     const canvas = document.getElementById('clientNodeCanvas');
+    const viewport = document.getElementById('clientNodeViewport');
     const layer = document.getElementById('clientNodeLayer');
     const links = document.getElementById('clientNodeLinks');
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
@@ -83,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         attach: '{{ url('/zooadmin/client-map/animals') }}',
     };
     let dragged = null;
-    let saveTimer;
+    let pinch = null;
     let zoom = Number(localStorage.getItem('zooland-client-map-zoom') || 1);
 
     const defaults = (type, index) => type === 'client'
@@ -102,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }[char]));
     const request = (url, method = 'POST', body = null) => fetch(url, {
         method, body,
+        credentials: 'same-origin',
         headers: {
             'X-CSRF-TOKEN': csrf,
             'Accept': 'application/json',
@@ -144,10 +146,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const sx = animal.x + 94, sy = animal.y + 54, tx = client.x + 118, ty = client.y + 48;
         const mid = (sx + tx) / 2;
         const direction = ty >= sy ? 1 : -1;
-        const radius = Math.max(0, Math.min(52, Math.abs(ty - sy) / 2, Math.abs(tx - sx) / 4));
-        const firstSweep = direction > 0 ? 1 : 0;
-        const secondSweep = direction > 0 ? 0 : 1;
-        return { d: `M ${sx} ${sy} H ${mid - radius} A ${radius} ${radius} 0 0 ${firstSweep} ${mid} ${sy + direction * radius} V ${ty - direction * radius} A ${radius} ${radius} 0 0 ${secondSweep} ${mid + radius} ${ty} H ${tx}`, x: mid, y: (sy + ty) / 2 };
+        const radius = Math.max(0, Math.min(72, Math.abs(ty - sy) / 2, Math.abs(tx - sx) / 4));
+        const kappa = .55228475 * radius;
+        return { d: `M ${sx} ${sy} H ${mid - radius} C ${mid - radius + kappa} ${sy}, ${mid} ${sy + direction * (radius - kappa)}, ${mid} ${sy + direction * radius} V ${ty - direction * radius} C ${mid} ${ty - direction * (radius - kappa)}, ${mid + radius - kappa} ${ty}, ${mid + radius} ${ty} H ${tx}`, x: mid, y: (sy + ty) / 2 };
     };
     const renderLinks = () => {
         links.replaceChildren();
@@ -164,10 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     const render = () => { layer.replaceChildren(...[...clients, ...animals].map(nodeElement)); renderLinks(); };
-    const savePositions = () => {
-        clearTimeout(saveTimer);
-        saveTimer = setTimeout(() => request(urls.positions, 'POST', JSON.stringify({nodes: [...clients, ...animals].map(node => ({type: node.type, id: node.id, x: Math.round(node.x), y: Math.round(node.y)}))})), 400);
-    };
+    const savePositions = () => request(urls.positions, 'POST', JSON.stringify({
+        nodes: [...clients, ...animals].map(node => ({type: node.type, id: node.id, x: Math.round(node.x), y: Math.round(node.y)})),
+    })).catch(() => console.warn('Не удалось сохранить положение нод'));
     const dropTarget = event => {
         dragged.element.style.pointerEvents = 'none';
         const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.client-node--client');
@@ -181,7 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
         element.classList.add('is-dragging');
         element.setPointerCapture?.(event.pointerId);
     };
-    window.addEventListener('pointermove', event => {
+    document.addEventListener('pointermove', event => {
+        if (pinch) return;
         if (!dragged) return;
         const rect = canvas.getBoundingClientRect(), node = dragged.node;
         node.x = Math.max(0, Math.min(2200, (event.clientX - rect.left) / zoom - dragged.offset.x));
@@ -191,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = dropTarget(event);
         layer.querySelectorAll('.client-node--client').forEach(item => item.classList.toggle('is-drop-target', item === target));
     });
-    window.addEventListener('pointerup', event => {
+    document.addEventListener('pointerup', event => {
         if (!dragged) return;
         const {node, element} = dragged, target = dropTarget(event);
         element.classList.remove('is-dragging');
@@ -201,6 +202,26 @@ document.addEventListener('DOMContentLoaded', () => {
             if (client && node.client_id !== client.id) request(`${urls.attach}/${node.id}/clients/${client.id}`).then(() => { node.client_id = client.id; render(); });
         }
         savePositions(); dragged = null;
+    }, true);
+    document.addEventListener('pointercancel', () => {
+        if (!dragged) return;
+        dragged.element.classList.remove('is-dragging');
+        savePositions(); dragged = null;
+    }, true);
+    const touchDistance = touches => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+    viewport.addEventListener('touchstart', event => {
+        if (event.touches.length !== 2) return;
+        event.preventDefault();
+        if (dragged) { dragged.element.classList.remove('is-dragging'); dragged = null; }
+        pinch = {distance: touchDistance(event.touches), zoom};
+    }, {passive: false});
+    viewport.addEventListener('touchmove', event => {
+        if (!pinch || event.touches.length !== 2) return;
+        event.preventDefault();
+        applyZoom(pinch.zoom * touchDistance(event.touches) / pinch.distance);
+    }, {passive: false});
+    viewport.addEventListener('touchend', event => {
+        if (event.touches.length < 2) pinch = null;
     });
     const detach = animal => {
         if (!confirm(`Отвязать ${animal.name} от клиента?`)) return;
