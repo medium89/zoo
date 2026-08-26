@@ -31,6 +31,7 @@
             display: flex;
             min-height: 100vh;
             width: 100%;
+            overflow-x: hidden;
         }
 
         .sidebar {
@@ -102,8 +103,10 @@
 
         .content {
             padding: 32px;
-            flex: 1 1 auto;
-            width: 100%;
+            flex: 1 1 0;
+            min-width: 0;
+            width: auto;
+            overflow-x: hidden;
         }
 
         .admin-breadcrumbs {
