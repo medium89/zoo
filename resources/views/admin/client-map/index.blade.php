@@ -397,10 +397,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if (!dragged) return;
-        const {element} = dragged;
+        const {node, element} = dragged;
+        const target = connectionTarget(event, node);
         element.classList.remove('is-dragging');
         layer.querySelectorAll('.client-node').forEach(item => item.classList.remove('is-drop-target'));
         savePositions(); dragged = null;
+        if (!target) return;
+        const animal = node.type === 'animal' ? node : target;
+        const client = node.type === 'client' ? node : target;
+        if (animal.client_id === client.id) return;
+        const previousClientId = animal.client_id;
+        animal.client_id = client.id;
+        render();
+        request(`${urls.attach}/${animal.id}/clients/${client.id}`).catch(() => {
+            animal.client_id = previousClientId;
+            render();
+            alert('Не удалось сохранить связь. Попробуйте ещё раз.');
+        });
     }, true);
     document.addEventListener('pointercancel', () => {
         panning = null; viewport.classList.remove('is-panning');
