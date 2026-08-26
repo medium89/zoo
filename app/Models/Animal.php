@@ -19,6 +19,8 @@ class Animal extends Model
         'note',
         'tags',
         'order',
+        'map_x',
+        'map_y',
     ];
 
     protected $casts = [

@@ -13,6 +13,8 @@ class Client extends Model
         'name',
         'phone',
         'address',
+        'map_x',
+        'map_y',
         'note',
         'tags',
     ];

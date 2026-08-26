@@ -29,6 +29,12 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
     Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::post('dashboard/tariffs', [App\Http\Controllers\DashboardController::class, 'updateTariffs'])->name('dashboard.tariffs.update');
     Route::post('tags/classify', App\Http\Controllers\TagClassificationController::class)->name('tags.classify');
+    Route::get('client-map', [App\Http\Controllers\ClientMapController::class, 'index'])->name('client-map.index');
+    Route::post('client-map/clients', [App\Http\Controllers\ClientMapController::class, 'storeClient'])->name('client-map.clients.store');
+    Route::post('client-map/animals', [App\Http\Controllers\ClientMapController::class, 'storeAnimal'])->name('client-map.animals.store');
+    Route::post('client-map/positions', [App\Http\Controllers\ClientMapController::class, 'savePositions'])->name('client-map.positions.save');
+    Route::post('client-map/animals/{animal}/clients/{client}', [App\Http\Controllers\ClientMapController::class, 'attachAnimal'])->name('client-map.animals.attach');
+    Route::delete('client-map/animals/{animal}/client', [App\Http\Controllers\ClientMapController::class, 'detachAnimal'])->name('client-map.animals.detach');
     Route::get('settings', [App\Http\Controllers\AdminController::class, 'settings'])->name('settings');
     Route::post('settings/site', [App\Http\Controllers\AdminController::class, 'saveSiteStatus'])->name('settings.site');
     Route::get('settings/telegram-bot', [App\Http\Controllers\TelegramBotSettingsController::class, 'edit'])->name('telegram-bot-settings.edit');
