@@ -29,8 +29,8 @@ class ClientMapController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:1000',
-            'map_x' => 'nullable|numeric|min:0|max:10000',
-            'map_y' => 'nullable|numeric|min:0|max:10000',
+            'map_x' => 'nullable|numeric|between:-1000000,1000000',
+            'map_y' => 'nullable|numeric|between:-1000000,1000000',
         ]);
 
         $client = Client::create($data);
@@ -44,8 +44,8 @@ class ClientMapController extends Controller
             'name' => 'required|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
             'photo' => 'nullable|image|max:10240',
-            'map_x' => 'nullable|numeric|min:0|max:10000',
-            'map_y' => 'nullable|numeric|min:0|max:10000',
+            'map_x' => 'nullable|numeric|between:-1000000,1000000',
+            'map_y' => 'nullable|numeric|between:-1000000,1000000',
         ]);
 
         $category = Category::find($data['category_id'] ?? null);
@@ -101,8 +101,8 @@ class ClientMapController extends Controller
             'nodes' => 'required|array|max:500',
             'nodes.*.type' => 'required|in:client,animal',
             'nodes.*.id' => 'required|integer',
-            'nodes.*.x' => 'required|numeric|min:0|max:10000',
-            'nodes.*.y' => 'required|numeric|min:0|max:10000',
+            'nodes.*.x' => 'required|numeric|between:-1000000,1000000',
+            'nodes.*.y' => 'required|numeric|between:-1000000,1000000',
         ]);
 
         foreach ($data['nodes'] as $node) {

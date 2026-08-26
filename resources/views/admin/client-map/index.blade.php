@@ -367,8 +367,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (!dragged) return;
         const rect = canvas.getBoundingClientRect(), node = dragged.node;
-        node.x = Math.max(0, Math.min(2200, (event.clientX - rect.left) / zoom - dragged.offset.x));
-        node.y = Math.max(0, Math.min(1500, (event.clientY - rect.top) / zoom - dragged.offset.y));
+        node.x = Math.max(-1000000, Math.min(1000000, (event.clientX - rect.left) / zoom - dragged.offset.x));
+        node.y = Math.max(-1000000, Math.min(1000000, (event.clientY - rect.top) / zoom - dragged.offset.y));
         dragged.element.style.left = `${node.x}px`; dragged.element.style.top = `${node.y}px`;
         renderLinks();
         layer.querySelectorAll('.client-node').forEach(item => item.classList.remove('is-drop-target'));

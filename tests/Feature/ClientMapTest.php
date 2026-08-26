@@ -34,6 +34,11 @@ class ClientMapTest extends TestCase
         $this->assertDatabaseHas('clients', ['id' => $client->id, 'map_x' => 180, 'map_y' => 240]);
         $this->assertDatabaseHas('animals', ['id' => $animal->id, 'map_x' => 640, 'map_y' => 480]);
 
+        $this->actingAs($admin)->postJson(route('admin.client-map.positions.save'), [
+            'nodes' => [['type' => 'animal', 'id' => $animal->id, 'x' => -420, 'y' => -180]],
+        ])->assertOk();
+        $this->assertDatabaseHas('animals', ['id' => $animal->id, 'map_x' => -420, 'map_y' => -180]);
+
         $this->actingAs($admin)
             ->postJson(route('admin.client-map.animals.attach', [$animal, $client]))
             ->assertOk();
