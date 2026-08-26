@@ -53,6 +53,11 @@
                 @endforeach
             </div>
         </div>
+        <div class="client-node-confirm" id="clientMapUnlinkConfirm" hidden>
+            <span>Разорвать связь?</span>
+            <button class="btn btn-sm btn-danger" type="button" data-confirm-unlink>Да</button>
+            <button class="btn btn-sm btn-light" type="button" data-cancel-unlink>Нет</button>
+        </div>
     </div>
 </div>
 
@@ -63,7 +68,7 @@
 @push('styles')
 <style>
 .client-node-page{min-width:0}.client-node-toolbar{display:flex;flex-wrap:wrap;gap:18px;padding:10px 14px;border:1px solid #dfe7ef;border-bottom:0;border-radius:12px 12px 0 0;background:#fff;color:#6e7e90;font-size:.82rem}.client-node-viewport{height:calc(100vh - 245px);min-height:580px;overflow:hidden;position:relative;border:1px solid #dfe7ef;border-radius:0 0 12px 12px;background:#edf2f7;touch-action:none;cursor:grab}.client-node-viewport.is-panning{cursor:grabbing}.client-node-canvas{position:relative;width:2400px;height:1600px;transform-origin:0 0;will-change:transform;background-color:#f8fafc;background-image:radial-gradient(#cbd5e1 1px,transparent 1px);background-size:20px 20px}.client-node-links{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.client-node-link{fill:none;stroke:#91a4b7;stroke-width:3}.client-node-unlink{pointer-events:all;cursor:pointer}.client-node-unlink circle{fill:#fff;stroke:#e1626d;stroke-width:2}.client-node-unlink text{fill:#d6404d;font-size:16px;font-weight:800;text-anchor:middle;dominant-baseline:central}.client-node{position:absolute;width:236px;border:1px solid #d9e2eb;border-radius:12px;background:#fff;box-shadow:0 9px 22px rgba(47,65,83,.12);overflow:hidden;user-select:none}.client-node--client{border-top:4px solid #3178c6}.client-node--animal{width:188px;border-top:4px solid #d38a2f}.client-node__head{display:flex;align-items:center;gap:8px;padding:9px 11px;cursor:grab;font-size:.72rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase}.client-node--client .client-node__head{background:#edf6ff;color:#1f629e}.client-node--animal .client-node__head{background:#fff6e9;color:#aa6816}.client-node__body{padding:12px}.client-node__name{font-size:.94rem;font-weight:800;color:#35475a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.client-node__meta{margin-top:4px;color:#768699;font-size:.8rem}.client-node__photo{width:52px;height:52px;float:right;margin-left:10px;border-radius:10px;object-fit:cover;background:#fff4dc}.client-node__photo--empty{display:grid;place-items:center;font-size:23px}.client-node__hint{margin-top:8px;color:#91a0af;font-size:.72rem}.client-node.is-dragging{z-index:10;box-shadow:0 16px 32px rgba(38,62,87,.22);cursor:grabbing}.client-node.is-drop-target{outline:3px solid rgba(49,120,198,.38);outline-offset:4px}@media(max-width:767px){.client-node-viewport{height:calc(100vh - 230px);min-height:480px}.client-node-toolbar{gap:9px;font-size:.72rem}.client-node-page{padding-right:0;padding-left:0}}
-.client-node__head{touch-action:none;-webkit-user-select:none;user-select:none}.client-node__connect{margin-left:auto;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.9);color:inherit;font-size:19px;font-weight:700;line-height:24px;cursor:crosshair;touch-action:none;box-shadow:0 1px 4px rgba(38,62,87,.15)}.client-node__connect:active{transform:scale(.92)}.client-node-link--preview{stroke:#3178c6;stroke-width:3;stroke-dasharray:7 6}.client-node-zoom{display:flex;gap:4px}.client-node-zoom .btn{min-width:34px;font-weight:700}
+.client-node__head{touch-action:none;-webkit-user-select:none;user-select:none}.client-node__connect{margin-left:auto;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.9);color:inherit;font-size:19px;font-weight:700;line-height:24px;cursor:crosshair;touch-action:none;box-shadow:0 1px 4px rgba(38,62,87,.15)}.client-node__connect:active{transform:scale(.92)}.client-node-link--preview{stroke:#3178c6;stroke-width:3;stroke-dasharray:7 6}.client-node-confirm{position:absolute;z-index:30;display:flex;align-items:center;gap:7px;padding:8px 9px;border:1px solid #dce5ee;border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(38,62,87,.2);font-size:.78rem;font-weight:700;white-space:nowrap}.client-node-confirm[hidden]{display:none}.client-node-confirm .btn{padding:3px 7px;font-size:.74rem}.client-node-zoom{display:flex;gap:4px}.client-node-zoom .btn{min-width:34px;font-weight:700}
 </style>
 @endpush
 
@@ -76,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewport = document.getElementById('clientNodeViewport');
     const layer = document.getElementById('clientNodeLayer');
     const links = document.getElementById('clientNodeLinks');
+    const unlinkConfirm = document.getElementById('clientMapUnlinkConfirm');
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
     const urls = {
         positions: '{{ route('admin.client-map.positions.save') }}',
@@ -88,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let pinch = null;
     let panning = null;
     let pan = {x: 0, y: 0};
+    let pendingUnlink = null;
     let zoom = Number(localStorage.getItem('zooland-client-map-zoom') || 1);
 
     const defaults = (type, index) => type === 'client'
@@ -172,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const remove = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             remove.setAttribute('class', 'client-node-unlink'); remove.setAttribute('transform', `translate(${link.x} ${link.y})`);
             remove.innerHTML = '<circle r="12"></circle><text y="1">×</text>';
-            remove.addEventListener('click', () => detach(animal)); links.append(remove);
+            remove.addEventListener('click', event => showUnlinkConfirm(animal, event)); links.append(remove);
         });
         if (linking) {
             const startX = linking.node.x + (linking.node.type === 'animal' ? 94 : 118);
@@ -216,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderLinks();
     };
     viewport.addEventListener('pointerdown', event => {
-        if (event.target.closest('.client-node, .client-node-unlink')) return;
+        if (event.target.closest('.client-node, .client-node-unlink, #clientMapUnlinkConfirm')) return;
         event.preventDefault();
         panning = {x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y};
         viewport.classList.add('is-panning');
@@ -296,10 +303,26 @@ document.addEventListener('DOMContentLoaded', () => {
     viewport.addEventListener('touchend', event => {
         if (event.touches.length < 2) pinch = null;
     });
-    const detach = animal => {
-        if (!confirm(`Отвязать ${animal.name} от клиента?`)) return;
-        request(`${urls.attach}/${animal.id}/client`, 'DELETE').then(() => { animal.client_id = null; render(); });
+    const hideUnlinkConfirm = () => { pendingUnlink = null; unlinkConfirm.hidden = true; };
+    const showUnlinkConfirm = (animal, event) => {
+        event.preventDefault(); event.stopPropagation();
+        pendingUnlink = animal;
+        const rect = viewport.getBoundingClientRect();
+        unlinkConfirm.hidden = false;
+        const width = unlinkConfirm.offsetWidth;
+        unlinkConfirm.style.left = `${Math.max(8, Math.min(rect.width - width - 8, event.clientX - rect.left + 14))}px`;
+        unlinkConfirm.style.top = `${Math.max(8, Math.min(rect.height - unlinkConfirm.offsetHeight - 8, event.clientY - rect.top - 18))}px`;
     };
+    unlinkConfirm.querySelector('[data-cancel-unlink]').addEventListener('click', hideUnlinkConfirm);
+    unlinkConfirm.querySelector('[data-confirm-unlink]').addEventListener('click', () => {
+        const animal = pendingUnlink;
+        hideUnlinkConfirm();
+        if (!animal) return;
+        request(`${urls.attach}/${animal.id}/client`, 'DELETE').then(() => { animal.client_id = null; render(); });
+    });
+    document.addEventListener('pointerdown', event => {
+        if (!unlinkConfirm.hidden && !event.target.closest('#clientMapUnlinkConfirm, .client-node-unlink')) hideUnlinkConfirm();
+    });
     const addForm = (id, url, type) => document.getElementById(id).addEventListener('submit', event => {
         event.preventDefault();
         const data = new FormData(event.currentTarget), initial = defaults(type, type === 'client' ? clients.length : animals.length);
