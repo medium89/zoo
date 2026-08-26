@@ -12,7 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('queue:work database --queue=telegram --stop-when-empty --max-time=50 --tries=3')
+        // The worker must stay alive between cron ticks: with stop-when-empty it
+        // exits before a newly received Telegram update reaches the database.
+        $schedule->command('queue:work database --queue=telegram --sleep=1 --max-time=55 --tries=3')
             ->everyMinute()
             ->withoutOverlapping();
 
