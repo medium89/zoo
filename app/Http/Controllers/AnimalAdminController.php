@@ -90,23 +90,30 @@ class AnimalAdminController extends Controller
             'new_client_note' => 'nullable|string|max:5000',
         ]);
 
+        $name = trim((string) ($data['new_client_name'] ?? ''));
+        if ($name !== '') {
+            $client = Client::firstOrCreate(['name' => $name], [
+                'phone' => $data['new_client_phone'] ?? null,
+                'note' => $data['new_client_note'] ?? null,
+            ]);
+            $animal->update(['client_id' => $client->id]);
+
+            return back()->with('success', 'Хозяин создан и назначен');
+        }
+
         if (!empty($data['client_id'])) {
             $animal->update(['client_id' => $data['client_id']]);
             return back()->with('success', 'Хозяин назначен');
         }
 
-        $name = trim((string) ($data['new_client_name'] ?? ''));
-        if ($name === '') {
-            return back()->withErrors(['new_client_name' => 'Выберите существующего клиента или укажите имя нового.']);
-        }
+        return back()->withErrors(['new_client_name' => 'Выберите существующего клиента или укажите имя нового.']);
+    }
 
-        $client = Client::firstOrCreate(['name' => $name], [
-            'phone' => $data['new_client_phone'] ?? null,
-            'note' => $data['new_client_note'] ?? null,
-        ]);
-        $animal->update(['client_id' => $client->id]);
+    public function detachClient(Animal $animal)
+    {
+        $animal->update(['client_id' => null]);
 
-        return back()->with('success', 'Хозяин создан и назначен');
+        return back()->with('success', 'Хозяин отвязан от питомца');
     }
 
     public function destroyPhoto(Animal $animal, AnimalPhoto $photo)

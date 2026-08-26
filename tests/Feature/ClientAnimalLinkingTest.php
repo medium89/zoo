@@ -46,4 +46,23 @@ class ClientAnimalLinkingTest extends TestCase
         $this->assertDatabaseHas('clients', ['name' => 'Сергей']);
         $this->assertDatabaseHas('animals', ['id' => $animal->id, 'client_id' => Client::where('name', 'Сергей')->value('id')]);
     }
+
+    public function test_client_and_animal_can_be_detached_without_deleting_records(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $client = Client::create(['name' => 'Анастасия']);
+        $animal = Animal::create(['name' => 'Дейзи', 'client_id' => $client->id, 'order' => 1]);
+
+        $this->actingAs($admin)
+            ->delete(route('admin.clients.animals.detach', [$client, $animal]))
+            ->assertRedirect();
+        $this->assertDatabaseHas('animals', ['id' => $animal->id, 'client_id' => null]);
+
+        $animal->update(['client_id' => $client->id]);
+        $this->actingAs($admin)
+            ->delete(route('admin.animals.client.detach', $animal))
+            ->assertRedirect();
+        $this->assertDatabaseHas('animals', ['id' => $animal->id, 'client_id' => null]);
+        $this->assertDatabaseHas('clients', ['id' => $client->id]);
+    }
 }

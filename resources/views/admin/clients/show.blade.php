@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>{{ $client->name }}</h1>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#clientAnimalModal">Добавить питомца</button>
+            <button type="button" class="btn btn-outline-primary" data-admin-popup-target="#clientAnimalModal">Добавить питомца</button>
             <a href="{{ route('admin.clients.edit', $client) }}" class="btn btn-primary">Редактировать</a>
         </div>
     </div>
@@ -39,9 +39,16 @@
                                     <a href="{{ route('admin.animals.show', $animal) }}" class="fw-bold">{{ $animal->name }}</a>
                                     <div class="text-muted small">{{ $animal->category?->name ?: 'категория не указана' }} · записей: {{ $animal->boardings->count() }}</div>
                                 </div>
-                                @if($animal->photos->first())
-                                    <img src="{{ Storage::url($animal->photos->first()->path) }}" alt="{{ $animal->name }}" style="width:54px;height:54px;object-fit:cover;border-radius:8px;">
-                                @endif
+                                <div class="d-flex align-items-start gap-2">
+                                    @if($animal->photos->first())
+                                        <img src="{{ Storage::url($animal->photos->first()->path) }}" alt="{{ $animal->name }}" style="width:54px;height:54px;object-fit:cover;border-radius:8px;">
+                                    @endif
+                                    <form action="{{ route('admin.clients.animals.detach', [$client, $animal]) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-sm btn-danger btn-icon js-unlink-trigger" title="Отвязать питомца" aria-label="Отвязать питомца" data-confirm="Отвязать питомца «{{ $animal->name }}» от клиента? Питомец останется в базе."><i class="fa fa-xmark"></i></button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     @empty
@@ -108,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 @endpush
 
-<div class="modal fade" id="clientAnimalModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade admin-secondary-modal" id="clientAnimalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form class="modal-content" method="POST" action="{{ route('admin.clients.animals.attach', $client) }}">
             @csrf

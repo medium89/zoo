@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>{{ $animal->name }}</h1>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#animalClientModal">Назначить хозяина</button>
+            <button type="button" class="btn btn-outline-primary" data-admin-popup-target="#animalClientModal">Назначить хозяина</button>
             <a href="{{ route('admin.animals.edit', $animal) }}" class="btn btn-primary">Редактировать</a>
         </div>
     </div>
@@ -29,6 +29,11 @@
                     <p><strong>Хозяин:</strong>
                         @if($animal->client)
                             <a href="{{ route('admin.clients.show', $animal->client) }}">{{ $animal->client->name }}</a>
+                            <form action="{{ route('admin.animals.client.detach', $animal) }}" method="POST" class="d-inline ms-1">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="btn btn-sm btn-danger btn-icon js-unlink-trigger" title="Отвязать хозяина" aria-label="Отвязать хозяина" data-confirm="Отвязать хозяина от питомца «{{ $animal->name }}»? Карточка клиента останется в базе."><i class="fa fa-xmark"></i></button>
+                            </form>
                         @else
                             —
                         @endif
@@ -114,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 @endpush
 
-<div class="modal fade" id="animalClientModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade admin-secondary-modal" id="animalClientModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form class="modal-content" method="POST" action="{{ route('admin.animals.client.assign', $animal) }}">
             @csrf

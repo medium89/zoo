@@ -89,28 +89,37 @@ class ClientAdminController extends Controller
             'note' => 'nullable|string|max:5000',
         ]);
 
+        $name = trim((string) ($data['new_animal_name'] ?? ''));
+        if ($name !== '') {
+            $category = Category::find($data['category_id'] ?? null);
+            $client->animals()->create([
+                'name' => $name,
+                'category_id' => $category?->id,
+                'species' => $category?->name,
+                'dog_size' => $data['dog_size'] ?? null,
+                'description' => $data['description'] ?? null,
+                'note' => $data['note'] ?? null,
+                'order' => (int) Animal::max('order') + 1,
+            ]);
+
+            return back()->with('success', 'Питомец создан и привязан к клиенту');
+        }
+
         if (!empty($data['animal_id'])) {
             Animal::findOrFail($data['animal_id'])->update(['client_id' => $client->id]);
             return back()->with('success', 'Питомец привязан к клиенту');
         }
 
-        $name = trim((string) ($data['new_animal_name'] ?? ''));
-        if ($name === '') {
-            return back()->withErrors(['new_animal_name' => 'Выберите питомца или укажите кличку нового.']);
-        }
+        return back()->withErrors(['new_animal_name' => 'Выберите питомца или укажите кличку нового.']);
+    }
 
-        $category = Category::find($data['category_id'] ?? null);
-        $client->animals()->create([
-            'name' => $name,
-            'category_id' => $category?->id,
-            'species' => $category?->name,
-            'dog_size' => $data['dog_size'] ?? null,
-            'description' => $data['description'] ?? null,
-            'note' => $data['note'] ?? null,
-            'order' => (int) Animal::max('order') + 1,
-        ]);
+    public function detachAnimal(Client $client, Animal $animal)
+    {
+        abort_unless($animal->client_id === $client->id, 404);
 
-        return back()->with('success', 'Питомец создан и привязан к клиенту');
+        $animal->update(['client_id' => null]);
+
+        return back()->with('success', 'Питомец отвязан от клиента');
     }
 
     private function validated(Request $request): array

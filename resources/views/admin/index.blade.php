@@ -223,6 +223,14 @@
             padding: 0;
         }
 
+        .admin-secondary-modal {
+            z-index: 1070;
+        }
+
+        #confirmUnlinkModal {
+            z-index: 1080;
+        }
+
         .admin-editor-modal .card {
             box-shadow: none;
         }
@@ -817,6 +825,21 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="confirmUnlinkModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Отвязать связь?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body"><p class="mb-0" id="confirmUnlinkText">Эта связь будет удалена.</p></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmUnlinkBtn">Отвязать</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
@@ -1025,6 +1048,26 @@
         };
 
         document.addEventListener('click', (event) => {
+            const trigger = event.target.closest('[data-admin-popup-target]');
+            if (!trigger) return;
+
+            const popup = document.querySelector(trigger.dataset.adminPopupTarget);
+            if (!popup) return;
+
+            // Карточки клиентов и питомцев загружаются внутрь основной модалки.
+            // Вторую Bootstrap-модалку нельзя оставлять вложенной: она окажется
+            // под backdrop. Переносим её к body перед открытием.
+            if (popup.parentElement !== document.body) {
+                document.body.appendChild(popup);
+            }
+            bootstrap.Modal.getOrCreateInstance(popup).show();
+        });
+
+        editorModalEl?.addEventListener('hidden.bs.modal', () => {
+            document.querySelectorAll('.admin-secondary-modal').forEach((popup) => popup.remove());
+        });
+
+        document.addEventListener('click', (event) => {
             const link = event.target.closest('a[href]');
             if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === '_blank') return;
             if (!isEditorUrl(new URL(link.href, window.location.origin))) return;
@@ -1219,6 +1262,29 @@
             if (deleteForm) {
                 deleteForm.submit();
                 deleteForm = null;
+            }
+        });
+
+        const unlinkModalEl = document.getElementById('confirmUnlinkModal');
+        const unlinkTextEl = document.getElementById('confirmUnlinkText');
+        const unlinkBtn = document.getElementById('confirmUnlinkBtn');
+        const unlinkModal = unlinkModalEl ? new bootstrap.Modal(unlinkModalEl) : null;
+        let unlinkForm = null;
+        document.addEventListener('click', (event) => {
+            const button = event.target.closest('.js-unlink-trigger');
+            if (!button || !unlinkModal) return;
+            const form = button.closest('form');
+            if (!form) return;
+
+            event.preventDefault();
+            unlinkForm = form;
+            unlinkTextEl.textContent = button.dataset.confirm || 'Эта связь будет удалена.';
+            unlinkModal.show();
+        });
+        unlinkBtn?.addEventListener('click', () => {
+            if (unlinkForm) {
+                unlinkForm.submit();
+                unlinkForm = null;
             }
         });
 
