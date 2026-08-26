@@ -145,12 +145,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return element;
     };
     const linkPath = (animal, client) => {
-        const sx = animal.x + 94, sy = animal.y + 54, tx = client.x + 118, ty = client.y + 48;
+        const animalCenter = animal.x + 94;
+        const clientCenter = client.x + 118;
+        const horizontalDirection = clientCenter >= animalCenter ? 1 : -1;
+        const sx = animal.x + (horizontalDirection > 0 ? 188 : 0);
+        const sy = animal.y + 64;
+        const tx = client.x + (horizontalDirection > 0 ? 0 : 236);
+        const ty = client.y + 64;
         const mid = (sx + tx) / 2;
         const direction = ty >= sy ? 1 : -1;
-        const radius = Math.max(0, Math.min(72, Math.abs(ty - sy) / 2, Math.abs(tx - sx) / 4));
+        const radius = Math.max(0, Math.min(64, Math.abs(ty - sy) / 2, Math.abs(tx - sx) / 3));
         const kappa = .55228475 * radius;
-        return { d: `M ${sx} ${sy} H ${mid - radius} C ${mid - radius + kappa} ${sy}, ${mid} ${sy + direction * (radius - kappa)}, ${mid} ${sy + direction * radius} V ${ty - direction * radius} C ${mid} ${ty - direction * (radius - kappa)}, ${mid + radius - kappa} ${ty}, ${mid + radius} ${ty} H ${tx}`, x: mid, y: (sy + ty) / 2 };
+        if (radius < 1) return {d: `M ${sx} ${sy} H ${tx}`, x: mid, y: sy};
+        return { d: `M ${sx} ${sy} H ${mid - horizontalDirection * radius} C ${mid - horizontalDirection * radius + horizontalDirection * kappa} ${sy}, ${mid} ${sy + direction * (radius - kappa)}, ${mid} ${sy + direction * radius} V ${ty - direction * radius} C ${mid} ${ty - direction * (radius - kappa)}, ${mid + horizontalDirection * (radius - kappa)} ${ty}, ${mid + horizontalDirection * radius} ${ty} H ${tx}`, x: mid, y: (sy + ty) / 2 };
     };
     const renderLinks = () => {
         links.replaceChildren();
