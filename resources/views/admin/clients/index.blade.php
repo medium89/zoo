@@ -51,7 +51,7 @@
                         <div class="actions">
                             <div class="d-flex justify-content-end gap-2">
                                 <a href="{{ route('admin.clients.show', $client) }}" class="btn btn-sm btn-outline-secondary"><i class="fa fa-eye"></i></a>
-                                <a href="{{ route('admin.clients.edit', $client) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
+                                <button type="button" class="btn btn-sm btn-primary text-white js-edit-client-with-pets" data-client='@json($clientsPayload[$client->id])' aria-label="Редактировать клиента"><i class="fa fa-pen"></i></button>
                                 <form action="{{ route('admin.clients.destroy', $client) }}" method="POST" class="d-inline js-delete-form" data-confirm="Удалить клиента? Связанные питомцы и записи останутся без хозяина.">
                                     @csrf
                                     @method('DELETE')
@@ -73,8 +73,9 @@
     <div class="modal-dialog modal-dialog-centered client-create-dialog">
         <form class="modal-content client-create-modal" action="{{ route('admin.clients.store') }}" method="POST">
             @csrf
+            <input type="hidden" name="_method" id="clientCreateMethod" value="POST">
             <div class="modal-header client-create-modal__header">
-                <div><div class="client-create-modal__eyebrow"><i class="fa fa-user-plus"></i> Клиенты</div><h5 class="modal-title">Новый клиент</h5></div>
+                <div><div class="client-create-modal__eyebrow"><i class="fa fa-user-plus"></i> Клиенты</div><h5 class="modal-title" id="clientCreateTitle">Новый клиент</h5></div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body client-create-modal__body">
@@ -172,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         label.append(input);
         return label;
     };
-    const addAnimal = () => {
+    const addAnimal = (data = {}) => {
         const index = position++;
         const row = document.createElement('div');
         row.className = 'client-animal-editor';
@@ -182,14 +183,17 @@ document.addEventListener('DOMContentLoaded', () => {
         name.placeholder = 'Кличка или новый питомец';
         name.autocomplete = 'off';
         name.setAttribute('list', 'clientAnimalsList');
+        name.value = data.name || '';
         const animalId = document.createElement('input');
         animalId.type = 'hidden';
         animalId.name = 'animals[' + index + '][animal_id]';
+        animalId.value = data.id || '';
         const category = document.createElement('select');
         category.className = 'form-select';
         category.name = 'animals[' + index + '][category_id]';
         category.append(new Option('Вид не указан', ''));
         categories.forEach(item => category.append(new Option(item.name, item.id)));
+        category.value = data.category_id || '';
         const remove = document.createElement('button');
         remove.className = 'btn btn-danger';
         remove.type = 'button';
@@ -215,13 +219,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     addButton.addEventListener('click', addAnimal);
-    openButton.addEventListener('click', () => {
-        modalElement.querySelector('form').reset();
+    const openCreate = () => {
+        const form = modalElement.querySelector('form');
+        form.reset();
+        form.action = '{{ route('admin.clients.store') }}';
+        document.getElementById('clientCreateMethod').value = 'POST';
+        document.getElementById('clientCreateTitle').textContent = 'Новый клиент';
         root.replaceChildren();
         position = 0;
         addAnimal();
         modal.show();
-    });
+    };
+    openButton.addEventListener('click', openCreate);
+    document.querySelectorAll('.js-edit-client-with-pets').forEach(button => button.addEventListener('click', () => {
+        const data = JSON.parse(button.dataset.client);
+        const form = modalElement.querySelector('form');
+        form.reset();
+        form.action = '{{ url('/zooadmin/clients') }}/' + data.id;
+        document.getElementById('clientCreateMethod').value = 'PUT';
+        document.getElementById('clientCreateTitle').textContent = 'Редактировать клиента';
+        form.querySelector('[name="name"]').value = data.name || '';
+        form.querySelector('[name="phone"]').value = data.phone || '';
+        form.querySelector('[name="address"]').value = data.address || '';
+        form.querySelector('[name="note"]').value = data.note || '';
+        root.replaceChildren();
+        position = 0;
+        (data.animals || []).forEach(addAnimal);
+        modal.show();
+    }));
 });
 </script>
 @endpush

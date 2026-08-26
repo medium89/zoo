@@ -77,4 +77,24 @@ class ClientMapTest extends TestCase
         $this->assertDatabaseHas('animals', ['name' => 'Пухля', 'client_id' => $client->id]);
     }
 
+    public function test_client_editor_updates_pets_in_one_submission(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $client = Client::create(['name' => 'Анастасия']);
+        $daisy = Animal::create(['name' => 'Дейзи', 'client_id' => $client->id, 'order' => 1]);
+        $puhlya = Animal::create(['name' => 'Пухля', 'client_id' => $client->id, 'order' => 2]);
+
+        $this->actingAs($admin)->put(route('admin.clients.update', $client), [
+            'name' => 'Анастасия П.',
+            'animals' => [
+                ['animal_id' => $daisy->id, 'name' => 'Дейзи'],
+                ['name' => 'Бобик'],
+            ],
+        ])->assertRedirect(route('admin.clients.index'));
+
+        $this->assertDatabaseHas('animals', ['id' => $daisy->id, 'client_id' => $client->id]);
+        $this->assertDatabaseHas('animals', ['id' => $puhlya->id, 'client_id' => null]);
+        $this->assertDatabaseHas('animals', ['name' => 'Бобик', 'client_id' => $client->id]);
+    }
+
 }

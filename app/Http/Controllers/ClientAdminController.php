@@ -12,7 +12,7 @@ class ClientAdminController extends Controller
 {
     public function index()
     {
-        $clients = Client::withCount(['animals', 'boardings'])
+        $clients = Client::with(['animals.category'])->withCount(['animals', 'boardings'])
             ->orderBy('name')
             ->paginate(20);
         $mapClients = Client::query()
@@ -35,8 +35,20 @@ class ClientAdminController extends Controller
             'category_id' => $animal->category_id,
             'client' => $animal->client?->name,
         ])->values()->all();
+        $clientsPayload = $clients->getCollection()->mapWithKeys(fn (Client $client) => [$client->id => [
+            'id' => $client->id,
+            'name' => $client->name,
+            'phone' => $client->phone,
+            'address' => $client->address,
+            'note' => $client->note,
+            'animals' => $client->animals->map(fn (Animal $animal) => [
+                'id' => $animal->id,
+                'name' => $animal->name,
+                'category_id' => $animal->category_id,
+            ])->values()->all(),
+        ]])->all();
 
-        return view('admin.clients.index', compact('clients', 'mapClients', 'mapClientsPayload', 'yandexMapsKey', 'categories', 'animalsPayload'));
+        return view('admin.clients.index', compact('clients', 'mapClients', 'mapClientsPayload', 'yandexMapsKey', 'categories', 'animalsPayload', 'clientsPayload'));
     }
 
     public function create()
@@ -53,24 +65,7 @@ class ClientAdminController extends Controller
 
         $client = DB::transaction(function () use ($data, $animals) {
             $client = Client::create($data);
-            foreach ($animals as $position) {
-                $name = trim((string) ($position['name'] ?? ''));
-                $animal = !empty($position['animal_id']) ? Animal::find($position['animal_id']) : null;
-                if ($animal) {
-                    $animal->update(['client_id' => $client->id]);
-                    continue;
-                }
-                if ($name === '') {
-                    continue;
-                }
-                $category = Category::find($position['category_id'] ?? null);
-                $client->animals()->create([
-                    'name' => $name,
-                    'category_id' => $category?->id,
-                    'species' => $category?->name,
-                    'order' => (int) Animal::max('order') + 1,
-                ]);
-            }
+            $this->syncAnimals($client, $animals);
 
             return $client;
         });
@@ -110,10 +105,19 @@ class ClientAdminController extends Controller
     public function update(Request $request, Client $client)
     {
         $data = $this->validated($request);
-        $data['tags'] = $this->normalizeTags($data['tags'] ?? []);
-        $client->update($data);
+        if ($request->has('tags')) {
+            $data['tags'] = $this->normalizeTags($data['tags'] ?? []);
+        } else {
+            unset($data['tags']);
+        }
+        $animals = $data['animals'] ?? [];
+        unset($data['animals']);
+        DB::transaction(function () use ($client, $data, $animals) {
+            $client->update($data);
+            $this->syncAnimals($client, $animals);
+        });
 
-        return redirect()->route('admin.clients.show', $client)->with('success', 'Клиент обновлён');
+        return redirect()->route('admin.clients.index')->with('success', 'Клиент обновлён');
     }
 
     public function destroy(Client $client)
@@ -195,5 +199,30 @@ class ClientAdminController extends Controller
             ->unique(fn (array $tag) => mb_strtolower($tag['name']))
             ->values()
             ->all();
+    }
+
+    private function syncAnimals(Client $client, array $positions): void
+    {
+        $submittedIds = collect($positions)->pluck('animal_id')->filter()->map(fn ($id) => (int) $id)->all();
+        $client->animals()->whereNotIn('id', $submittedIds)->update(['client_id' => null]);
+
+        foreach ($positions as $position) {
+            $name = trim((string) ($position['name'] ?? ''));
+            $animal = !empty($position['animal_id']) ? Animal::find($position['animal_id']) : null;
+            if ($animal) {
+                $animal->update(['client_id' => $client->id]);
+                continue;
+            }
+            if ($name === '') {
+                continue;
+            }
+            $category = Category::find($position['category_id'] ?? null);
+            $client->animals()->create([
+                'name' => $name,
+                'category_id' => $category?->id,
+                'species' => $category?->name,
+                'order' => (int) Animal::max('order') + 1,
+            ]);
+        }
     }
 }
