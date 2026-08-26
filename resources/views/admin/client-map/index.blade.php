@@ -169,10 +169,10 @@ document.addEventListener('DOMContentLoaded', () => {
         nodes: [...clients, ...animals].map(node => ({type: node.type, id: node.id, x: Math.round(node.x), y: Math.round(node.y)})),
     })).catch(() => console.warn('Не удалось сохранить положение нод'));
     const dropTarget = event => {
-        dragged.element.style.pointerEvents = 'none';
-        const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.client-node--client');
-        dragged.element.style.pointerEvents = '';
-        return target;
+        const rect = canvas.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / zoom;
+        const y = (event.clientY - rect.top) / zoom;
+        return clients.find(client => x >= client.x && x <= client.x + 236 && y >= client.y && y <= client.y + 128) || null;
     };
     const startDrag = (event, node, element) => {
         event.preventDefault();
@@ -190,16 +190,22 @@ document.addEventListener('DOMContentLoaded', () => {
         dragged.element.style.left = `${node.x}px`; dragged.element.style.top = `${node.y}px`;
         renderLinks();
         const target = dropTarget(event);
-        layer.querySelectorAll('.client-node--client').forEach(item => item.classList.toggle('is-drop-target', item === target));
+        layer.querySelectorAll('.client-node--client').forEach(item => item.classList.toggle('is-drop-target', target && String(target.id) === item.dataset.id));
     });
     document.addEventListener('pointerup', event => {
         if (!dragged) return;
         const {node, element} = dragged, target = dropTarget(event);
         element.classList.remove('is-dragging');
-        layer.querySelectorAll('.client-node--client').forEach(item => item.classList.remove('is-drop-target'));
-        if (node.type === 'animal' && target) {
-            const client = clients.find(item => String(item.id) === target.dataset.id);
-            if (client && node.client_id !== client.id) request(`${urls.attach}/${node.id}/clients/${client.id}`).then(() => { node.client_id = client.id; render(); });
+        layer.querySelectorAll('.client-node--client').forEach(item => item.classList.toggle('is-drop-target', target && String(target.id) === item.dataset.id));
+        if (node.type === 'animal' && target && node.client_id !== target.id) {
+            const previousClientId = node.client_id;
+            node.client_id = target.id;
+            render();
+            request(`${urls.attach}/${node.id}/clients/${target.id}`).catch(() => {
+                node.client_id = previousClientId;
+                render();
+                alert('Не удалось сохранить связь. Попробуйте ещё раз.');
+            });
         }
         savePositions(); dragged = null;
     }, true);
