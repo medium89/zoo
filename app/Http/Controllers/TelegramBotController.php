@@ -2022,12 +2022,19 @@ TEXT);
         }
 
         foreach ($photos->take(10) as $photo) {
-            $source = $photo->telegram_file_id ?: url(Storage::url($photo->path));
-            $this->telegramApi('sendPhoto', [
-                'chat_id' => $chatId,
-                'photo' => $source,
-                'caption' => $animal->name,
-            ]);
+            if ($photo->telegram_file_id) {
+                $this->telegramApi('sendPhoto', [
+                    'chat_id' => $chatId,
+                    'photo' => $photo->telegram_file_id,
+                    'caption' => $animal->name,
+                ]);
+                continue;
+            }
+
+            $path = Storage::disk('public')->path($photo->path);
+            if (is_file($path)) {
+                $this->sendPhoto($chatId, $path, $animal->name);
+            }
         }
     }
 
@@ -2039,12 +2046,19 @@ TEXT);
         }
 
         foreach ($photos->take(10) as $photo) {
-            $source = $photo->telegram_file_id ?: url(Storage::url($photo->path));
-            $this->telegramApi('sendPhoto', [
-                'chat_id' => $chatId,
-                'photo' => $source,
-                'caption' => $client->name,
-            ]);
+            if ($photo->telegram_file_id) {
+                $this->telegramApi('sendPhoto', [
+                    'chat_id' => $chatId,
+                    'photo' => $photo->telegram_file_id,
+                    'caption' => $client->name,
+                ]);
+                continue;
+            }
+
+            $path = Storage::disk('public')->path($photo->path);
+            if (is_file($path)) {
+                $this->sendPhoto($chatId, $path, $client->name);
+            }
         }
     }
 
