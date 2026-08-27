@@ -19,6 +19,7 @@
             <div class="card h-100">
                 <div class="card-header">Информация</div>
                 <div class="card-body">
+                    <img src="{{ $client->avatarUrl() }}" alt="{{ $client->name }}" class="client-profile-avatar mb-3">
                     <p><strong>Телефон:</strong> {{ $client->phone ?: '—' }}</p>
                     <p><strong>Адрес:</strong> {{ $client->address ?: '—' }}</p>
                     @if(!empty($client->tags))
@@ -151,3 +152,7 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<style>.client-profile-avatar{width:96px;height:96px;object-fit:cover;border-radius:18px;background:#eaf3ff}</style>
+@endpush

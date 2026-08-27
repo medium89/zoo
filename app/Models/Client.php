@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Client extends Model
 {
@@ -26,6 +27,20 @@ class Client extends Model
     public function animals()
     {
         return $this->hasMany(Animal::class);
+    }
+
+    public function photos()
+    {
+        return $this->hasMany(ClientPhoto::class);
+    }
+
+    public function avatarUrl(): string
+    {
+        $photo = $this->photos->first();
+
+        return $photo?->path
+            ? Storage::url($photo->path)
+            : asset('images/client-placeholder.svg');
     }
 
     public function boardings()

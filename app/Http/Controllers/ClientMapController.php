@@ -12,7 +12,7 @@ class ClientMapController extends Controller
 {
     public function index()
     {
-        $clients = Client::orderBy('name')->get();
+        $clients = Client::with('photos')->orderBy('name')->get();
         $animals = Animal::with(['photos', 'category'])->orderBy('name')->get();
         $categories = Category::orderBy('name')->get(['id', 'name']);
         $clientsPayload = $clients->map(fn (Client $client) => $this->clientPayload($client))->values()->all();
@@ -129,7 +129,8 @@ class ClientMapController extends Controller
 
     private function clientPayload(Client $client): array
     {
-        return ['id' => $client->id, 'name' => $client->name, 'phone' => $client->phone, 'address' => $client->address, 'x' => $client->map_x, 'y' => $client->map_y];
+        return ['id' => $client->id, 'name' => $client->name, 'phone' => $client->phone, 'address' => $client->address, 'x' => $client->map_x, 'y' => $client->map_y,
+            'photo' => $client->photos->first()?->path ? Storage::url($client->photos->first()->path) : null];
     }
 
     private function animalPayload(Animal $animal): array

@@ -294,6 +294,36 @@ class TelegramBotController extends Controller
 
         $payload = $session->payload ?: [];
 
+        if (preg_match('/^photo_target:(animal|client):(\d+)$/', $data, $matches)) {
+            if ($session->state !== 'waiting_photo_target_selection') {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Выбор устарел. Отправьте фото ещё раз.');
+                return;
+            }
+
+            $type = $matches[1];
+            $id = (int) $matches[2];
+            $allowed = $type === 'animal' ? ($payload['animal_ids'] ?? []) : ($payload['client_ids'] ?? []);
+            if (!in_array($id, $allowed, true)) {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Карточка не найдена. Отправьте фото ещё раз.');
+                return;
+            }
+
+            if ($type === 'animal' && ($animal = Animal::with('client')->find($id))) {
+                $this->askPetPhotoConfirmation($chatId, $fromId, $animal, (string) ($payload['file_id'] ?? ''));
+                return;
+            }
+            if ($type === 'client' && ($client = Client::find($id))) {
+                $this->askClientPhotoConfirmation($chatId, $fromId, $client, (string) ($payload['file_id'] ?? ''));
+                return;
+            }
+
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Карточка не найдена. Отправьте фото ещё раз.');
+            return;
+        }
+
         if (preg_match('/^pet_photo:choose:(\d+)$/', $data, $matches)) {
             if ($session->state !== 'waiting_pet_photo_selection' || !in_array((int) $matches[1], $payload['animal_ids'] ?? [], true)) {
                 $this->clearSession($fromId);
@@ -330,6 +360,27 @@ class TelegramBotController extends Controller
             $this->storeTelegramPhoto($animal, $fileId);
             $this->clearSession($fromId);
             $this->sendMessage($chatId, 'Фото добавлено в профиль питомца '.$animal->name.'.');
+            return;
+        }
+
+        if ($data === 'client_photo:confirm') {
+            if ($session->state !== 'waiting_client_photo_confirmation') {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Подтверждение устарело. Отправьте фото ещё раз.');
+                return;
+            }
+
+            $client = Client::find((int) ($payload['client_id'] ?? 0));
+            $fileId = (string) ($payload['file_id'] ?? '');
+            if (!$client || $fileId === '') {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Не удалось сохранить фото. Отправьте его ещё раз.');
+                return;
+            }
+
+            $this->storeTelegramClientPhoto($client, $fileId);
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Фото добавлено в профиль клиента '.$client->name.'.');
             return;
         }
 
@@ -1908,12 +1959,14 @@ TEXT);
 
     private function sendClientInfo(int|string $chatId, Client $client): void
     {
-        $client->loadMissing(['animals.photos']);
+        $client->loadMissing(['photos', 'animals.photos']);
         $text = "Хозяин: {$client->name}\n";
         $text .= 'Телефон: '.($client->phone ?: 'не указан')."\n";
+        $text .= 'Фото: '.($client->photos->isNotEmpty() ? 'есть' : 'нет')."\n";
         $text .= 'Заметка: '.($client->note ?: '—')."\n";
         $text .= 'Питомцы: '.($client->animals->isNotEmpty() ? $client->animals->pluck('name')->join(', ') : 'не добавлены');
 
+        $this->sendClientPhotos($chatId, $client, 1);
         $this->sendMessage($chatId, $text);
 
         foreach ($client->animals->take(10) as $animal) {
@@ -1947,6 +2000,7 @@ TEXT);
         $text .= 'Хозяин: '.($animal->client?->name ?: 'не указан')."\n";
         $text .= 'Описание: '.($animal->description ?: '—')."\n";
         $text .= 'Заметки: '.($animal->note ?: '—')."\n";
+        $text .= 'Фото: '.($animal->photos->isNotEmpty() ? 'есть' : 'нет')."\n";
         $tags = collect($animal->tags ?? [])->filter(fn ($tag) => is_array($tag) && filled($tag['name'] ?? null));
         if ($tags->isNotEmpty()) {
             $text .= "Теги:\n".$tags->map(fn (array $tag) => (($tag['type'] ?? '') === 'positive' ? '🟢 ' : '🔴 ').trim($tag['name']))->implode("\n")."\n";
@@ -1973,6 +2027,23 @@ TEXT);
                 'chat_id' => $chatId,
                 'photo' => $source,
                 'caption' => $animal->name,
+            ]);
+        }
+    }
+
+    private function sendClientPhotos(int|string $chatId, Client $client, ?int $limit = null): void
+    {
+        $photos = $client->photos;
+        if ($limit) {
+            $photos = $photos->take($limit);
+        }
+
+        foreach ($photos->take(10) as $photo) {
+            $source = $photo->telegram_file_id ?: url(Storage::url($photo->path));
+            $this->telegramApi('sendPhoto', [
+                'chat_id' => $chatId,
+                'photo' => $source,
+                'caption' => $client->name,
             ]);
         }
     }
@@ -2007,10 +2078,11 @@ TEXT);
             return;
         }
 
-        $intent = $this->aitunnel->extractIntent($caption);
-        $name = $this->animalNameFromPhotoCaption($caption) ?: data_get($intent, 'animal.name');
+        // A photo caption often contains just a name. Do not delegate that
+        // choice to the intent model: a pet name may look like a person's name.
+        $name = $this->photoSubjectFromCaption($caption);
         if (!$name) {
-            $this->sendMessage($chatId, 'Не понял, к какому питомцу привязать фото. Укажите кличку в подписи.');
+            $this->sendMessage($chatId, 'Не понял, кому принадлежит фото. Укажите в подписи кличку питомца или имя клиента.');
             return;
         }
 
@@ -2019,26 +2091,48 @@ TEXT);
             ->orderBy('id')
             ->limit(8)
             ->get();
-        if ($animals->isEmpty()) {
-            $this->sendMessage($chatId, 'Питомец '.$name.' не найден. Сначала создайте запись или карточку питомца.');
+        $clients = Client::query()
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->orderBy('id')
+            ->limit(8)
+            ->get();
+        if ($animals->isEmpty() && $clients->isEmpty()) {
+            $this->sendMessage($chatId, 'Не нашёл питомца или клиента «'.$name.'». Проверьте имя или сначала создайте карточку.');
             return;
         }
 
-        if ($animals->count() === 1) {
+        if ($animals->count() === 1 && $clients->isEmpty()) {
             $this->askPetPhotoConfirmation($chatId, $fromId, $animals->first(), $fileId);
             return;
         }
 
-        $this->saveSession($fromId, $chatId, 'waiting_pet_photo_selection', [
+        if ($clients->count() === 1 && $animals->isEmpty()) {
+            $this->askClientPhotoConfirmation($chatId, $fromId, $clients->first(), $fileId);
+            return;
+        }
+
+        $this->askPhotoTarget($chatId, $fromId, $fileId, $animals, $clients, $name);
+    }
+
+    private function askPhotoTarget(int|string $chatId, string $fromId, string $fileId, $animals, $clients, string $name): void
+    {
+        $this->saveSession($fromId, $chatId, 'waiting_photo_target_selection', [
             'file_id' => $fileId,
             'animal_ids' => $animals->pluck('id')->map(fn ($id) => (int) $id)->all(),
+            'client_ids' => $clients->pluck('id')->map(fn ($id) => (int) $id)->all(),
         ]);
         $buttons = $animals->map(fn (Animal $animal) => [[
-            'text' => $animal->name.' · '.$this->animalOwnerLabel($animal),
-            'callback_data' => 'pet_photo:choose:'.$animal->id,
+            'text' => '🐾 Питомец: '.$animal->name.' · '.$this->animalOwnerLabel($animal),
+            'callback_data' => 'photo_target:animal:'.$animal->id,
         ]])->all();
+        foreach ($clients as $client) {
+            $buttons[] = [[
+                'text' => '👤 Клиент: '.$client->name,
+                'callback_data' => 'photo_target:client:'.$client->id,
+            ]];
+        }
         $buttons[] = [['text' => 'Отмена', 'callback_data' => 'cancel']];
-        $this->sendMessage($chatId, 'Нашёл несколько питомцев с кличкой «'.$name.'». Кому добавить фото?', ['inline_keyboard' => $buttons]);
+        $this->sendMessage($chatId, 'К кому прикрепить фото «'.$name.'»?', ['inline_keyboard' => $buttons]);
     }
 
     private function askPetPhotoConfirmation(int|string $chatId, string $fromId, Animal $animal, string $fileId): void
@@ -2068,6 +2162,18 @@ TEXT);
         }
 
         return null;
+    }
+
+    private function photoSubjectFromCaption(string $caption): ?string
+    {
+        $name = $this->animalNameFromPhotoCaption($caption);
+        if ($name) {
+            return $name;
+        }
+
+        $caption = trim(preg_replace('/[.!]+$/u', '', $caption) ?? '');
+
+        return mb_strlen($caption) <= 120 ? $caption : null;
     }
 
     private function transcribeVoice(array $voice): string
@@ -2104,6 +2210,41 @@ TEXT);
             ['telegram_file_id' => $fileId],
             ['path' => $storagePath]
         );
+    }
+
+    private function askClientPhotoConfirmation(int|string $chatId, string $fromId, Client $client, string $fileId): void
+    {
+        if ($fileId === '') {
+            $this->sendMessage($chatId, 'Не удалось получить фото. Отправьте его ещё раз.');
+            return;
+        }
+
+        $this->saveSession($fromId, $chatId, 'waiting_client_photo_confirmation', [
+            'client_id' => $client->id,
+            'file_id' => $fileId,
+        ]);
+        $this->sendMessage($chatId, 'Добавить это фото в профиль клиента '.$client->name.'?', [
+            'inline_keyboard' => [[
+                ['text' => 'Да, добавить', 'callback_data' => 'client_photo:confirm'],
+                ['text' => 'Отмена', 'callback_data' => 'cancel'],
+            ]],
+        ]);
+    }
+
+    private function storeTelegramClientPhoto(Client $client, string $fileId): void
+    {
+        $file = $this->telegramApi('getFile', ['file_id' => $fileId]);
+        $path = $file['result']['file_path'] ?? null;
+        $bytes = $this->downloadTelegramFile($fileId, $path);
+        if ($bytes === null) {
+            return;
+        }
+
+        $ext = pathinfo((string) $path, PATHINFO_EXTENSION) ?: 'jpg';
+        $safeId = preg_replace('/[^a-zA-Z0-9_-]/', '', $fileId) ?: Str::random(12);
+        $storagePath = 'clients/'.$client->id.'/telegram-'.$safeId.'.'.$ext;
+        Storage::disk('public')->put($storagePath, $bytes);
+        $client->photos()->firstOrCreate(['telegram_file_id' => $fileId], ['path' => $storagePath]);
     }
 
     private function downloadTelegramFile(string $fileId, ?string $knownPath = null): ?string

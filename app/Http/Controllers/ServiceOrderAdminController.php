@@ -25,7 +25,7 @@ class ServiceOrderAdminController extends Controller
             'from' => 'nullable|date',
             'to' => 'nullable|date',
         ]);
-        $orders = ServiceOrder::with(['client', 'animals.services', 'animals.category', 'animals.animal.photos'])
+        $orders = ServiceOrder::with(['client.photos', 'animals.services', 'animals.category', 'animals.animal.photos'])
             ->whereNull('archived_at')
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($query) use ($search) {
@@ -44,7 +44,7 @@ class ServiceOrderAdminController extends Controller
 
         return view('admin.service-orders.index', [
             'orders' => $orders,
-            'clients' => Client::orderBy('name')->get(),
+            'clients' => Client::with('photos')->orderBy('name')->get(),
             'animals' => $animals,
             'categories' => $categories,
             'animalsPayload' => $animals->map(fn (Animal $animal) => ['id' => $animal->id, 'name' => $animal->name, 'category_id' => $animal->category_id, 'client' => $animal->client?->name, 'photo' => $animal->photos->first()?->path ? \Illuminate\Support\Facades\Storage::url($animal->photos->first()->path) : null])->values()->all(),
@@ -100,7 +100,7 @@ class ServiceOrderAdminController extends Controller
     {
         $archiver->archive();
 
-        $orders = ServiceOrder::with(['client', 'animals.services', 'animals.category', 'animals.animal.photos'])
+        $orders = ServiceOrder::with(['client.photos', 'animals.services', 'animals.category', 'animals.animal.photos'])
             ->whereNotNull('archived_at')
             ->orderByDesc('archived_at')
             ->orderByDesc('end_date')

@@ -28,6 +28,7 @@
                     <article class="client-node client-node--client" data-type="client" data-id="{{ $client->id }}" style="left: {{ $clientX }}px; top: {{ $clientY }}px">
                         <div class="client-node__head"><i class="fa fa-user"></i> Клиент</div>
                         <div class="client-node__body">
+                            <img class="client-node__photo" src="{{ $client->avatarUrl() }}" alt="">
                             <div class="client-node__name">{{ $client->name }}</div>
                             <div class="client-node__meta">{{ $client->phone ?: 'Телефон не указан' }}</div>
                             <div class="client-node__hint">Перетащите сюда питомца</div>
@@ -208,7 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
         element.style.left = `${node.x}px`;
         element.style.top = `${node.y}px`;
         if (node.type === 'client') {
-            element.innerHTML = `<div class="client-node__head"><i class="fa fa-user"></i> Клиент<div class="client-node__actions"><button class="client-node__view" type="button" aria-label="Посмотреть клиента"><i class="fa fa-eye"></i></button><button class="client-node__edit" type="button" aria-label="Редактировать клиента"><i class="fa fa-pen"></i></button><button class="client-node__connect" type="button" aria-label="Связать с питомцем">+</button></div></div><div class="client-node__body"><div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${escapeHtml(node.phone || 'Телефон не указан')}</div><div class="client-node__hint">Потяните + к питомцу</div></div>`;
+            const photo = node.photo ? `<img class="client-node__photo" src="${escapeHtml(node.photo)}" alt="">` : `<img class="client-node__photo" src="{{ asset('images/client-placeholder.svg') }}" alt="">`;
+            element.innerHTML = `<div class="client-node__head"><i class="fa fa-user"></i> Клиент<div class="client-node__actions"><button class="client-node__view" type="button" aria-label="Посмотреть клиента"><i class="fa fa-eye"></i></button><button class="client-node__edit" type="button" aria-label="Редактировать клиента"><i class="fa fa-pen"></i></button><button class="client-node__connect" type="button" aria-label="Связать с питомцем">+</button></div></div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${escapeHtml(node.phone || 'Телефон не указан')}</div><div class="client-node__hint">Потяните + к питомцу</div></div>`;
         } else {
             const photo = node.photo
                 ? `<img class="client-node__photo" src="${escapeHtml(node.photo)}" alt="">`

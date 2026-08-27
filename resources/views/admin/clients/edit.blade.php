@@ -6,7 +6,7 @@
     @if($errors->any())
         <div class="alert alert-danger">{{ $errors->first() }}</div>
     @endif
-    <form action="{{ route('admin.clients.update', $client) }}" method="POST" class="card">
+    <form action="{{ route('admin.clients.update', $client) }}" method="POST" enctype="multipart/form-data" class="card">
         @csrf
         @method('PUT')
         @include('admin.clients.partials.form', ['client' => $client])

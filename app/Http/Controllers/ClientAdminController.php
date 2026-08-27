@@ -7,12 +7,13 @@ use App\Models\Animal;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ClientAdminController extends Controller
 {
     public function index()
     {
-        $clients = Client::with(['animals.category'])->withCount(['animals', 'boardings'])
+        $clients = Client::with(['animals.category', 'photos'])->withCount(['animals', 'boardings'])
             ->orderBy('name')
             ->paginate(20);
         $mapClients = Client::query()
@@ -41,6 +42,7 @@ class ClientAdminController extends Controller
             'phone' => $client->phone,
             'address' => $client->address,
             'note' => $client->note,
+            'photo' => $client->photos->first()?->path ? Storage::url($client->photos->first()->path) : null,
             'animals' => $client->animals->map(fn (Animal $animal) => [
                 'id' => $animal->id,
                 'name' => $animal->name,
@@ -61,7 +63,8 @@ class ClientAdminController extends Controller
         $data = $this->validated($request);
         $data['tags'] = $this->normalizeTags($data['tags'] ?? []);
         $animals = $data['animals'] ?? [];
-        unset($data['animals']);
+        $photos = $request->file('photos', []);
+        unset($data['animals'], $data['photos']);
 
         $client = DB::transaction(function () use ($data, $animals) {
             $client = Client::create($data);
@@ -70,12 +73,15 @@ class ClientAdminController extends Controller
             return $client;
         });
 
+        $this->storePhotos($client, $photos);
+
         return redirect()->route('admin.clients.index')->with('success', 'Клиент добавлен'.($client->animals()->exists() ? ' вместе с питомцами' : ''));
     }
 
     public function show(Client $client)
     {
         $client->load([
+            'photos',
             'animals.photos',
             'animals.category',
             'animals.boardings' => fn ($query) => $query->latest('start_date'),
@@ -111,11 +117,13 @@ class ClientAdminController extends Controller
             unset($data['tags']);
         }
         $animals = $data['animals'] ?? [];
-        unset($data['animals']);
+        $photos = $request->file('photos', []);
+        unset($data['animals'], $data['photos']);
         DB::transaction(function () use ($client, $data, $animals) {
             $client->update($data);
             $this->syncAnimals($client, $animals);
         });
+        $this->storePhotos($client, $photos);
 
         return redirect()->route('admin.clients.index')->with('success', 'Клиент обновлён');
     }
@@ -181,6 +189,8 @@ class ClientAdminController extends Controller
             'tags' => 'nullable|array',
             'tags.*.name' => 'nullable|string|max:60',
             'tags.*.type' => 'nullable|in:positive,negative',
+            'photos' => 'nullable|array|max:10',
+            'photos.*' => 'nullable|image|max:10240',
             'animals' => 'nullable|array|max:30',
             'animals.*.animal_id' => 'nullable|exists:animals,id',
             'animals.*.name' => 'nullable|string|max:255',
@@ -199,6 +209,17 @@ class ClientAdminController extends Controller
             ->unique(fn (array $tag) => mb_strtolower($tag['name']))
             ->values()
             ->all();
+    }
+
+    private function storePhotos(Client $client, array $photos): void
+    {
+        foreach ($photos as $photo) {
+            if ($photo) {
+                $client->photos()->create([
+                    'path' => $photo->store('clients/'.$client->id, 'public'),
+                ]);
+            }
+        }
     }
 
     private function syncAnimals(Client $client, array $positions): void

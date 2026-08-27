@@ -17,6 +17,13 @@
         <textarea name="note" class="form-control" rows="4">{{ old('note', $client?->note) }}</textarea>
     </div>
     <div class="mb-3">
+        <label class="form-label">Фото клиента</label>
+        <input type="file" name="photos[]" class="form-control" accept="image/*" multiple>
+        @if($client?->photos?->isNotEmpty())
+            <div class="d-flex flex-wrap gap-2 mt-2">@foreach($client->photos as $photo)<img src="{{ Storage::url($photo->path) }}" alt="" style="width:56px;height:56px;border-radius:10px;object-fit:cover">@endforeach</div>
+        @endif
+    </div>
+    <div class="mb-3">
         @include('admin.partials.tags-editor', ['tags' => $client?->tags])
     </div>
 </div>
