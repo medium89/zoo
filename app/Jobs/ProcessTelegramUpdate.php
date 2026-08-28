@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Http\Controllers\TelegramBotController;
+use App\Http\Controllers\Telegram\TelegramBotController;
 use App\Models\TelegramWebhookUpdate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

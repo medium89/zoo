@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Public;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Feedback;
 use App\Models\SiteSetting;

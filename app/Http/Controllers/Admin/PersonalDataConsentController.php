@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
@@ -29,4 +31,3 @@ class PersonalDataConsentController extends Controller
             ->with('success', 'Документ согласия сохранен');
     }
 }
-

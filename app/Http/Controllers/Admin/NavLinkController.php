@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\NavLink;
 use Illuminate\Http\Request;
@@ -26,4 +28,3 @@ class NavLinkController extends Controller
         return back()->with('success', 'Настройки меню сохранены');
     }
 }
-

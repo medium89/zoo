@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Http\Controllers\TelegramBotController;
+use App\Http\Controllers\Telegram\TelegramBotController;
 use ReflectionClass;
 use Tests\TestCase;
 

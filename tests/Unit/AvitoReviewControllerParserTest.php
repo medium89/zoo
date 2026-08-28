@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Http\Controllers\AvitoReviewController;
+use App\Http\Controllers\Admin\AvitoReviewController;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
