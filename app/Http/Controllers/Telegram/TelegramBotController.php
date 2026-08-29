@@ -19,10 +19,10 @@ use App\Services\AitunnelService;
 use App\Services\BoardingPricingService;
 use App\Services\BoardingTaskInstructionParser;
 use App\Services\TelegramCalendarImageService;
+use App\Services\TelegramApiClient;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -35,6 +35,7 @@ class TelegramBotController extends Controller
         private readonly BoardingTaskInstructionParser $taskInstructionParser,
         private readonly BoardingPricingService $pricing,
         private readonly TelegramCalendarImageService $calendarImage,
+        private readonly TelegramApiClient $telegram,
     ) {
     }
 
@@ -2572,28 +2573,7 @@ TEXT);
 
     private function sendPhoto(int|string $chatId, string $path, string $caption, ?array $replyMarkup = null): void
     {
-        $token = config('services.telegram.bot_token');
-        if (!$token || !is_file($path)) {
-            throw new \RuntimeException('Не удалось подготовить изображение календаря.');
-        }
-
-        $payload = ['chat_id' => $chatId, 'caption' => $caption];
-        if ($replyMarkup) {
-            $payload['reply_markup'] = json_encode($replyMarkup, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-        }
-
-        $response = Http::timeout(30)
-            ->attach('photo', fopen($path, 'r'), 'calendar.png')
-            ->post("https://api.telegram.org/bot{$token}/sendPhoto", $payload);
-        $result = $response->json();
-        if (!$response->successful() || !is_array($result) || !($result['ok'] ?? false)) {
-            Log::warning('Telegram API returned an unsuccessful photo response.', [
-                'status' => $response->status(),
-                'error_code' => $result['error_code'] ?? null,
-                'description' => $result['description'] ?? null,
-            ]);
-            throw new TelegramApiException('Telegram не принял изображение календаря.');
-        }
+        $this->telegram->sendPhoto($chatId, $path, $caption, $replyMarkup);
     }
 
     private function answerCallback(?string $callbackId): void
@@ -2605,34 +2585,6 @@ TEXT);
 
     private function telegramApi(string $method, array $payload): array
     {
-        $token = config('services.telegram.bot_token');
-        if (!$token) {
-            Log::error('Telegram API request skipped: bot token is missing.', ['method' => $method]);
-            throw new TelegramApiException('Не настроен токен Telegram-бота.');
-        }
-
-        try {
-            $response = Http::timeout(30)->post("https://api.telegram.org/bot{$token}/{$method}", $payload);
-        } catch (Throwable $e) {
-            Log::warning('Telegram API request failed.', [
-                'method' => $method,
-                'error' => $e->getMessage(),
-            ]);
-
-            throw new TelegramApiException('Не удалось подключиться к Telegram API.', previous: $e);
-        }
-
-        $result = $response->json();
-        if (!$response->successful() || !is_array($result) || !($result['ok'] ?? false)) {
-            Log::warning('Telegram API returned an unsuccessful response.', [
-                'method' => $method,
-                'status' => $response->status(),
-                'error_code' => $result['error_code'] ?? null,
-                'description' => $result['description'] ?? null,
-            ]);
-            throw new TelegramApiException('Telegram API вернул ошибку: '.($result['description'] ?? $response->status()));
-        }
-
-        return is_array($result) ? $result : ['ok' => false];
+        return $this->telegram->call($method, $payload);
     }
 }
