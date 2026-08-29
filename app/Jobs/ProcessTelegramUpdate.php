@@ -16,6 +16,7 @@ class ProcessTelegramUpdate implements ShouldQueue
 
     public int $tries = 3;
     public int $timeout = 120;
+    public array $backoff = [15, 60, 300];
 
     public function __construct(public readonly int $webhookUpdateId)
     {
@@ -30,5 +31,13 @@ class ProcessTelegramUpdate implements ShouldQueue
 
         $bot->processUpdate($update->payload);
         $update->update(['processed_at' => now()]);
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        TelegramWebhookUpdate::whereKey($this->webhookUpdateId)->update([
+            'failed_at' => now(),
+            'failure_reason' => mb_substr($exception->getMessage(), 0, 500),
+        ]);
     }
 }

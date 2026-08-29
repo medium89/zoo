@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Telegram;
 
+use App\Exceptions\TelegramApiException;
 use App\Http\Controllers\Controller;
 
 use App\Models\Animal;
@@ -77,6 +78,11 @@ class TelegramBotController extends Controller
             }
         } catch (Throwable $e) {
             $chatId = data_get($update, 'message.chat.id') ?: data_get($update, 'callback_query.message.chat.id');
+            if ($e instanceof TelegramApiException) {
+                Log::warning('Telegram transport failed while processing update.', ['error' => $e->getMessage()]);
+                throw $e;
+            }
+
             if ($chatId) {
                 Log::warning('Telegram bot could not process update.', ['error' => $e->getMessage()]);
                 $this->sendMessage($chatId, 'Не понял сообщение. Напишите, например: «Запиши кошку Пухлю с 22 по 25 августа, уход» — или уточните, что нужно сделать.');
@@ -2586,7 +2592,7 @@ TEXT);
                 'error_code' => $result['error_code'] ?? null,
                 'description' => $result['description'] ?? null,
             ]);
-            throw new \RuntimeException('Telegram не принял изображение календаря.');
+            throw new TelegramApiException('Telegram не принял изображение календаря.');
         }
     }
 
@@ -2602,8 +2608,7 @@ TEXT);
         $token = config('services.telegram.bot_token');
         if (!$token) {
             Log::error('Telegram API request skipped: bot token is missing.', ['method' => $method]);
-
-            return ['ok' => false];
+            throw new TelegramApiException('Не настроен токен Telegram-бота.');
         }
 
         try {
@@ -2614,7 +2619,7 @@ TEXT);
                 'error' => $e->getMessage(),
             ]);
 
-            return ['ok' => false];
+            throw new TelegramApiException('Не удалось подключиться к Telegram API.', previous: $e);
         }
 
         $result = $response->json();
@@ -2625,6 +2630,7 @@ TEXT);
                 'error_code' => $result['error_code'] ?? null,
                 'description' => $result['description'] ?? null,
             ]);
+            throw new TelegramApiException('Telegram API вернул ошибку: '.($result['description'] ?? $response->status()));
         }
 
         return is_array($result) ? $result : ['ok' => false];

@@ -6,6 +6,7 @@ use App\Jobs\ProcessTelegramUpdate;
 use App\Models\TelegramWebhookUpdate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use RuntimeException;
 use Tests\TestCase;
 
 class TelegramWebhookQueueTest extends TestCase
@@ -41,5 +42,20 @@ class TelegramWebhookQueueTest extends TestCase
 
         $this->postJson('/api/telegram/webhook', ['update_id' => 1])
             ->assertForbidden();
+    }
+
+    public function test_final_queue_failure_is_recorded_on_the_webhook_update(): void
+    {
+        $update = TelegramWebhookUpdate::create([
+            'update_id' => 987655,
+            'payload' => ['update_id' => 987655],
+        ]);
+
+        (new ProcessTelegramUpdate($update->id))->failed(new RuntimeException('Telegram is unavailable'));
+
+        $this->assertDatabaseHas('telegram_webhook_updates', [
+            'id' => $update->id,
+            'failure_reason' => 'Telegram is unavailable',
+        ]);
     }
 }

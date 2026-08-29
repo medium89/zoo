@@ -1,0 +1,38 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (! Schema::hasTable('failed_jobs')) {
+            Schema::create('failed_jobs', function (Blueprint $table) {
+                $table->id();
+                $table->string('uuid')->unique();
+                $table->text('connection');
+                $table->text('queue');
+                $table->longText('payload');
+                $table->longText('exception');
+                $table->timestamp('failed_at')->useCurrent();
+            });
+        }
+
+        Schema::table('telegram_webhook_updates', function (Blueprint $table) {
+            $table->timestamp('failed_at')->nullable()->index()->after('processed_at');
+            $table->string('failure_reason', 500)->nullable()->after('failed_at');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('telegram_webhook_updates', function (Blueprint $table) {
+            $table->dropIndex(['failed_at']);
+            $table->dropColumn(['failed_at', 'failure_reason']);
+        });
+
+        Schema::dropIfExists('failed_jobs');
+    }
+};
