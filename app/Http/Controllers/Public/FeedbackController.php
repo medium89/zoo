@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Feedback;
 use App\Models\SiteSetting;
+use App\Services\TelegramNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 
 class FeedbackController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, TelegramNotificationService $telegram)
     {
         $siteSettings = SiteSetting::first();
         $consentTextHtml = (string)($siteSettings?->personal_data_consent_text ?? '');
@@ -72,20 +73,7 @@ class FeedbackController extends Controller
         $text .= "Телефон: {$request->phone}\n";
         $text .= "Сообщение: {$request->message}";
 
-        $token = env('TELEGRAM_BOT_TOKEN');
-        $chatIds = [
-            env('TELEGRAM_CHAT_ID'),
-            env('TELEGRAM_CHAT_ID_2')
-        ];
-
-        foreach ($chatIds as $id) {
-            if ($token && $id) {
-                Http::get("https://api.telegram.org/bot{$token}/sendMessage", [
-                    'chat_id' => $id,
-                    'text'    => $text,
-                ]);
-            }
-        }
+        $telegram->notifyConfiguredChats($text);
 
         if ($request->expectsJson()) {
             return response()->json([
