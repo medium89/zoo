@@ -115,7 +115,15 @@ class ServiceOrderAdminController extends Controller
 
     public function destroy(ServiceOrder $serviceOrder)
     {
-        $serviceOrder->delete();
+        DB::transaction(function () use ($serviceOrder): void {
+            $legacyBoardingId = $serviceOrder->legacy_boarding_id;
+            $serviceOrder->delete();
+
+            if ($legacyBoardingId) {
+                Boarding::query()->whereKey($legacyBoardingId)->delete();
+            }
+        });
+
         return back()->with('success', 'Заказ удалён');
     }
 

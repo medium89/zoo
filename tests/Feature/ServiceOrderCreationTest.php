@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Boarding;
 use App\Models\Category;
+use App\Models\ServiceOrder;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -55,5 +57,31 @@ class ServiceOrderCreationTest extends TestCase
             'units_per_day' => 2,
             'unit_price' => 500,
         ]);
+    }
+
+    public function test_deleting_a_unified_order_also_removes_its_legacy_boarding(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $boarding = Boarding::create([
+            'name' => 'Дейзи',
+            'service_type' => 'передержка',
+            'start_date' => '2026-11-10',
+            'end_date' => '2026-11-12',
+        ]);
+        $order = ServiceOrder::create([
+            'legacy_boarding_id' => $boarding->id,
+            'service_type' => 'передержка',
+            'units_per_day' => 1,
+            'daily_price' => 500,
+            'start_date' => '2026-11-10',
+            'end_date' => '2026-11-12',
+        ]);
+
+        $this->actingAs($admin)
+            ->delete(route('admin.service-orders.destroy', $order))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('service_orders', ['id' => $order->id]);
+        $this->assertDatabaseMissing('boardings', ['id' => $boarding->id]);
     }
 }
