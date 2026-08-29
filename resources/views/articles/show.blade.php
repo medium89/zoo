@@ -94,6 +94,7 @@
                         <div class="comment-form-wrapper">
                             <form action="{{ route('articles.comment', $article) }}" method="POST" id="commentForm" class="comment-form card border-0 shadow-sm">
                                 @csrf
+                                <div class="visually-hidden" aria-hidden="true"><label>Сайт<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
                                 <input type="hidden" name="parent_id" value="">
                                 <div class="card-body">
                                     <div class="mb-3">

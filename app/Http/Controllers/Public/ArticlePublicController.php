@@ -55,6 +55,8 @@ class ArticlePublicController extends Controller
 
     public function show(Article $article)
     {
+        abort_unless($article->active, 404);
+
         $article->load('images');
         $comments = ArticleComment::where('article_id', $article->id)
             ->where('status', 'approved')
@@ -72,13 +74,21 @@ class ArticlePublicController extends Controller
     {
         $data = $request->validate([
             'email' => 'required|email|max:255',
-            'content' => 'required|string',
+            'content' => 'required|string|max:5000',
             'parent_id' => 'nullable|exists:article_comments,id',
+            'website' => 'nullable|string|max:0',
         ]);
 
+        if (! empty($data['parent_id']) && ! ArticleComment::whereKey($data['parent_id'])
+            ->where('article_id', $article->id)
+            ->exists()) {
+            return back()->withErrors(['parent_id' => 'Ответ можно оставить только на комментарий к этой статье.']);
+        }
+
         $data['article_id'] = $article->id;
-        $data['status'] = 'approved';
+        $data['status'] = 'pending';
         $data['order'] = (int)ArticleComment::max('order') + 1;
+        unset($data['website']);
 
         $comment = ArticleComment::create($data);
 

@@ -28,7 +28,7 @@ use App\Http\Controllers\Public\{ArticlePublicController, FeedbackController, Ho
 Auth::routes(['register' => false]);
 
 // Public Routes
-Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('throttle:10,1')->name('feedback.store');
 
 // Admin Routes
 Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admin.')->group(function () {
@@ -125,4 +125,4 @@ Route::get('/calendar', [BoardingController::class, 'publicCalendar'])->name('ca
 Route::get('/gallery/more', [HomeController::class, 'galleryMore'])->name('gallery.more');
 Route::get('/articles', [ArticlePublicController::class, 'index'])->name('articles.index');
 Route::get('/articles/{article:slug}', [ArticlePublicController::class, 'show'])->name('articles.show');
-Route::post('/articles/{article:slug}/comments', [ArticlePublicController::class, 'comment'])->name('articles.comment');
+Route::post('/articles/{article:slug}/comments', [ArticlePublicController::class, 'comment'])->middleware('throttle:6,1')->name('articles.comment');
