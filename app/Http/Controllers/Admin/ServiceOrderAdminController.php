@@ -59,6 +59,7 @@ class ServiceOrderAdminController extends Controller
     {
         $data = $this->validated($request);
         DB::transaction(function () use ($data): void {
+            $data = $this->resolveNewClient($data);
             $order = ServiceOrder::create($this->orderAttributes($data));
             $this->syncDetails($order, $data);
         });
@@ -69,6 +70,7 @@ class ServiceOrderAdminController extends Controller
     {
         $data = $this->validated($request);
         DB::transaction(function () use ($serviceOrder, $data): void {
+            $data = $this->resolveNewClient($data);
             $serviceOrder->update($this->orderAttributes($data));
             $this->syncDetails($serviceOrder, $data);
         });
@@ -133,6 +135,11 @@ class ServiceOrderAdminController extends Controller
             'animals.*.services.*.units_per_day' => 'required|integer|min:1|max:24', 'animals.*.services.*.unit_price' => 'required|integer|min:0|max:100000',
         ]);
 
+        return $data;
+    }
+
+    private function resolveNewClient(array $data): array
+    {
         if (filled($data['new_client']['name'] ?? null)) {
             $client = Client::create([
                 'name' => trim($data['new_client']['name']),
