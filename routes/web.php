@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\{
     AboutController, AdminController, AdvantageController, AnimalAdminController,
     ArticleAdminController, ArticleCommentAdminController, AvitoReviewController,
     BoardingController, BoardingTaskController, CategoryController, ClientAdminController,
-    ClientMapController, DashboardController, GalleryController, ImageManagerController,
+    ClientMapController, DashboardController, FeedbackAdminController, GalleryController, ImageManagerController,
     NavLinkController, PersonalDataConsentController, ServiceController,
     ServiceOrderAdminController, SliderController, SocialController,
     TagClassificationController, TelegramBotSettingsController, UserController,
@@ -73,8 +73,8 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
     Route::delete('animals/{animal}/client', [AnimalAdminController::class, 'detachClient'])->name('animals.client.detach');
     Route::resource('animals', AnimalAdminController::class);
     Route::resource('users', UserController::class);
-    Route::resource('feedbacks', FeedbackController::class)->except(['create', 'show']);
-    Route::post('feedbacks/reorder', [FeedbackController::class, 'reorder'])->name('feedbacks.reorder');
+    Route::resource('feedbacks', FeedbackAdminController::class)->only(['index', 'edit', 'update', 'destroy']);
+    Route::post('feedbacks/reorder', [FeedbackAdminController::class, 'reorder'])->name('feedbacks.reorder');
     Route::resource('categories', CategoryController::class)->except(['show']);
     Route::get('boarding', [BoardingController::class, 'index'])->name('boarding.index');
     Route::post('boarding', [BoardingController::class, 'store'])->name('boarding.store');
