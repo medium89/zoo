@@ -73,7 +73,7 @@
                 <p class="map-form-modal__lead">Карточка появится на поле сразу после создания.</p>
                 <div class="map-form-field"><label for="mapClientName">Имя или ФИО <span>*</span></label><input id="mapClientName" class="form-control" name="name" placeholder="Например, Анастасия Иванова" autocomplete="name" required></div>
                 <div class="map-form-field"><label for="mapClientPhone">Телефон</label><input id="mapClientPhone" class="form-control" name="phone" placeholder="+7 999 123-45-67" autocomplete="tel"></div>
-                <div class="map-form-field"><label for="mapClientAddress">Адрес</label><input id="mapClientAddress" class="form-control" name="address" placeholder="Улица, дом, квартира" autocomplete="street-address"></div>
+                <div class="map-form-field"><label for="mapClientAddress">Адрес</label><input id="mapClientAddress" class="form-control" name="address" placeholder="Улица, дом, квартира" autocomplete="street-address" data-address-suggest></div>
             </div>
             <div class="modal-footer map-form-modal__footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Отмена</button><button class="btn btn-primary"><i class="fa fa-plus me-1"></i>Создать клиента</button></div>
         </form>
@@ -314,7 +314,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('mapNodeEditorTitle').textContent = isClient ? 'Редактировать клиента' : 'Редактировать питомца';
         const fields = document.getElementById('mapNodeEditorFields');
         if (isClient) {
-            fields.innerHTML = `<div class="map-form-field"><label for="mapEditName">Имя или ФИО <span>*</span></label><input id="mapEditName" class="form-control" name="name" value="${escapeHtml(node.name)}" required></div><div class="map-form-field"><label for="mapEditPhone">Телефон</label><input id="mapEditPhone" class="form-control" name="phone" value="${escapeHtml(node.phone)}"></div><div class="map-form-field"><label for="mapEditAddress">Адрес</label><input id="mapEditAddress" class="form-control" name="address" value="${escapeHtml(node.address)}"></div>`;
+            fields.innerHTML = `<div class="map-form-field"><label for="mapEditName">Имя или ФИО <span>*</span></label><input id="mapEditName" class="form-control" name="name" value="${escapeHtml(node.name)}" required></div><div class="map-form-field"><label for="mapEditPhone">Телефон</label><input id="mapEditPhone" class="form-control" name="phone" value="${escapeHtml(node.phone)}"></div><div class="map-form-field"><label for="mapEditAddress">Адрес</label><input id="mapEditAddress" class="form-control" name="address" value="${escapeHtml(node.address)}" data-address-suggest></div>`;
+            window.initAdminAddressSuggest?.(fields);
         } else {
             const options = ['<option value="">Не указана</option>', ...categories.map(category => `<option value="${category.id}" ${Number(node.category_id) === Number(category.id) ? 'selected' : ''}>${escapeHtml(category.name)}</option>`)].join('');
             fields.innerHTML = `<div class="map-form-field"><label for="mapEditName">Кличка <span>*</span></label><input id="mapEditName" class="form-control" name="name" value="${escapeHtml(node.name)}" required></div><div class="map-form-field"><label for="mapEditCategory">Категория</label><select id="mapEditCategory" class="form-select" name="category_id">${options}</select></div>`;

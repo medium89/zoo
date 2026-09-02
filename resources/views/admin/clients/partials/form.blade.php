@@ -9,7 +9,7 @@
     </div>
     <div class="mb-3">
         <label class="form-label">Адрес</label>
-        <input type="text" name="address" class="form-control" value="{{ old('address', $client?->address) }}" placeholder="Город, улица, дом">
+        <input type="text" name="address" class="form-control" value="{{ old('address', $client?->address) }}" placeholder="Город, улица, дом" data-address-suggest>
         <div class="form-text">Адрес появится на карте в разделе «Клиенты».</div>
     </div>
     <div class="mb-3">

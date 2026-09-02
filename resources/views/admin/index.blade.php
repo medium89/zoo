@@ -377,6 +377,13 @@
         .client-animal-search-result { padding: 8px 9px; border: 0; border-radius: 6px; background: transparent; color: #34465a; text-align: left; font-size: .86rem; }
         .client-animal-search-result:hover, .client-animal-search-result:focus { background: #edf5ff; color: #1763b7; outline: 0; }
         .client-animal-search-empty { padding: 8px 9px; color: #788699; font-size: .8rem; }
+        .address-suggest { position: relative; }
+        .address-suggest__results { position: absolute; top: calc(100% + 5px); right: 0; left: 0; z-index: 1095; max-height: 240px; overflow-y: auto; border: 1px solid #d7e2ed; border-radius: 9px; background: #fff; box-shadow: 0 12px 28px rgba(36, 56, 76, .18); }
+        .address-suggest__results[hidden] { display: none; }
+        .address-suggest__item { display: block; width: 100%; padding: 9px 11px; border: 0; border-bottom: 1px solid #edf1f5; background: #fff; color: #34485b; font-size: .84rem; line-height: 1.35; text-align: left; }
+        .address-suggest__item:last-child { border-bottom: 0; }
+        .address-suggest__item:hover, .address-suggest__item:focus { background: #edf5ff; color: #1763b7; outline: 0; }
+        .address-suggest__empty { padding: 9px 11px; color: #788699; font-size: .8rem; }
 
         .admin-editor-modal .card {
             box-shadow: none;
@@ -1002,6 +1009,85 @@
         const editorModal = editorModalEl ? new bootstrap.Modal(editorModalEl) : null;
         const editorScrollKey = `admin-editor-scroll:${window.location.pathname}${window.location.search}`;
         const tagClassificationUrl = @json(route('admin.tags.classify'));
+        const yandexMapsApiKey = @json(config('services.yandex.maps_api_key'));
+        let yandexMapsPromise = null;
+
+        const loadYandexMaps = () => {
+            if (window.ymaps) return Promise.resolve(window.ymaps);
+            if (!yandexMapsApiKey) return Promise.reject(new Error('Yandex Maps API key is missing'));
+            if (yandexMapsPromise) return yandexMapsPromise;
+
+            yandexMapsPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = `https://api-maps.yandex.ru/2.1/?apikey=${encodeURIComponent(yandexMapsApiKey)}&lang=ru_RU`;
+                script.async = true;
+                script.onload = () => window.ymaps ? resolve(window.ymaps) : reject(new Error('Yandex Maps is unavailable'));
+                script.onerror = () => reject(new Error('Yandex Maps failed to load'));
+                document.head.append(script);
+            });
+            return yandexMapsPromise;
+        };
+
+        const initAddressSuggest = (root = document) => {
+            root.querySelectorAll('input[data-address-suggest], input.form-control[name="address"]').forEach((input) => {
+                if (input.dataset.addressSuggestReady === '1') return;
+                input.dataset.addressSuggestReady = '1';
+
+                const host = input.parentElement;
+                if (!host) return;
+                host.classList.add('address-suggest');
+                const results = document.createElement('div');
+                results.className = 'address-suggest__results';
+                results.hidden = true;
+                host.append(results);
+                let timer = null;
+
+                const close = () => { results.hidden = true; };
+                const draw = (items) => {
+                    results.replaceChildren();
+                    if (!items.length) {
+                        const empty = document.createElement('div');
+                        empty.className = 'address-suggest__empty';
+                        empty.textContent = 'Адрес не найден. Попробуйте указать город, улицу и дом.';
+                        results.append(empty);
+                    } else {
+                        items.forEach((address) => {
+                            const item = document.createElement('button');
+                            item.type = 'button';
+                            item.className = 'address-suggest__item';
+                            item.textContent = address;
+                            item.addEventListener('mousedown', (event) => {
+                                event.preventDefault();
+                                input.value = address;
+                                close();
+                            });
+                            results.append(item);
+                        });
+                    }
+                    results.hidden = false;
+                };
+
+                const search = () => {
+                    const query = input.value.trim();
+                    if (query.length < 3) return close();
+                    loadYandexMaps().then((ymaps) => ymaps.geocode(query, {results: 5})).then((response) => {
+                        const addresses = [];
+                        response.geoObjects.each((geoObject) => {
+                            const address = geoObject.properties.get('text');
+                            if (address && !addresses.includes(address)) addresses.push(address);
+                        });
+                        draw(addresses);
+                    }).catch(() => close());
+                };
+
+                input.addEventListener('input', () => {
+                    window.clearTimeout(timer);
+                    timer = window.setTimeout(search, 280);
+                });
+                input.addEventListener('blur', () => window.setTimeout(close, 160));
+            });
+        };
+        window.initAdminAddressSuggest = initAddressSuggest;
 
         const restoreEditorScroll = () => {
             const saved = sessionStorage.getItem(editorScrollKey);
@@ -1011,6 +1097,7 @@
         };
 
         restoreEditorScroll();
+        initAddressSuggest();
 
         const setTagType = (item, type, reason = '') => {
             item.classList.remove('entity-tag--positive', 'entity-tag--negative', 'is-classifying');
@@ -1160,6 +1247,7 @@
             editorModalTitle.textContent = heading?.textContent.trim() || 'Редактирование';
             heading?.remove();
             editorModalBody.innerHTML = source.innerHTML;
+            initAddressSuggest(editorModalBody);
         };
 
         const showEditorError = () => {

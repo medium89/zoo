@@ -94,7 +94,7 @@
                     <div class="client-create-fields">
                         <label>Имя или ФИО <b>*</b><input class="form-control" name="name" required autocomplete="name" placeholder="Например, Анастасия Иванова"></label>
                         <label>Телефон<input class="form-control" name="phone" autocomplete="tel" placeholder="+7 999 123-45-67"></label>
-                        <label class="client-create-fields__wide">Адрес<input class="form-control" name="address" autocomplete="street-address" placeholder="Улица, дом, квартира"></label>
+                        <label class="client-create-fields__wide">Адрес<input class="form-control" name="address" autocomplete="street-address" placeholder="Улица, дом, квартира" data-address-suggest></label>
                         <label class="client-create-fields__wide">Комментарий<textarea class="form-control" name="note" rows="2" placeholder="Важные детали о клиенте"></textarea></label>
                         <label class="client-create-fields__wide">Фото клиента<input class="form-control" type="file" name="photos[]" accept="image/*" multiple></label>
                     </div>
