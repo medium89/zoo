@@ -76,8 +76,8 @@
     @endif
 </div>
 
-<div class="modal fade" id="clientCreateModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered client-create-dialog">
+<div class="modal fade admin-modal" id="clientCreateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable client-create-dialog">
         <form class="modal-content client-create-modal" action="{{ route('admin.clients.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="_method" id="clientCreateMethod" value="POST">

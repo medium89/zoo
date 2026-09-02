@@ -124,7 +124,7 @@
     </section>
 </div>
 
-<div class="modal fade" id="tariffsModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade admin-modal" id="tariffsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <form method="POST" action="{{ route('admin.dashboard.tariffs.update') }}" class="modal-content tariffs-modal">
             @csrf

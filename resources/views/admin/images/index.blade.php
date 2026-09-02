@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     // Cropper modal
     const modalTpl = document.createElement('div');
-    modalTpl.className = 'modal fade';
+    modalTpl.className = 'modal fade admin-modal';
     modalTpl.id = 'cropModal';
     modalTpl.tabIndex = -1;
     modalTpl.innerHTML = `

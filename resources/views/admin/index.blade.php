@@ -251,6 +251,85 @@
             box-shadow: 0 22px 60px rgba(31, 35, 42, .24);
         }
 
+        /* Единый паттерн для форм и подтверждений: как в редакторе заказа. */
+        .admin-modal .modal-dialog:not(.modal-lg):not(.modal-xl):not(.modal-sm) {
+            --bs-modal-width: 680px;
+        }
+
+        .admin-modal .modal-content {
+            overflow: hidden;
+            border: 0;
+            border-radius: 16px;
+            box-shadow: 0 22px 60px rgba(28, 45, 64, .22);
+            color: #304255;
+        }
+
+        .admin-modal .modal-header {
+            align-items: flex-start;
+            min-height: 74px;
+            padding: 19px 24px 17px;
+            border-bottom: 1px solid #e7edf3;
+        }
+
+        .admin-modal .modal-title {
+            color: #2e4054;
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: -.015em;
+        }
+
+        .admin-modal .modal-body {
+            padding: 20px 24px 22px;
+            background: #fff;
+            font-size: .9rem;
+        }
+
+        .admin-modal .modal-body > .border-top {
+            margin-top: 18px;
+            padding-top: 18px !important;
+            border-color: #e6edf4 !important;
+        }
+
+        .admin-modal .form-label {
+            margin-bottom: 6px;
+            color: #607288;
+            font-size: .78rem;
+            font-weight: 750;
+        }
+
+        .admin-modal .form-control,
+        .admin-modal .form-select {
+            min-height: 40px;
+            border-color: #d8e2ec;
+            border-radius: 8px;
+            color: #304255;
+            font-size: .88rem;
+            box-shadow: none;
+        }
+
+        .admin-modal textarea.form-control { min-height: 72px; }
+        .admin-modal .form-control:focus,
+        .admin-modal .form-select:focus { border-color: #6da3dd; box-shadow: 0 0 0 3px rgba(49, 120, 198, .11); }
+        .admin-modal .form-text { margin-top: 7px; color: #77889a; font-size: .76rem; line-height: 1.45; }
+
+        .admin-modal .modal-footer {
+            gap: 9px;
+            padding: 14px 24px 18px;
+            border-top: 1px solid #e7edf3;
+            background: #fbfcfe;
+        }
+
+        .admin-modal .modal-footer .btn { min-height: 39px; padding: 8px 13px; font-size: .84rem; font-weight: 700; }
+
+        @media (max-width: 575px) {
+            .admin-modal .modal-dialog { margin: 8px; }
+            .admin-modal .modal-header { min-height: 64px; padding: 15px 16px 13px; }
+            .admin-modal .modal-title { font-size: 1rem; }
+            .admin-modal .modal-body { padding: 16px; }
+            .admin-modal .modal-footer { padding: 12px 16px 15px; }
+            .admin-modal .modal-footer .btn { flex: 1; padding-right: 8px; padding-left: 8px; }
+        }
+
         .admin-editor-modal .modal-header {
             padding: 18px 22px;
             border-bottom: 1px solid #edf0f2;
@@ -859,7 +938,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade admin-editor-modal" id="adminEditorModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade admin-modal admin-editor-modal" id="adminEditorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content">
             <div class="modal-header">
@@ -875,8 +954,8 @@
 <a href="#" class="admin-to-top" id="adminToTop" aria-label="Наверх">
     <i class="fas fa-arrow-up"></i>
 </a>
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade admin-modal" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title text-danger">Удаление</h5>
@@ -892,7 +971,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="confirmUnlinkModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade admin-modal" id="confirmUnlinkModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">

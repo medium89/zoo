@@ -119,8 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 @endpush
 
-<div class="modal fade admin-secondary-modal" id="animalClientModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade admin-modal admin-secondary-modal" id="animalClientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <form class="modal-content" method="POST" action="{{ route('admin.animals.client.assign', $animal) }}">
             @csrf
             <div class="modal-header">
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 </div>
 
-<div class="modal fade" id="animalPhotoModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade admin-modal--media" id="animalPhotoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content bg-dark">
             <div class="modal-header border-0">

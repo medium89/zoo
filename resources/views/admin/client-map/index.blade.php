@@ -62,8 +62,8 @@
     </div>
 </div>
 
-<div class="modal fade" id="newMapClientModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered map-form-dialog">
+<div class="modal fade admin-modal" id="newMapClientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable map-form-dialog">
         <form class="modal-content map-form-modal" id="newMapClientForm">
             <div class="modal-header map-form-modal__header">
                 <div><div class="map-form-modal__eyebrow"><i class="fa fa-user-plus"></i> Карта клиентов</div><h5 class="modal-title">Новый клиент</h5></div>
@@ -79,8 +79,8 @@
         </form>
     </div>
 </div>
-<div class="modal fade" id="newMapAnimalModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered map-form-dialog">
+<div class="modal fade admin-modal" id="newMapAnimalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable map-form-dialog">
         <form class="modal-content map-form-modal" id="newMapAnimalForm" enctype="multipart/form-data">
             <div class="modal-header map-form-modal__header">
                 <div><div class="map-form-modal__eyebrow"><i class="fa fa-paw"></i> Карта клиентов</div><h5 class="modal-title">Новый питомец</h5></div>
@@ -96,8 +96,8 @@
         </form>
     </div>
 </div>
-<div class="modal fade" id="mapNodeEditorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered map-form-dialog">
+<div class="modal fade admin-modal" id="mapNodeEditorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable map-form-dialog">
         <form class="modal-content map-form-modal" id="mapNodeEditorForm">
             <div class="modal-header map-form-modal__header">
                 <div><div class="map-form-modal__eyebrow" id="mapNodeEditorEyebrow"></div><h5 class="modal-title" id="mapNodeEditorTitle">Редактировать карточку</h5></div>
@@ -108,8 +108,8 @@
         </form>
     </div>
 </div>
-<div class="modal fade" id="mapNodeDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered map-form-dialog">
+<div class="modal fade admin-modal" id="mapNodeDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable map-form-dialog">
         <div class="modal-content map-form-modal">
             <div class="modal-header map-form-modal__header">
                 <div><div class="map-form-modal__eyebrow" id="mapNodeDetailsEyebrow"></div><h5 class="modal-title" id="mapNodeDetailsTitle">Карточка</h5></div>

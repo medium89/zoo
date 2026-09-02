@@ -105,8 +105,8 @@
         </div>
     </div>
 </div>
-<div class="modal fade admin-secondary-modal" id="clientAnimalModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade admin-modal admin-secondary-modal" id="clientAnimalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <form class="modal-content" method="POST" action="{{ route('admin.clients.animals.attach', $client) }}">
             @csrf
             <div class="modal-header">

@@ -75,8 +75,8 @@
     </div>
 </div>
 
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade admin-modal" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <form method="POST" class="modal-content" id="deleteForm">
             @csrf
             @method('DELETE')
