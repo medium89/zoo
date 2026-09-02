@@ -1010,6 +1010,7 @@
         const editorScrollKey = `admin-editor-scroll:${window.location.pathname}${window.location.search}`;
         const tagClassificationUrl = @json(route('admin.tags.classify'));
         const yandexMapsApiKey = @json(config('services.yandex.maps_api_key'));
+        const yandexSuggestApiKey = @json(config('services.yandex.suggest_api_key'));
         let yandexMapsPromise = null;
 
         const loadYandexMaps = () => {
@@ -1019,7 +1020,8 @@
 
             yandexMapsPromise = new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                script.src = `https://api-maps.yandex.ru/2.1/?apikey=${encodeURIComponent(yandexMapsApiKey)}&lang=ru_RU`;
+                const suggestParameter = yandexSuggestApiKey ? `&suggest_apikey=${encodeURIComponent(yandexSuggestApiKey)}&load=SuggestView` : '';
+                script.src = `https://api-maps.yandex.ru/2.1/?apikey=${encodeURIComponent(yandexMapsApiKey)}&lang=ru_RU${suggestParameter}`;
                 script.async = true;
                 script.onload = () => window.ymaps ? resolve(window.ymaps) : reject(new Error('Yandex Maps is unavailable'));
                 script.onerror = () => reject(new Error('Yandex Maps failed to load'));
@@ -1070,13 +1072,20 @@
                 const search = () => {
                     const query = input.value.trim();
                     if (query.length < 3) return close();
-                    loadYandexMaps().then((ymaps) => ymaps.geocode(query, {results: 5})).then((response) => {
-                        const addresses = [];
-                        response.geoObjects.each((geoObject) => {
-                            const address = geoObject.properties.get('text');
-                            if (address && !addresses.includes(address)) addresses.push(address);
+                    loadYandexMaps().then((ymaps) => {
+                        if (yandexSuggestApiKey && typeof ymaps.suggest === 'function') {
+                            return ymaps.suggest(query).then((items) => {
+                                draw(items.map((item) => item.value).filter(Boolean));
+                            });
+                        }
+                        return ymaps.geocode(query, {results: 5}).then((response) => {
+                            const addresses = [];
+                            response.geoObjects.each((geoObject) => {
+                                const address = geoObject.properties.get('text');
+                                if (address && !addresses.includes(address)) addresses.push(address);
+                            });
+                            draw(addresses);
                         });
-                        draw(addresses);
                     }).catch(() => close());
                 };
 

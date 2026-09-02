@@ -159,7 +159,7 @@
             });
         };
         const script = document.createElement('script');
-        script.src = 'https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($yandexMapsKey) }}&lang=ru_RU';
+        script.src = 'https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($yandexMapsKey) }}&lang=ru_RU{{ $yandexSuggestKey ? '&suggest_apikey='.urlencode($yandexSuggestKey).'&load=SuggestView' : '' }}';
         script.async = true;
         script.onload = initMap;
         script.onerror = () => setStatus('Не удалось загрузить Яндекс.Карты. Проверьте интернет, VPN или ограничения ключа для zooland22.ru.');

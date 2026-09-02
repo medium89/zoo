@@ -44,6 +44,7 @@ class ClientAdminController extends Controller
             'phone' => $client->phone,
         ])->values()->all();
         $yandexMapsKey = config('services.yandex.maps_api_key');
+        $yandexSuggestKey = config('services.yandex.suggest_api_key');
 
         $categories = Category::orderBy('name')->get(['id', 'name']);
         $animalsPayload = Animal::with('client')->orderBy('name')->get()->map(fn (Animal $animal) => [
@@ -66,7 +67,7 @@ class ClientAdminController extends Controller
             ])->values()->all(),
         ]])->all();
 
-        return view('admin.clients.index', compact('clients', 'mapClients', 'mapClientsPayload', 'yandexMapsKey', 'categories', 'animalsPayload', 'clientsPayload', 'filters'));
+        return view('admin.clients.index', compact('clients', 'mapClients', 'mapClientsPayload', 'yandexMapsKey', 'yandexSuggestKey', 'categories', 'animalsPayload', 'clientsPayload', 'filters'));
     }
 
     public function create()

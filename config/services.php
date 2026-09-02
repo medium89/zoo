@@ -38,6 +38,7 @@ return [
 
     'yandex' => [
         'maps_api_key' => env('YANDEX_MAPS_API_KEY'),
+        'suggest_api_key' => env('YANDEX_SUGGEST_API_KEY'),
     ],
 
     'telegram' => [
