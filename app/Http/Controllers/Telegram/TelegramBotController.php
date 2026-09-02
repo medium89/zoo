@@ -16,6 +16,7 @@ use App\Models\TelegramBotSession;
 use App\Models\TelegramWebhookUpdate;
 use App\Jobs\ProcessTelegramUpdate;
 use App\Services\AitunnelService;
+use App\Services\AnonymousOrderAnimalLinker;
 use App\Services\BoardingPricingService;
 use App\Services\BoardingTaskInstructionParser;
 use App\Services\BookingListPeriodParser;
@@ -33,6 +34,7 @@ class TelegramBotController extends Controller
 {
     public function __construct(
         private readonly AitunnelService $aitunnel,
+        private readonly AnonymousOrderAnimalLinker $anonymousOrderAnimalLinker,
         private readonly BoardingTaskInstructionParser $taskInstructionParser,
         private readonly BookingListPeriodParser $bookingListPeriodParser,
         private readonly BoardingPricingService $pricing,
@@ -535,6 +537,7 @@ class TelegramBotController extends Controller
                     'label' => $group['label'],
                     'quantity' => $group['quantity'],
                 ]);
+                $this->anonymousOrderAnimalLinker->link($orderAnimal);
                 $orderAnimal->services()->create([
                     'service_order_id' => $order->id,
                     'service_type' => $serviceType,
