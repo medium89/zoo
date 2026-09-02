@@ -246,9 +246,9 @@
 
         .admin-editor-modal .modal-content {
             border: 0;
-            border-radius: 18px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 22px 60px rgba(31, 35, 42, .24);
+            box-shadow: 0 18px 60px rgba(15, 35, 60, .18);
         }
 
         /* Единый паттерн для форм и подтверждений: как в редакторе заказа. */
@@ -331,14 +331,17 @@
         }
 
         .admin-editor-modal .modal-header {
-            padding: 18px 22px;
-            border-bottom: 1px solid #edf0f2;
+            padding: 17px 20px;
+            border-bottom: 1px solid #e8edf3;
         }
 
         .admin-editor-modal .modal-body {
-            padding: 22px;
-            background: #f7f8fa;
+            padding: 18px 20px 22px;
+            background: #fff;
         }
+
+        .admin-editor-modal .modal-dialog { --bs-modal-width: 980px; }
+        .admin-editor-modal .modal-title { font-size: 1.05rem; }
 
         .admin-editor-modal .container-fluid {
             padding: 0;
