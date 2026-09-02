@@ -24,7 +24,10 @@
             </div>
             <div class="card-body p-0">
                 @if($yandexMapsKey)
-                    <div id="clientsMap" class="client-map" aria-label="Карта клиентов"></div>
+                    <div class="client-map-wrap">
+                        <div id="clientsMap" class="client-map" aria-label="Карта клиентов"></div>
+                        <div id="clientsMapStatus" class="client-map-status" role="status">Загружаем карту…</div>
+                    </div>
                 @else
                     <div class="p-3 text-muted">Чтобы показать адреса на карте, добавьте <code>YANDEX_MAPS_API_KEY</code> в файл <code>.env</code>.</div>
                 @endif
@@ -108,43 +111,59 @@
 
 @if($mapClients->isNotEmpty() && $yandexMapsKey)
     @push('styles')
-    <style>.client-map{height:420px;width:100%;border-radius:0 0 .375rem .375rem;overflow:hidden}@media(max-width:767px){.client-map{height:320px}}</style>
+    <style>.client-map-wrap{position:relative}.client-map{height:420px;width:100%;border-radius:0 0 .375rem .375rem;overflow:hidden}.client-map-status{position:absolute;inset:0;display:grid;place-items:center;padding:20px;background:#fff;color:#6b7b8d;font-size:.88rem;text-align:center}.client-map-status.is-hidden{display:none}@media(max-width:767px){.client-map{height:320px}}</style>
     @endpush
     @push('scripts')
-    <script src="https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($yandexMapsKey) }}&lang=ru_RU" defer></script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const clients = @json($mapClientsPayload);
-        const start = () => {
-            if (!window.ymaps || !document.getElementById('clientsMap')) return;
+        const container = document.getElementById('clientsMap');
+        const status = document.getElementById('clientsMapStatus');
+        const setStatus = (message = '') => {
+            if (!status) return;
+            status.textContent = message;
+            status.classList.toggle('is-hidden', message === '');
+        };
+        const initMap = () => {
+            if (!window.ymaps || !container || container.dataset.ready === '1') return;
             ymaps.ready(() => {
-                const map = new ymaps.Map('clientsMap', {center: [53.3474, 83.7783], zoom: 10, controls: ['zoomControl', 'fullscreenControl']});
-                const cluster = new ymaps.Clusterer({preset: 'islands#blueClusterIcons'});
-                const points = [];
-                let completed = 0;
-                clients.forEach((client) => {
-                    ymaps.geocode(client.address, {results: 1}).then((result) => {
-                        const geoObject = result.geoObjects.get(0);
-                        if (!geoObject) return;
-                        const point = new ymaps.Placemark(geoObject.geometry.getCoordinates(), {
-                            balloonContentHeader: client.name,
-                            balloonContentBody: `${client.address}${client.phone ? `<br>${client.phone}` : ''}`,
-                            hintContent: client.name,
+                try {
+                    container.dataset.ready = '1';
+                    const map = new ymaps.Map(container, {center: [53.3474, 83.7783], zoom: 10, controls: ['zoomControl', 'fullscreenControl']});
+                    setStatus();
+                    const cluster = new ymaps.Clusterer({preset: 'islands#blueClusterIcons'});
+                    const points = [];
+                    let completed = 0;
+                    clients.forEach((client) => {
+                        ymaps.geocode(client.address, {results: 1}).then((result) => {
+                            const geoObject = result.geoObjects.get(0);
+                            if (!geoObject) return;
+                            const point = new ymaps.Placemark(geoObject.geometry.getCoordinates(), {
+                                balloonContentHeader: client.name,
+                                balloonContentBody: `${client.address}${client.phone ? `<br>${client.phone}` : ''}`,
+                                hintContent: client.name,
+                            });
+                            points.push(point);
+                            cluster.add(point);
+                        }).catch(() => {}).finally(() => {
+                            completed += 1;
+                            if (completed === clients.length && points.length) {
+                                map.geoObjects.add(cluster);
+                                map.setBounds(cluster.getBounds(), {checkZoomRange: true, zoomMargin: 36});
+                            }
                         });
-                        points.push(point);
-                        cluster.add(point);
-                    }).catch(() => {}).finally(() => {
-                        completed += 1;
-                        if (completed === clients.length && points.length) {
-                            map.geoObjects.add(cluster);
-                            map.setBounds(cluster.getBounds(), {checkZoomRange: true, zoomMargin: 36});
-                        }
                     });
-                });
+                } catch (_) {
+                    setStatus('Не удалось создать карту. Проверьте настройки ключа Яндекс.Карт.');
+                }
             });
         };
-        const waitForMaps = () => window.ymaps ? start() : window.setTimeout(waitForMaps, 100);
-        waitForMaps();
+        const script = document.createElement('script');
+        script.src = 'https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($yandexMapsKey) }}&lang=ru_RU';
+        script.async = true;
+        script.onload = initMap;
+        script.onerror = () => setStatus('Не удалось загрузить Яндекс.Карты. Проверьте интернет, VPN или ограничения ключа для zooland22.ru.');
+        document.head.append(script);
     });
     </script>
     @endpush
