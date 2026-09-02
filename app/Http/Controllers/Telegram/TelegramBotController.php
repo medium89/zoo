@@ -18,6 +18,7 @@ use App\Jobs\ProcessTelegramUpdate;
 use App\Services\AitunnelService;
 use App\Services\BoardingPricingService;
 use App\Services\BoardingTaskInstructionParser;
+use App\Services\BookingListPeriodParser;
 use App\Services\TelegramCalendarImageService;
 use App\Services\TelegramApiClient;
 use Carbon\Carbon;
@@ -33,6 +34,7 @@ class TelegramBotController extends Controller
     public function __construct(
         private readonly AitunnelService $aitunnel,
         private readonly BoardingTaskInstructionParser $taskInstructionParser,
+        private readonly BookingListPeriodParser $bookingListPeriodParser,
         private readonly BoardingPricingService $pricing,
         private readonly TelegramCalendarImageService $calendarImage,
         private readonly TelegramApiClient $telegram,
@@ -159,6 +161,11 @@ class TelegramBotController extends Controller
             if ($this->handleSessionText($session, $chatId, $fromId, $text)) {
                 return;
             }
+        }
+
+        if ($period = $this->bookingListPeriodParser->parse($text)) {
+            $this->sendBookingsList($chatId, $period);
+            return;
         }
 
         $intent = $this->aitunnel->extractIntent($text);
