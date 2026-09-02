@@ -145,7 +145,7 @@
                             });
                             points.push(point);
                             cluster.add(point);
-                        }).catch(() => {}).finally(() => {
+                        }, () => {}).then(() => {
                             completed += 1;
                             if (completed === clients.length && points.length) {
                                 map.geoObjects.add(cluster);
