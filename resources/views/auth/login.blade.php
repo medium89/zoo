@@ -64,6 +64,11 @@
                                 <button type="submit" class="btn btn-primary">
                                     Войти
                                 </button>
+                                @if (Route::has('password.request'))
+                                    <a href="{{ route('password.request') }}" class="btn btn-link px-2">
+                                        Забыли пароль?
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </form>
