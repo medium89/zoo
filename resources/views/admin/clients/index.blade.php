@@ -129,7 +129,7 @@
             ymaps.ready(() => {
                 try {
                     container.dataset.ready = '1';
-                    const map = new ymaps.Map(container, {center: [53.3474, 83.7783], zoom: 10, controls: ['zoomControl', 'fullscreenControl']});
+                    const map = new ymaps.Map('clientsMap', {center: [53.3474, 83.7783], zoom: 10, controls: ['zoomControl', 'fullscreenControl']});
                     setStatus();
                     const cluster = new ymaps.Clusterer({preset: 'islands#blueClusterIcons'});
                     const points = [];
