@@ -100,17 +100,27 @@ class ServiceOrderAdminController extends Controller
         return back()->with('success', 'Карточка питомца обновлена');
     }
 
-    public function archiveIndex(ExpiredBoardingArchiver $archiver)
+    public function archiveIndex(Request $request, ExpiredBoardingArchiver $archiver)
     {
         $archiver->archive();
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'service' => 'nullable|in:передержка,выгул,уход',
+        ]);
 
         $orders = ServiceOrder::with(['client.photos', 'animals.services', 'animals.category', 'animals.animal.photos'])
             ->whereNotNull('archived_at')
+            ->when($filters['search'] ?? null, function ($query, string $search) {
+                $query->where(fn ($items) => $items->whereHas('client', fn ($clients) => $clients->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('animals', fn ($animals) => $animals->where('label', 'like', "%{$search}%")
+                        ->orWhereHas('animal', fn ($animals) => $animals->where('name', 'like', "%{$search}%"))));
+            })
+            ->when($filters['service'] ?? null, fn ($query, string $service) => $query->whereHas('animals.services', fn ($services) => $services->where('service_type', $service)))
             ->orderByDesc('archived_at')
             ->orderByDesc('end_date')
             ->get();
 
-        return view('admin.service-orders.archive', compact('orders'));
+        return view('admin.service-orders.archive', compact('orders', 'filters'));
     }
 
     public function destroy(ServiceOrder $serviceOrder)

@@ -11,6 +11,11 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    <x-admin.filters :action="route('admin.clients.index')" :filters="$filters" placeholder="Имя, телефон или адрес">
+        <label class="admin-filter-bar__field">Питомцы<select name="animals" class="form-select"><option value="">Все</option><option value="with" @selected(($filters['animals'] ?? '') === 'with')>Есть питомцы</option><option value="without" @selected(($filters['animals'] ?? '') === 'without')>Без питомцев</option></select></label>
+        <label class="admin-filter-bar__field">Адрес<select name="address" class="form-select"><option value="">Все</option><option value="with" @selected(($filters['address'] ?? '') === 'with')>Указан</option><option value="without" @selected(($filters['address'] ?? '') === 'without')>Не указан</option></select></label>
+    </x-admin.filters>
+
     @if($mapClients->isNotEmpty())
         <section class="card mb-4 client-map-card">
             <div class="card-header d-flex justify-content-between align-items-center gap-2">

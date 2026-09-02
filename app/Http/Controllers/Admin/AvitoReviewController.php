@@ -12,11 +12,18 @@ use Illuminate\Support\Facades\DB;
 
 class AvitoReviewController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $reviews = AvitoReview::orderBy('order')->orderBy('id')->paginate(50);
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'status' => 'nullable|in:new,published,hidden',
+        ]);
+        $reviews = AvitoReview::query()
+            ->when($filters['search'] ?? null, fn ($query, string $search) => $query->where(fn ($items) => $items->where('name', 'like', "%{$search}%")->orWhere('text', 'like', "%{$search}%")))
+            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+            ->orderBy('order')->orderBy('id')->paginate(50)->withQueryString();
 
-        return view('admin.avito_reviews.index', compact('reviews'));
+        return view('admin.avito_reviews.index', compact('reviews', 'filters'));
     }
 
     public function create()

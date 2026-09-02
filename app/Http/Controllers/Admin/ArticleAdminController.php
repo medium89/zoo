@@ -15,10 +15,22 @@ use Illuminate\Support\Str;
 
 class ArticleAdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $articles = Article::with('category')->orderBy('order')->latest()->paginate(10);
-        return view('admin.articles.index', compact('articles'));
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
+            'status' => 'nullable|in:active,inactive',
+        ]);
+        $articles = Article::with('category')
+            ->when($filters['search'] ?? null, fn ($query, string $search) => $query->where('title', 'like', "%{$search}%"))
+            ->when($filters['category_id'] ?? null, fn ($query, int $categoryId) => $query->where('category_id', $categoryId))
+            ->when(($filters['status'] ?? null) === 'active', fn ($query) => $query->where('active', true))
+            ->when(($filters['status'] ?? null) === 'inactive', fn ($query) => $query->where('active', false))
+            ->orderBy('order')->latest()->paginate(10)->withQueryString();
+        $categories = Category::orderBy('name')->get(['id', 'name']);
+
+        return view('admin.articles.index', compact('articles', 'categories', 'filters'));
     }
 
     public function create()

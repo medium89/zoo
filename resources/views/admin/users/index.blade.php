@@ -12,6 +12,9 @@
             {{ session('success') }}
         </div>
     @endif
+    <x-admin.filters :action="route('admin.users.index')" :filters="$filters" placeholder="Имя или email">
+        <label class="admin-filter-bar__field">Доступ<select name="role" class="form-select"><option value="">Все</option><option value="admin" @selected(($filters['role'] ?? '') === 'admin')>Администраторы</option><option value="user" @selected(($filters['role'] ?? '') === 'user')>Пользователи</option></select></label>
+    </x-admin.filters>
     <div class="admin-grid" style="--grid-cols: 80px 1fr 1fr 190px;">
         <div class="admin-grid-header">
             <span>ID</span>

@@ -10,11 +10,22 @@ use Illuminate\View\View;
 
 class FeedbackAdminController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $feedbacks = Feedback::query()->orderBy('order')->latest()->paginate(10);
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'status' => 'nullable|in:new,in_progress,completed,cancelled',
+        ]);
+        $feedbacks = Feedback::query()
+            ->when($filters['search'] ?? null, function ($query, string $search) {
+                $query->where(fn ($items) => $items->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('message', 'like', "%{$search}%"));
+            })
+            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+            ->orderBy('order')->latest()->paginate(10)->withQueryString();
 
-        return view('admin.feedbacks.index', compact('feedbacks'));
+        return view('admin.feedbacks.index', compact('feedbacks', 'filters'));
     }
 
     public function edit(Feedback $feedback): View

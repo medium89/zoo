@@ -13,11 +13,25 @@ use Illuminate\Support\Facades\Storage;
 
 class ClientAdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'animals' => 'nullable|in:with,without',
+            'address' => 'nullable|in:with,without',
+        ]);
         $clients = Client::with(['animals.category', 'photos'])->withCount(['animals', 'boardings'])
+            ->when($filters['search'] ?? null, function ($query, string $search) {
+                $query->where(fn ($items) => $items->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%"));
+            })
+            ->when(($filters['animals'] ?? null) === 'with', fn ($query) => $query->has('animals'))
+            ->when(($filters['animals'] ?? null) === 'without', fn ($query) => $query->doesntHave('animals'))
+            ->when(($filters['address'] ?? null) === 'with', fn ($query) => $query->whereNotNull('address')->where('address', '!=', ''))
+            ->when(($filters['address'] ?? null) === 'without', fn ($query) => $query->where(fn ($items) => $items->whereNull('address')->orWhere('address', '')))
             ->orderBy('name')
-            ->paginate(20);
+            ->paginate(20)->withQueryString();
         $mapClients = Client::query()
             ->whereNotNull('address')
             ->where('address', '!=', '')
@@ -52,7 +66,7 @@ class ClientAdminController extends Controller
             ])->values()->all(),
         ]])->all();
 
-        return view('admin.clients.index', compact('clients', 'mapClients', 'mapClientsPayload', 'yandexMapsKey', 'categories', 'animalsPayload', 'clientsPayload'));
+        return view('admin.clients.index', compact('clients', 'mapClients', 'mapClientsPayload', 'yandexMapsKey', 'categories', 'animalsPayload', 'clientsPayload', 'filters'));
     }
 
     public function create()

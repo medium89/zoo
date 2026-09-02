@@ -15,8 +15,18 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
-        return view('admin.users.index', compact('users'));
+        $filters = request()->validate([
+            'search' => 'nullable|string|max:255',
+            'role' => 'nullable|in:admin,user',
+        ]);
+        $users = User::query()
+            ->when($filters['search'] ?? null, fn ($query, string $search) => $query->where(fn ($items) => $items->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")))
+            ->when(($filters['role'] ?? null) === 'admin', fn ($query) => $query->where('is_admin', true))
+            ->when(($filters['role'] ?? null) === 'user', fn ($query) => $query->where('is_admin', false))
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.users.index', compact('users', 'filters'));
     }
 
     /**

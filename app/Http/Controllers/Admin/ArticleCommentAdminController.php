@@ -9,10 +9,22 @@ use Illuminate\Http\Request;
 
 class ArticleCommentAdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $comments = ArticleComment::orderBy('order')->latest()->paginate(20);
-        return view('admin.articles.comments', compact('comments'));
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'status' => 'nullable|in:pending,approved,rejected',
+        ]);
+        $comments = ArticleComment::with('article')
+            ->when($filters['search'] ?? null, function ($query, string $search) {
+                $query->where(fn ($items) => $items->where('email', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%")
+                    ->orWhereHas('article', fn ($articles) => $articles->where('title', 'like', "%{$search}%")));
+            })
+            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+            ->orderBy('order')->latest()->paginate(20)->withQueryString();
+
+        return view('admin.articles.comments', compact('comments', 'filters'));
     }
 
     public function update(Request $request, ArticleComment $article_comment)

@@ -46,6 +46,10 @@
         </div>
     @endif
 
+    <x-admin.filters :action="route('admin.avito-reviews.index')" :filters="$filters" placeholder="Автор или текст отзыва">
+        <label class="admin-filter-bar__field">Статус<select name="status" class="form-select"><option value="">Все</option><option value="new" @selected(($filters['status'] ?? '') === 'new')>Новые</option><option value="published" @selected(($filters['status'] ?? '') === 'published')>Опубликованы</option><option value="hidden" @selected(($filters['status'] ?? '') === 'hidden')>Скрыты</option></select></label>
+    </x-admin.filters>
+
     <div class="admin-grid" style="--grid-cols: 100px 1fr 140px 2fr 120px 120px 140px;">
         <div class="admin-grid-header">
             <div>Порядок</div>

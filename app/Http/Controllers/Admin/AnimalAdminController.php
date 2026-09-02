@@ -13,14 +13,27 @@ use Illuminate\Support\Facades\Storage;
 
 class AnimalAdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
+            'owner' => 'nullable|in:with,without',
+        ]);
         $animals = Animal::with(['client', 'category'])
             ->withCount(['boardings', 'photos'])
+            ->when($filters['search'] ?? null, function ($query, string $search) {
+                $query->where(fn ($items) => $items->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('client', fn ($clients) => $clients->where('name', 'like', "%{$search}%")));
+            })
+            ->when($filters['category_id'] ?? null, fn ($query, int $categoryId) => $query->where('category_id', $categoryId))
+            ->when(($filters['owner'] ?? null) === 'with', fn ($query) => $query->whereNotNull('client_id'))
+            ->when(($filters['owner'] ?? null) === 'without', fn ($query) => $query->whereNull('client_id'))
             ->orderBy('name')
-            ->paginate(20);
+            ->paginate(20)->withQueryString();
+        $categories = Category::orderBy('name')->get(['id', 'name']);
 
-        return view('admin.animals.index', compact('animals'));
+        return view('admin.animals.index', compact('animals', 'categories', 'filters'));
     }
 
     public function create()

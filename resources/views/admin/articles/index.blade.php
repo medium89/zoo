@@ -11,6 +11,11 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    <x-admin.filters :action="route('admin.articles.index')" :filters="$filters" placeholder="Название статьи">
+        <label class="admin-filter-bar__field">Категория<select name="category_id" class="form-select"><option value="">Все</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected((string) ($filters['category_id'] ?? '') === (string) $category->id)>{{ $category->name }}</option>@endforeach</select></label>
+        <label class="admin-filter-bar__field">Публикация<select name="status" class="form-select"><option value="">Все</option><option value="active" @selected(($filters['status'] ?? '') === 'active')>Опубликованы</option><option value="inactive" @selected(($filters['status'] ?? '') === 'inactive')>Черновики</option></select></label>
+    </x-admin.filters>
+
     <form id="articles-form" action="{{ route('admin.articles.status') }}" method="POST">@csrf</form>
     <div class="admin-grid" style="--grid-cols: 100px 1.6fr 1.2fr 1.2fr 1fr 140px 180px;">
         <div class="admin-grid-header">
