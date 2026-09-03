@@ -1603,7 +1603,9 @@
             const btn = e.target.closest('.js-delete-trigger, form.js-delete-form button[type="submit"]');
             if (!btn || !deleteModal) return;
             if (btn.closest('.modal') && !btn.matches('[data-delete-confirm-modal]')) return;
-            const form = btn.closest('form') || btn.form;
+            const form = btn.closest('form')
+                || (btn.dataset.deleteForm ? document.getElementById(btn.dataset.deleteForm) : null)
+                || btn.form;
             if (!form) return;
             e.preventDefault();
             deleteForm = form;
