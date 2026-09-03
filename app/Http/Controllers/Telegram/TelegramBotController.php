@@ -25,6 +25,7 @@ use App\Services\TelegramApiClient;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -170,9 +171,13 @@ class TelegramBotController extends Controller
             return;
         }
 
+        $this->telegram->sendTyping($chatId);
         $intent = $this->aitunnel->extractIntent($text);
         if ($ownerUpdateIntent = $this->ownerUpdateIntentFromText($text)) {
             $intent = $ownerUpdateIntent;
+        }
+        if ($renameIntent = $this->renameIntentFromText($text)) {
+            $intent = $renameIntent;
         }
         if ($anonymousOrderIntent = $this->anonymousOrderIntentFromText($text)) {
             $intent = $anonymousOrderIntent;
@@ -649,6 +654,7 @@ class TelegramBotController extends Controller
         $intent = null;
 
         try {
+            $this->telegram->sendTyping($chatId);
             $intent = $this->aitunnel->extractIntent($text);
         } catch (Throwable) {
             // Для коротких ответов достаточно локальной обработки.
@@ -819,6 +825,16 @@ class TelegramBotController extends Controller
 
         if ($type === 'update_pet_owner') {
             $this->startPetOwnerUpdate($chatId, $fromId, $intent);
+            return;
+        }
+
+        if ($type === 'rename_pet') {
+            $this->renameAnimal($chatId, (string) data_get($intent, 'animal.name'), (string) data_get($intent, 'new_name'));
+            return;
+        }
+
+        if ($type === 'rename_client') {
+            $this->renameClient($chatId, (string) data_get($intent, 'client.name'), (string) data_get($intent, 'new_name'));
             return;
         }
 
@@ -1155,6 +1171,112 @@ class TelegramBotController extends Controller
         return null;
     }
 
+    /** @return array<string, mixed>|null */
+    private function renameIntentFromText(string $text): ?array
+    {
+        $text = trim($text);
+        $patterns = [
+            'rename_pet' => [
+                '/^(?:переименуй|переименовать)\s+(?:питомца|кота|кошку|собаку|пса|пёсика|щенка)\s+(.+?)\s+(?:в|как)\s+(.+?)\.?$/ui',
+                '/^(?:кот(?:а|у)?|кошк(?:у|а)?|собак(?:у|а)?|питомец)\s+(.+?)\s+зовут\s+(.+?)\.?$/ui',
+            ],
+            'rename_client' => [
+                '/^(?:переименуй|переименовать)\s+(?:клиента|хозяина|хозяйку)\s+(.+?)\s+(?:в|как)\s+(.+?)\.?$/ui',
+                '/^клиента\s+(.+?)\s+зовут\s+(.+?)\.?$/ui',
+            ],
+        ];
+
+        foreach ($patterns as $intent => $intentPatterns) {
+            foreach ($intentPatterns as $pattern) {
+                if (!preg_match($pattern, $text, $matches)) {
+                    continue;
+                }
+
+                $oldName = $this->renameValue($matches[1]);
+                $newName = $this->renameValue($matches[2]);
+                if ($oldName === '' || $newName === '') {
+                    return null;
+                }
+
+                return $intent === 'rename_pet'
+                    ? ['intent' => $intent, 'animal' => ['name' => $oldName], 'new_name' => $newName]
+                    : ['intent' => $intent, 'client' => ['name' => $oldName], 'new_name' => $newName];
+            }
+        }
+
+        return null;
+    }
+
+    private function renameValue(string $value): string
+    {
+        return trim(trim($value), " \t\n\r\0\x0B\"'«».");
+    }
+
+    private function renameAnimal(int|string $chatId, string $oldName, string $newName): void
+    {
+        $oldName = $this->renameValue($oldName);
+        $newName = $this->renameValue($newName);
+        if ($oldName === '' || $newName === '') {
+            $this->sendMessage($chatId, 'Не удалось переименовать питомца: не указана старая или новая кличка.');
+            return;
+        }
+
+        $animals = Animal::query()->whereRaw('LOWER(name) = ?', [mb_strtolower($oldName)])->get();
+        if ($animals->isEmpty()) {
+            $this->sendMessage($chatId, "Питомец «{$oldName}» не найден.");
+            return;
+        }
+        if ($animals->count() > 1) {
+            $this->sendMessage($chatId, "Нашёл несколько питомцев с кличкой «{$oldName}». Переименуйте нужного в карточке админки, чтобы не ошибиться.");
+            return;
+        }
+        if (mb_strtolower($oldName) === mb_strtolower($newName)) {
+            $this->sendMessage($chatId, "У питомца уже кличка «{$newName}».");
+            return;
+        }
+
+        $animal = $animals->first();
+        DB::transaction(function () use ($animal, $oldName, $newName): void {
+            $animal->update(['name' => $newName]);
+            DB::table('service_order_animals')
+                ->where('animal_id', $animal->id)
+                ->whereRaw('LOWER(label) = ?', [mb_strtolower($oldName)])
+                ->update(['label' => $newName, 'updated_at' => now()]);
+            DB::table('boardings')->where('animal_id', $animal->id)
+                ->update(['name' => $newName, 'updated_at' => now()]);
+        });
+
+        $this->sendMessage($chatId, "Питомец переименован: «{$oldName}» → «{$newName}».");
+    }
+
+    private function renameClient(int|string $chatId, string $oldName, string $newName): void
+    {
+        $oldName = $this->renameValue($oldName);
+        $newName = $this->renameValue($newName);
+        if ($oldName === '' || $newName === '') {
+            $this->sendMessage($chatId, 'Не удалось переименовать клиента: не указано старое или новое имя.');
+            return;
+        }
+
+        $clients = Client::query()->whereRaw('LOWER(name) = ?', [mb_strtolower($oldName)])->get();
+        if ($clients->isEmpty()) {
+            $this->sendMessage($chatId, "Клиент «{$oldName}» не найден.");
+            return;
+        }
+        if ($clients->count() > 1) {
+            $this->sendMessage($chatId, "Нашёл несколько клиентов с именем «{$oldName}». Переименуйте нужного в карточке админки, чтобы не ошибиться.");
+            return;
+        }
+        if (mb_strtolower($oldName) === mb_strtolower($newName)) {
+            $this->sendMessage($chatId, "У клиента уже имя «{$newName}».");
+            return;
+        }
+
+        $client = $clients->first();
+        $client->update(['name' => $newName]);
+        $this->sendMessage($chatId, "Клиент переименован: «{$oldName}» → «{$newName}».");
+    }
+
     private function anonymousOrderIntentFromText(string $text): ?array
     {
         $normalized = mb_strtolower(trim($text));
@@ -1252,6 +1374,9 @@ class TelegramBotController extends Controller
     {
         $this->sendMessage($chatId, <<<'TEXT'
 Я помогаю вести календарь услуг и карточки питомцев.
+
+Переименовать питомца: «Переименуй питомца Старое имя в Новое имя».
+Переименовать клиента: «Переименуй клиента Старое имя в Новое имя».
 
 Новая запись
 • Передержка: «Запиши кошку Пухлю с 22 по 25 августа, передержка».
@@ -2592,7 +2717,7 @@ TEXT);
     {
         $payload = [
             'chat_id' => $chatId,
-            'text' => $text,
+            'text' => $this->withHelpfulHint($text),
         ];
 
         if ($replyMarkup) {
@@ -2604,6 +2729,37 @@ TEXT);
         }
 
         $this->telegramApi('sendMessage', $payload);
+    }
+
+    private function withHelpfulHint(string $text): string
+    {
+        if (str_contains($text, 'Подсказка:')) {
+            return $text;
+        }
+
+        $normalized = mb_strtolower($text);
+        $isProblem = str_contains($normalized, 'не понял')
+            || str_contains($normalized, 'не удалось')
+            || str_contains($normalized, 'не найден')
+            || str_contains($normalized, 'не хватает')
+            || str_contains($normalized, 'неизвест')
+            || str_contains($normalized, 'не распознал')
+            || str_starts_with($normalized, 'укажите ');
+
+        if (!$isProblem) {
+            return $text;
+        }
+
+        $hint = match (true) {
+            str_contains($normalized, 'переимен') => 'Напишите: «Переименуй питомца Старое имя в Новое имя» или «Переименуй клиента Старое имя в Новое имя».',
+            str_contains($normalized, 'дат') => 'Напишите период так: «с 10 по 11 сентября» или «10.09.2026 — 11.09.2026».',
+            str_contains($normalized, 'цен') => 'Напишите цену целым числом, например: «500».',
+            str_contains($normalized, 'хозяин') || str_contains($normalized, 'клиент') => 'Укажите имя клиента или напишите «без хозяина».',
+            str_contains($normalized, 'питом') || str_contains($normalized, 'кличк') => 'Напишите кличку питомца. Например: «Покажи Пухлю».',
+            default => 'Напишите /help — бот покажет примеры команд.',
+        };
+
+        return rtrim($text)."\n\nПодсказка: {$hint}";
     }
 
     private function sendPhoto(int|string $chatId, string $path, string $caption, ?array $replyMarkup = null): void

@@ -57,6 +57,16 @@ class TelegramApiClient
         $this->successfulResponse('sendPhoto', $response->status(), $response->json());
     }
 
+    public function sendTyping(int|string $chatId): void
+    {
+        try {
+            $this->call('sendChatAction', ['chat_id' => $chatId, 'action' => 'typing']);
+        } catch (Throwable $exception) {
+            // The typing indicator must never interrupt a bot reply.
+            Log::debug('Telegram typing indicator failed.', ['error' => $exception->getMessage()]);
+        }
+    }
+
     /** @param array<string, mixed>|mixed $result */
     private function successfulResponse(string $method, int $status, mixed $result): array
     {

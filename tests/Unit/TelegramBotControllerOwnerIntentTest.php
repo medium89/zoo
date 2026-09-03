@@ -51,4 +51,21 @@ class TelegramBotControllerOwnerIntentTest extends TestCase
         $this->assertSame('create_service_order', $intent['intent']);
         $this->assertSame(2, count($intent['animals']));
     }
+
+    public function test_it_recognizes_pet_and_client_rename_phrases(): void
+    {
+        $controller = (new ReflectionClass(TelegramBotController::class))->newInstanceWithoutConstructor();
+        $method = new \ReflectionMethod($controller, 'renameIntentFromText');
+        $method->setAccessible(true);
+
+        $petIntent = $method->invoke($controller, 'Кошку «1 кошка» зовут Тумсис');
+        $this->assertSame('rename_pet', $petIntent['intent']);
+        $this->assertSame('1 кошка', $petIntent['animal']['name']);
+        $this->assertSame('Тумсис', $petIntent['new_name']);
+
+        $clientIntent = $method->invoke($controller, 'Переименуй клиента Анастасия в Настя');
+        $this->assertSame('rename_client', $clientIntent['intent']);
+        $this->assertSame('Анастасия', $clientIntent['client']['name']);
+        $this->assertSame('Настя', $clientIntent['new_name']);
+    }
 }
