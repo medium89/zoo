@@ -30,7 +30,7 @@
             <div class="archived-order-card__aside">
                 <strong>{{ number_format($order->daily_price, 0, '.', ' ') }} ₽<small>/ день</small></strong>
                 <small>В архиве с {{ $order->archived_at?->format('d.m.Y') }}</small>
-                <form method="POST" action="{{ route('admin.service-orders.destroy', $order) }}" class="js-delete-form" data-confirm="Удалить заказ из архива без возможности восстановления?">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger" aria-label="Удалить заказ"><i class="fa fa-trash"></i></button></form>
+                <form method="POST" action="{{ route('admin.service-orders.restore', $order) }}">@csrf<button class="btn btn-sm btn-outline-primary" aria-label="Восстановить заказ" title="Восстановить"><i class="fa fa-box-open"></i></button></form>
             </div>
         </article>
     @empty

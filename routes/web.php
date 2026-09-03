@@ -96,6 +96,7 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
     Route::post('service-orders/animals/{animal}', [ServiceOrderAdminController::class, 'updateAnimal'])->name('service-orders.animals.update');
     Route::put('service-orders/{serviceOrder}', [ServiceOrderAdminController::class, 'update'])->name('service-orders.update');
     Route::post('service-orders/{serviceOrder}/archive', [ServiceOrderAdminController::class, 'archive'])->name('service-orders.archive');
+    Route::post('service-orders/{serviceOrder}/restore', [ServiceOrderAdminController::class, 'restore'])->name('service-orders.restore');
     Route::delete('service-orders/{serviceOrder}', [ServiceOrderAdminController::class, 'destroy'])->name('service-orders.destroy');
     Route::resource('articles', ArticleAdminController::class);
     Route::delete('articles/{article}/images/{image}', [ArticleAdminController::class, 'destroyImage'])->name('articles.images.destroy');

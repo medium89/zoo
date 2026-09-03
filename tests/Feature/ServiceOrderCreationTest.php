@@ -59,7 +59,7 @@ class ServiceOrderCreationTest extends TestCase
         ]);
     }
 
-    public function test_deleting_a_unified_order_also_removes_its_legacy_boarding(): void
+    public function test_deleting_a_unified_order_archives_it_and_keeps_its_legacy_boarding(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
         $boarding = Boarding::create([
@@ -81,7 +81,16 @@ class ServiceOrderCreationTest extends TestCase
             ->delete(route('admin.service-orders.destroy', $order))
             ->assertRedirect();
 
-        $this->assertDatabaseMissing('service_orders', ['id' => $order->id]);
-        $this->assertDatabaseMissing('boardings', ['id' => $boarding->id]);
+        $this->assertDatabaseHas('service_orders', ['id' => $order->id, 'status' => 'archived']);
+        $this->assertDatabaseHas('boardings', ['id' => $boarding->id, 'status' => 'archived']);
+        $this->assertNotNull($order->fresh()->archived_at);
+
+        $this->actingAs($admin)
+            ->post(route('admin.service-orders.restore', $order))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('service_orders', ['id' => $order->id, 'status' => 'active']);
+        $this->assertDatabaseHas('boardings', ['id' => $boarding->id, 'status' => 'active']);
+        $this->assertNull($order->fresh()->archived_at);
     }
 }

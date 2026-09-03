@@ -125,16 +125,17 @@ class ServiceOrderAdminController extends Controller
 
     public function destroy(ServiceOrder $serviceOrder)
     {
-        DB::transaction(function () use ($serviceOrder): void {
-            $legacyBoardingId = $serviceOrder->legacy_boarding_id;
-            $serviceOrder->delete();
+        // Keep the route safe for old bookmarks and stale browser tabs.
+        // Orders are business records and must remain recoverable.
+        return $this->archive($serviceOrder);
+    }
 
-            if ($legacyBoardingId) {
-                Boarding::query()->whereKey($legacyBoardingId)->delete();
-            }
-        });
+    public function restore(ServiceOrder $serviceOrder)
+    {
+        $serviceOrder->update(['archived_at' => null, 'status' => 'active']);
+        $this->syncLegacyBoarding($serviceOrder);
 
-        return back()->with('success', 'Заказ удалён');
+        return back()->with('success', 'Заказ восстановлен из архива');
     }
 
     private function validated(Request $request): array
@@ -209,6 +210,6 @@ class ServiceOrderAdminController extends Controller
         $boarding->update(['client_id' => $order->client_id, 'animal_id' => $firstAnimal?->animal_id, 'name' => $firstAnimal?->animal?->name ?: $firstAnimal?->label ?: $boarding->name,
             'service_type' => $firstService?->service_type ?: $order->service_type, 'units_per_day' => $firstService?->units_per_day ?: $order->units_per_day,
             'unit_price' => $firstService?->unit_price ?: $order->daily_price, 'start_date' => $order->start_date, 'end_date' => $order->end_date,
-            'note' => $order->note, 'archived_at' => $order->archived_at]);
+            'note' => $order->note, 'status' => $order->status, 'archived_at' => $order->archived_at]);
     }
 }
