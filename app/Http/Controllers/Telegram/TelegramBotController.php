@@ -1163,6 +1163,12 @@ class TelegramBotController extends Controller
             return null;
         }
 
+        // This shortcut exists for orders like “три кошки и собака, кличек не знаю”.
+        // Never let it replace a named pet with a generic “1 кошка”.
+        if ($this->containsNamedAnimal($normalized)) {
+            return null;
+        }
+
         $animals = [];
         $numbers = [
             'один' => 1, 'одна' => 1, 'одним' => 1,
@@ -1205,6 +1211,25 @@ class TelegramBotController extends Controller
             'end_date' => $end->toDateString(),
             'animals' => $animals,
         ];
+    }
+
+    private function containsNamedAnimal(string $text): bool
+    {
+        preg_match_all(
+            '/\b(?:кот(?:а|ы|ов|у|ом|е)?|кошк(?:а|у|и|ек|е|ой|ами)?|собак(?:а|и|у|ой|ами)?|п[её]с(?:а|ы|ов|у|ом|е)?|щенк(?:а|и|ов|у|ом|е)?)\s+([\p{L}][\p{L}-]{1,})/ui',
+            $text,
+            $matches
+        );
+
+        $notNames = ['без', 'клички', 'кличек', 'не', 'знаю', 'известно', 'известны', 'пока', 'на', 'по', 'для', 'после', 'перед', 'уход', 'ухода'];
+
+        foreach ($matches[1] ?? [] as $candidate) {
+            if (!in_array(mb_strtolower($candidate), $notNames, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function anonymousAnimalLabel(?string $categoryName, int $quantity): string

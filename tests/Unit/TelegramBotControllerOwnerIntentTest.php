@@ -29,4 +29,26 @@ class TelegramBotControllerOwnerIntentTest extends TestCase
 
         $this->assertSame('Дейзи', $method->invoke($controller, 'Это фото Дейзи'));
     }
+
+    public function test_named_pet_is_not_replaced_with_an_anonymous_order_group(): void
+    {
+        $controller = (new ReflectionClass(TelegramBotController::class))->newInstanceWithoutConstructor();
+        $method = new \ReflectionMethod($controller, 'anonymousOrderIntentFromText');
+        $method->setAccessible(true);
+
+        $this->assertNull($method->invoke($controller, 'Запиши кота Тумсиса на уход с 10 по 11 сентября'));
+        $this->assertNull($method->invoke($controller, 'Собаку Рекса на уход с 10 по 11 сентября'));
+    }
+
+    public function test_unnamed_group_still_uses_the_anonymous_order_flow(): void
+    {
+        $controller = (new ReflectionClass(TelegramBotController::class))->newInstanceWithoutConstructor();
+        $method = new \ReflectionMethod($controller, 'anonymousOrderIntentFromText');
+        $method->setAccessible(true);
+
+        $intent = $method->invoke($controller, '22 и 23 уход за тремя котами и собакой');
+
+        $this->assertSame('create_service_order', $intent['intent']);
+        $this->assertSame(2, count($intent['animals']));
+    }
 }
