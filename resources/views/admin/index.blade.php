@@ -794,6 +794,78 @@
             }
         }
 
+        /* Каркас админки: узкая панель разделов + контекстная навигация. */
+        :root { --admin-rail-width: 72px; --admin-context-width: 260px; }
+        .admin-layout { display: flex; min-height: 100vh; overflow: visible; }
+        .admin-menu-toggle { display: none; }
+        .sidebar {
+            display: flex; position: sticky; inset: 0 auto auto 0; z-index: 1020; width: calc(var(--admin-rail-width) + var(--admin-context-width));
+            min-height: 100vh; height: 100vh; padding: 0; overflow: hidden; flex: 0 0 auto; color: #dce5f0; background: #18212d;
+            border: 0; box-shadow: 6px 0 22px rgba(25, 38, 53, .08); transform: none; opacity: 1; visibility: visible;
+        }
+        body.sidebar-collapsed .sidebar { width: calc(var(--admin-rail-width) + var(--admin-context-width)); flex-basis: auto; transform: none; opacity: 1; visibility: visible; }
+        .admin-brand { display: grid; place-items: center; width: var(--admin-rail-width); height: 72px; color: #fff; text-decoration: none; }
+        .admin-brand span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #6f55d9, #9c7ff7); font-size: 1.05rem; font-weight: 800; box-shadow: 0 7px 16px rgba(104, 74, 200, .4); }
+        .admin-rail { position: absolute; inset: 72px auto 0 0; display: flex; flex-direction: column; width: var(--admin-rail-width); padding: 16px 0; gap: 7px; background: #18212d; }
+        .admin-rail__button { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto; padding: 0; border: 0; border-radius: 12px; background: transparent; color: #93a1b3; transition: .18s ease; }
+        .admin-rail__button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+        .admin-rail__button:hover, .admin-rail__button:focus-visible { color: #fff; background: #253244; outline: 0; }
+        .admin-rail__button.is-active { color: #fff; background: #6d58d8; box-shadow: 0 8px 18px rgba(87, 63, 189, .34); }
+        .admin-contextual-nav { position: absolute; inset: 0 0 0 var(--admin-rail-width); display: flex; flex-direction: column; width: var(--admin-context-width); padding: 25px 14px 15px; background: #202b39; overflow-y: auto; }
+        .admin-contextual-nav__group { display: none; }
+        .admin-contextual-nav__group.is-active { display: grid; gap: 3px; }
+        .admin-contextual-nav__title { margin: 5px 10px 16px; color: #fff; font-size: .95rem; font-weight: 800; }
+        .admin-contextual-nav a, .admin-contextual-nav__footer button { display: flex; align-items: center; min-height: 40px; padding: 9px 11px; border: 0; border-radius: 9px; background: transparent; color: #b9c5d3; font-size: .87rem; font-weight: 600; text-decoration: none; text-align: left; }
+        .admin-contextual-nav a:hover, .admin-contextual-nav a:focus-visible, .admin-contextual-nav a.active { background: #2d3b4d; color: #fff; outline: 0; }
+        .admin-contextual-nav a.active { box-shadow: inset 3px 0 0 #9b83ff; }
+        .admin-contextual-nav__footer { margin-top: auto; padding-top: 16px; border-top: 1px solid #344354; }
+        .admin-contextual-nav__footer form { margin: 0; }
+        .admin-contextual-nav__footer button { width: 100%; gap: 9px; }
+        .admin-contextual-nav__footer button:hover, .admin-contextual-nav__footer button:focus-visible { background: #2d3b4d; color: #fff; outline: 0; }
+        .content { min-width: 0; padding: 0 32px 32px; overflow-x: clip; }
+        .admin-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 88px; margin-bottom: 24px; border-bottom: 1px solid #e6ebf1; }
+        .admin-topbar__search { display: flex; align-items: center; gap: 10px; width: min(440px, 100%); min-height: 42px; padding: 8px 13px; border: 1px solid #dbe3eb; border-radius: 10px; background: #fff; color: #718196; font-size: .85rem; text-align: left; }
+        .admin-topbar__search:hover, .admin-topbar__search:focus-visible { border-color: #9b83ff; box-shadow: 0 0 0 3px rgba(112, 87, 214, .12); outline: 0; }
+        .admin-topbar__search span { flex: 1; }
+        .admin-topbar kbd, .admin-command-palette kbd { padding: 2px 5px; border: 1px solid #dce3eb; border-radius: 5px; background: #f7f9fb; color: #8490a0; font-family: inherit; font-size: .7rem; }
+        .admin-topbar__create { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 8px 14px; border: 0; border-radius: 10px; background: #6d58d8; font-size: .85rem; font-weight: 700; box-shadow: 0 8px 18px rgba(87, 63, 189, .22); }
+        .admin-topbar__create:hover, .admin-topbar__create:focus-visible { background: #5d49c7; }
+        .admin-create-menu { min-width: 190px; padding: 7px; border: 1px solid #e1e7ee; border-radius: 11px; box-shadow: 0 16px 34px rgba(31, 47, 66, .15); }
+        .admin-create-menu .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 8px 9px; border-radius: 7px; color: #34465a; font-size: .85rem; font-weight: 600; }
+        .admin-create-menu .dropdown-item i { width: 15px; color: #765ee2; }
+        .admin-command-palette[hidden] { display: none; }
+        .admin-command-palette { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: start center; padding: min(12vh, 120px) 18px 18px; }
+        .admin-command-palette__backdrop { position: absolute; inset: 0; background: rgba(19, 29, 42, .42); backdrop-filter: blur(2px); }
+        .admin-command-palette__dialog { position: relative; width: min(620px, 100%); overflow: hidden; border: 1px solid #e0e7ef; border-radius: 15px; background: #fff; box-shadow: 0 26px 70px rgba(18, 31, 46, .28); }
+        .admin-command-palette__header { display: flex; align-items: center; gap: 11px; padding: 14px 16px; border-bottom: 1px solid #e8edf2; color: #6d58d8; }
+        .admin-command-palette__header input { flex: 1; min-width: 0; border: 0; outline: 0; color: #2d4054; font-size: .97rem; }
+        .admin-command-palette__results { display: grid; gap: 3px; max-height: min(52vh, 420px); overflow-y: auto; padding: 8px; }
+        .admin-command-palette__result { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 11px; border: 0; border-radius: 9px; background: transparent; color: #34465a; text-align: left; font-size: .88rem; font-weight: 650; }
+        .admin-command-palette__result span { color: #8492a2; font-size: .75rem; font-weight: 500; }
+        .admin-command-palette__result.is-selected, .admin-command-palette__result:hover, .admin-command-palette__result:focus-visible { background: #f0edff; color: #5b46c5; outline: 0; }
+        .admin-command-palette__hint { display: flex; gap: 15px; margin: 0; padding: 10px 16px; border-top: 1px solid #e8edf2; color: #8492a2; font-size: .75rem; }
+        .admin-command-palette__hint span { display: inline-flex; gap: 3px; align-items: center; }
+        @media (max-width: 991.98px) {
+            #sidebarToggle.admin-menu-toggle { position: fixed; top: 14px; left: 14px; z-index: 1035; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 10px; background: #202b39; color: #fff; box-shadow: 0 8px 20px rgba(31, 45, 63, .2); }
+            .sidebar, body.sidebar-collapsed .sidebar { position: fixed; inset: 0 auto 0 0; width: min(338px, calc(100vw - 34px)); height: 100dvh; min-height: 100dvh; transform: translateX(-105%); transition: transform .22s ease; }
+            body.sidebar-open .sidebar { transform: translateX(0); }
+            .admin-brand { width: var(--admin-rail-width); }
+            .admin-rail { inset: 72px auto 0 0; }
+            .admin-contextual-nav { width: calc(100% - var(--admin-rail-width)); }
+            .sidebar-backdrop { z-index: 1010; }
+            .content { padding: 72px 16px 28px; }
+            .admin-topbar { min-height: 54px; margin-bottom: 22px; }
+        }
+        @media (max-width: 575.98px) {
+            .content { padding: 70px 14px 24px; }
+            .admin-topbar__search { width: auto; flex: 1; }
+            .admin-topbar__search span, .admin-topbar__search kbd { display: none; }
+            .admin-topbar__create span { display: none; }
+            .content .admin-topbar__create { width: 42px; justify-content: center; padding: 0; }
+            .admin-command-palette { padding: 74px 12px 12px; }
+            .admin-command-palette__hint { display: none; }
+        }
+
         /* WYSIWYG базовые размеры */
         textarea.wysiwyg,
         textarea.js-wysiwyg,
@@ -828,60 +900,75 @@
     @stack('styles')
 </head>
 <body>
-<button id="sidebarToggle" class="btn btn-dark" aria-label="Переключить меню"><i class="fa fa-bars"></i></button>
+@php
+    $adminNavigation = [
+        'work' => ['label' => 'Работа', 'icon' => 'fa-briefcase', 'items' => [
+            ['Главная', 'admin.dashboard', 'zooadmin/dashboard*'], ['Заказы и работа', 'admin.service-orders.index', 'zooadmin/service-orders'],
+            ['Клиенты', 'admin.clients.index', 'zooadmin/clients*'], ['Питомцы', 'admin.animals.index', 'zooadmin/animals*'],
+            ['Календарь', 'admin.boarding.index', 'zooadmin/boarding*'], ['Архив заказов', 'admin.service-orders.archive.index', 'zooadmin/service-orders/archive*'],
+            ['Карта клиентов', 'admin.client-map.index', 'zooadmin/client-map*'], ['Категории животных', 'admin.categories.index', 'zooadmin/categories*'],
+        ]],
+        'communication' => ['label' => 'Коммуникации', 'icon' => 'fa-comment-dots', 'items' => [
+            ['Обратная связь', 'admin.feedbacks.index', 'zooadmin/feedbacks*'], ['Отзывы Avito', 'admin.avito-reviews.index', 'zooadmin/avito-reviews*'],
+        ]],
+        'site' => ['label' => 'Сайт', 'icon' => 'fa-wand-magic-sparkles', 'items' => [
+            ['Слайдер', 'admin.sliders.index', 'zooadmin/sliders*'], ['Обо мне', 'admin.about.edit', 'zooadmin/about*'],
+            ['Преимущества', 'admin.advantages.index', 'zooadmin/advantages*'], ['Услуги', 'admin.services.index', 'zooadmin/services*'],
+            ['Фотоальбом', 'admin.galleries.index', 'zooadmin/galleries*'], ['Изображения', 'admin.images.index', 'zooadmin/images*'],
+            ['Социальные контакты', 'admin.socials.index', 'zooadmin/socials*'], ['Статьи', 'admin.articles.index', 'zooadmin/articles*'],
+            ['Комментарии', 'admin.article-comments.index', 'zooadmin/article-comments*'], ['Меню сайта', 'admin.nav-links.index', 'zooadmin/nav-links*'],
+        ]],
+        'settings' => ['label' => 'Настройки', 'icon' => 'fa-gear', 'items' => [
+            ['Общие настройки', 'admin.settings', 'zooadmin/settings'], ['Telegram-бот', 'admin.telegram-bot-settings.edit', 'zooadmin/settings/telegram-bot*'],
+            ['Согласие ПДн', 'admin.personal-data-consent.edit', 'zooadmin/personal-data-consent*'], ['Пользователи', 'admin.users.index', 'zooadmin/users*'],
+        ]],
+    ];
+    $activeNavigationGroup = collect($adminNavigation)->search(fn ($group) => collect($group['items'])->contains(fn ($item) => request()->is($item[2]))) ?: 'work';
+@endphp
+<button id="sidebarToggle" class="admin-menu-toggle" aria-label="Открыть навигацию" aria-controls="sidebar" aria-expanded="false"><i class="fa fa-bars"></i></button>
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-<div class="d-flex admin-layout">
-    <nav id="sidebar" class="sidebar d-flex flex-column p-0">
-        <h4 class="text-center py-3 border-bottom mb-0">
-            <a href="{{ route('admin.dashboard') }}">Админпанель</a></h4>
-        <div class="sidebar-content">
-            <div class="sidebar-content__item px-3 text-uppercase text-muted small pt-2 pb-2 mt-2">Контент</div>
-            <div class="sidebar-content__item">
-                <a href="/zooadmin/sliders" class="{{ request()->is('zooadmin/sliders*') ? 'active' : '' }}"><i class="fa fa-photo-film me-2"></i>Слайдер</a>
-                <a href="{{ route('admin.about.edit') }}" class="{{ request()->is('zooadmin/about*') ? 'active' : '' }}"><i class="fa fa-user me-2"></i>Обо мне</a>
-                <a href="/zooadmin/advantages" class="{{ request()->is('zooadmin/advantages*') ? 'active' : '' }}"><i class="fa fa-star me-2"></i>Преимущества</a>
-                <a href="/zooadmin/services" class="{{ request()->is('zooadmin/services*') ? 'active' : '' }}"><i class="fa fa-briefcase me-2"></i>Услуги</a>
-                <a href="/zooadmin/galleries" class="{{ request()->is('zooadmin/galleries*') ? 'active' : '' }}"><i class="fa fa-image me-2"></i>Фотоальбом</a>
-                <a href="/zooadmin/images" class="{{ request()->is('zooadmin/images*') ? 'active' : '' }}"><i class="fa fa-file-image me-2"></i>Изображения</a>
-                <a href="/zooadmin/socials" class="{{ request()->is('zooadmin/socials*') ? 'active' : '' }}"><i class="fa fa-share-alt me-2"></i>Социальные контакты</a>
-            </div>
-            <div class="sidebar-content__item px-3 text-uppercase text-muted small border-top pt-2 mt-2">Работа</div>
-            <div class="sidebar-content__item">
-                <a href="{{ route('admin.dashboard') }}" class="{{ request()->is('zooadmin/dashboard*') ? 'active' : '' }}"><i class="fa fa-chart-line me-2"></i>Дашборд</a>
-                <a href="{{ route('admin.clients.index') }}" class="{{ request()->is('zooadmin/clients*') ? 'active' : '' }}"><i class="fa fa-address-book me-2"></i>Клиенты</a>
-                <a href="{{ route('admin.client-map.index') }}" class="{{ request()->is('zooadmin/client-map*') ? 'active' : '' }}"><i class="fa fa-diagram-project me-2"></i>Карта клиентов</a>
-                <a href="{{ route('admin.animals.index') }}" class="{{ request()->is('zooadmin/animals*') ? 'active' : '' }}"><i class="fa fa-paw me-2"></i>Питомцы</a>
-                <a href="{{ route('admin.categories.index') }}" class="{{ request()->is('zooadmin/categories*') ? 'active' : '' }}"><i class="fa fa-tags me-2"></i>Категории животных</a>
-                <a href="{{ route('admin.feedbacks.index') }}" class="{{ request()->is('zooadmin/feedbacks*') ? 'active' : '' }}"><i class="fa fa-envelope me-2"></i>Обратная связь</a>
-                <a href="{{ route('admin.avito-reviews.index') }}" class="{{ request()->is('zooadmin/avito-reviews*') ? 'active' : '' }}"><i class="fa fa-star-half-stroke me-2"></i>Отзывы Avito</a>
-                <a href="{{ route('admin.boarding.index') }}" class="{{ request()->is('zooadmin/boarding*') ? 'active' : '' }}"><i class="fa fa-calendar-check me-2"></i>Календарь</a>
-                <a href="{{ route('admin.service-orders.index') }}" class="{{ request()->is('zooadmin/service-orders') ? 'active' : '' }}"><i class="fa fa-briefcase me-2"></i>Заказы и работа</a>
-                <a href="{{ route('admin.service-orders.archive.index') }}" class="{{ request()->is('zooadmin/service-orders/archive') ? 'active' : '' }}"><i class="fa fa-box-archive me-2"></i>Архив заказов</a>
-            </div>
-            <div class="sidebar-content__item px-3 text-uppercase text-muted small border-top pt-2 mt-2">Статьи</div>
-            <div class="sidebar-content__item">
-                <a href="{{ route('admin.article-comments.index') }}" class="{{ request()->is('zooadmin/article-comments*') ? 'active' : '' }}"><i class="fa fa-comments me-2"></i>Комментарии</a>
-                <a href="{{ route('admin.articles.index') }}" class="{{ request()->is('zooadmin/articles*') ? 'active' : '' }}"><i class="fa fa-newspaper me-2"></i>Статьи</a>
-            </div>
-            <div class="sidebar-content__item px-3 text-uppercase text-muted small">Настройки</div>
-            <div class="sidebar-content__item">
-                <a href="{{ route('admin.settings') }}" class="{{ request()->is('zooadmin/settings') ? 'active' : '' }}"><i class="fa fa-gear me-2"></i>Настройки</a>
-                <a href="{{ route('admin.telegram-bot-settings.edit') }}" class="{{ request()->is('zooadmin/settings/telegram-bot*') ? 'active' : '' }}"><i class="fa fa-robot me-2"></i>Telegram-бот</a>
-                <a href="{{ route('admin.personal-data-consent.edit') }}" class="{{ request()->is('zooadmin/personal-data-consent*') ? 'active' : '' }}"><i class="fa fa-file-signature me-2"></i>Согласие ПДн</a>
-                <a href="{{ route('admin.nav-links.index') }}" class="{{ request()->is('zooadmin/nav-links*') ? 'active' : '' }}"><i class="fa fa-list me-2"></i>Меню сайта</a>
-                <a href="{{ route('admin.users.index') }}" class="{{ request()->is('zooadmin/users*') ? 'active' : '' }}"><i class="fa fa-users me-2"></i>Пользователи</a>
-            </div>
-            <div class="sidebar-content__item border-top mt-auto pt-3">
-                <a href="{{ route('logout') }}"
-                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                class="mt-auto border-top">Выйти</a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+<div class="admin-layout">
+    <nav id="sidebar" class="sidebar" aria-label="Основная навигация">
+        <a class="admin-brand" href="{{ route('admin.dashboard') }}" aria-label="Админпанель: главная"><span>Z</span></a>
+        <div class="admin-rail" aria-label="Разделы админпанели">
+            @foreach($adminNavigation as $key => $group)
+                <button type="button" class="admin-rail__button {{ $key === $activeNavigationGroup ? 'is-active' : '' }}" data-admin-group-button="{{ $key }}" aria-controls="admin-group-{{ $key }}" aria-expanded="{{ $key === $activeNavigationGroup ? 'true' : 'false' }}" title="{{ $group['label'] }}">
+                    <i class="fa {{ $group['icon'] }}" aria-hidden="true"></i><span>{{ $group['label'] }}</span>
+                </button>
+            @endforeach
+        </div>
+        <div class="admin-contextual-nav" aria-label="Навигация текущего раздела">
+            @foreach($adminNavigation as $key => $group)
+                <section id="admin-group-{{ $key }}" class="admin-contextual-nav__group {{ $key === $activeNavigationGroup ? 'is-active' : '' }}" data-admin-group="{{ $key }}" data-admin-group-label="{{ $group['label'] }}" aria-label="{{ $group['label'] }}" aria-hidden="{{ $key === $activeNavigationGroup ? 'false' : 'true' }}">
+                    <p class="admin-contextual-nav__title">{{ $group['label'] }}</p>
+                    @foreach($group['items'] as [$label, $route, $pattern])
+                        <a href="{{ route($route) }}" class="{{ request()->is($pattern) ? 'active' : '' }}">{{ $label }}</a>
+                    @endforeach
+                </section>
+            @endforeach
+            <div class="admin-contextual-nav__footer">
+                <form action="{{ route('logout') }}" method="POST">
                     @csrf
+                    <button type="submit"><i class="fa fa-arrow-right-from-bracket" aria-hidden="true"></i>Выйти</button>
                 </form>
             </div>
         </div>
     </nav>
-    <div class="content flex-grow-1">
+    <main class="content" id="adminMain">
+        <header class="admin-topbar">
+            <button type="button" class="admin-topbar__search" id="adminSearchTrigger" aria-haspopup="dialog" aria-controls="adminCommandPalette">
+                <i class="fa fa-magnifying-glass" aria-hidden="true"></i><span>Поиск по админке</span><kbd>Ctrl K</kbd>
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-primary admin-topbar__create" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-plus" aria-hidden="true"></i><span>Создать</span></button>
+                <ul class="dropdown-menu dropdown-menu-end admin-create-menu">
+                    <li><a class="dropdown-item" href="{{ route('admin.service-orders.index') }}?create=1"><i class="fa fa-briefcase"></i>Заказ</a></li>
+                    <li><a class="dropdown-item" href="{{ route('admin.clients.create') }}"><i class="fa fa-address-book"></i>Клиента</a></li>
+                    <li><a class="dropdown-item" href="{{ route('admin.animals.create') }}"><i class="fa fa-paw"></i>Питомца</a></li>
+                    <li><a class="dropdown-item" href="{{ route('admin.articles.create') }}"><i class="fa fa-newspaper"></i>Статью</a></li>
+                </ul>
+            </div>
+        </header>
         @php
             $routeName = request()->route()?->getName() ?? '';
             $currentPath = trim(request()->path(), '/');
@@ -946,7 +1033,20 @@
         <div id="admin-content">
             @yield('content')
         </div>
-    </div>
+    </main>
+</div>
+<div class="admin-command-palette" id="adminCommandPalette" role="dialog" aria-modal="true" aria-labelledby="adminCommandPaletteTitle" hidden>
+    <div class="admin-command-palette__backdrop" data-command-close></div>
+    <section class="admin-command-palette__dialog">
+        <div class="admin-command-palette__header">
+            <i class="fa fa-magnifying-glass" aria-hidden="true"></i>
+            <label class="visually-hidden" id="adminCommandPaletteTitle" for="adminCommandSearch">Поиск по админке</label>
+            <input id="adminCommandSearch" type="search" autocomplete="off" placeholder="Раздел, действие или страница…">
+            <kbd>Esc</kbd>
+        </div>
+        <div class="admin-command-palette__results" id="adminCommandResults" role="listbox" aria-label="Результаты поиска"></div>
+        <p class="admin-command-palette__hint"><span><kbd>↑</kbd><kbd>↓</kbd> выбрать</span><span><kbd>Enter</kbd> открыть</span></p>
+    </section>
 </div>
 <div class="modal fade admin-modal admin-editor-modal" id="adminEditorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
@@ -1477,44 +1577,192 @@
         });
 
         const isDesktop = () => window.innerWidth >= 992;
-        let desktopOpen = true;
         let mobileOpen = false;
-        let lastIsDesktop = isDesktop();
-
-        const applySidebarState = () => {
-            if (isDesktop()) {
-                document.body.classList.toggle('sidebar-collapsed', !desktopOpen);
-                document.body.classList.remove('sidebar-open');
-                toggleButton?.setAttribute('aria-expanded', desktopOpen);
-            } else {
-                document.body.classList.remove('sidebar-collapsed');
-                document.body.classList.toggle('sidebar-open', mobileOpen);
-                toggleButton?.setAttribute('aria-expanded', mobileOpen);
+        let lastDesktopBreakpoint = isDesktop();
+        let activeNavigationGroup = @json($activeNavigationGroup);
+        const groupButtons = Array.from(document.querySelectorAll('[data-admin-group-button]'));
+        const groupPanels = Array.from(document.querySelectorAll('[data-admin-group]'));
+        const drawerBackgroundState = new Map();
+        const drawerSemanticState = new Map();
+        const drawerBackgroundTargets = () => [
+            document.getElementById('adminMain'),
+            document.getElementById('adminCommandPalette'),
+            document.getElementById('adminToTop'),
+        ].filter(Boolean);
+        const rememberAttributes = (store, element, attributes) => {
+            if (store.has(element)) return;
+            store.set(element, Object.fromEntries(attributes.map((attribute) => [attribute, element.getAttribute(attribute)])));
+        };
+        const restoreAttributes = (store) => {
+            store.forEach((attributes, element) => Object.entries(attributes).forEach(([attribute, value]) => {
+                if (value === null) element.removeAttribute(attribute);
+                else element.setAttribute(attribute, value);
+            }));
+            store.clear();
+        };
+        const setDrawerAccessibility = (open) => {
+            if (open) {
+                rememberAttributes(drawerSemanticState, sidebar, ['role', 'aria-modal', 'aria-label']);
+                sidebar?.setAttribute('role', 'dialog');
+                sidebar?.setAttribute('aria-modal', 'true');
+                sidebar?.setAttribute('aria-label', 'Навигация админпанели');
+                drawerBackgroundTargets().forEach((element) => {
+                    rememberAttributes(drawerBackgroundState, element, ['inert', 'aria-hidden']);
+                    element.setAttribute('inert', '');
+                    element.setAttribute('aria-hidden', 'true');
+                });
+                return;
             }
+            restoreAttributes(drawerSemanticState);
+            restoreAttributes(drawerBackgroundState);
         };
 
+        const applySidebarState = () => {
+            const drawerOpen = !isDesktop() && mobileOpen;
+            document.body.classList.toggle('sidebar-open', drawerOpen);
+            setDrawerAccessibility(drawerOpen);
+            toggleButton?.setAttribute('aria-expanded', String(drawerOpen));
+            toggleButton?.setAttribute('aria-label', drawerOpen ? 'Закрыть навигацию' : 'Открыть навигацию');
+        };
+        const focusableIn = (container) => Array.from(container?.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])') || [])
+            .filter((element) => !element.hidden && element.getAttribute('aria-hidden') !== 'true' && !element.closest('[aria-hidden="true"]'));
+        const trapFocus = (event, container) => {
+            if (event.key !== 'Tab') return false;
+            const focusable = focusableIn(container);
+            if (!focusable.length) return false;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            } else if (!container.contains(document.activeElement)) {
+                event.preventDefault();
+                first.focus();
+            }
+            return true;
+        };
+        const closeDrawer = (returnFocus = true) => {
+            if (!mobileOpen) return;
+            mobileOpen = false;
+            applySidebarState();
+            if (returnFocus) toggleButton?.focus();
+        };
+        const selectNavigationGroup = (group, focusPanel = false) => {
+            activeNavigationGroup = group;
+            groupButtons.forEach((button) => {
+                const selected = button.dataset.adminGroupButton === group;
+                button.classList.toggle('is-active', selected);
+                button.setAttribute('aria-expanded', String(selected));
+            });
+            groupPanels.forEach((panel) => {
+                const selected = panel.dataset.adminGroup === group;
+                panel.classList.toggle('is-active', selected);
+                panel.setAttribute('aria-hidden', String(!selected));
+            });
+            if (focusPanel) groupPanels.find((panel) => panel.dataset.adminGroup === group)?.querySelector('a')?.focus();
+        };
+
+        selectNavigationGroup(activeNavigationGroup);
         applySidebarState();
 
         toggleButton?.addEventListener('click', () => {
-            if (isDesktop()) {
-                desktopOpen = !desktopOpen;
-            } else {
-                mobileOpen = !mobileOpen;
-            }
+            mobileOpen = !mobileOpen;
             applySidebarState();
+            if (mobileOpen) groupButtons.find((button) => button.dataset.adminGroupButton === activeNavigationGroup)?.focus();
         });
-
-        backdrop?.addEventListener('click', () => {
-            mobileOpen = false;
-            applySidebarState();
-        });
-
+        backdrop?.addEventListener('click', () => closeDrawer());
+        groupButtons.forEach((button) => button.addEventListener('click', () => selectNavigationGroup(button.dataset.adminGroupButton, !isDesktop())));
+        groupPanels.forEach((panel) => panel.addEventListener('click', (event) => {
+            if (!isDesktop() && event.target.closest('a')) closeDrawer(false);
+        }));
         window.addEventListener('resize', () => {
-            const nowDesktop = isDesktop();
-            if (nowDesktop !== lastIsDesktop) {
-                lastIsDesktop = nowDesktop;
-                applySidebarState();
+            const desktop = isDesktop();
+            if (desktop !== lastDesktopBreakpoint) {
+                if (desktop) mobileOpen = false;
+                lastDesktopBreakpoint = desktop;
             }
+            applySidebarState();
+        });
+
+        const commandPalette = document.getElementById('adminCommandPalette');
+        const commandSearch = document.getElementById('adminCommandSearch');
+        const commandResults = document.getElementById('adminCommandResults');
+        const commandCreateItems = [
+            { label: 'Создать заказ', href: @json(route('admin.service-orders.index').'?create=1'), group: 'Быстрое создание' },
+            { label: 'Создать клиента', href: @json(route('admin.clients.create')), group: 'Быстрое создание' },
+            { label: 'Создать питомца', href: @json(route('admin.animals.create')), group: 'Быстрое создание' },
+            { label: 'Создать статью', href: @json(route('admin.articles.create')), group: 'Быстрое создание' },
+        ];
+        const commandItems = commandCreateItems.concat(groupPanels.flatMap((panel) => Array.from(panel.querySelectorAll('a')).map((link) => ({
+            label: link.textContent.trim(), href: link.href, group: panel.dataset.adminGroupLabel || '',
+        }))));
+        let commandMatches = commandItems;
+        let commandIndex = 0;
+        let commandLastFocus = null;
+        const renderCommandResults = () => {
+            if (!commandResults) return;
+            const query = (commandSearch?.value || '').trim().toLocaleLowerCase('ru');
+            commandMatches = commandItems.filter((item) => `${item.label} ${item.group}`.toLocaleLowerCase('ru').includes(query));
+            commandIndex = Math.min(commandIndex, Math.max(commandMatches.length - 1, 0));
+            commandResults.replaceChildren();
+            if (!commandMatches.length) {
+                const empty = document.createElement('p');
+                empty.className = 'm-2 text-muted small';
+                empty.textContent = 'Ничего не найдено';
+                commandResults.append(empty);
+                return;
+            }
+            commandMatches.forEach((item, index) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = `admin-command-palette__result${index === commandIndex ? ' is-selected' : ''}`;
+                button.setAttribute('role', 'option');
+                button.setAttribute('aria-selected', String(index === commandIndex));
+                button.innerHTML = `<span>${item.label}</span><small>${item.group}</small>`;
+                button.addEventListener('click', () => { window.location.assign(item.href); });
+                commandResults.append(button);
+            });
+        };
+        const closeCommandPalette = () => {
+            if (!commandPalette || commandPalette.hidden) return;
+            commandPalette.hidden = true;
+            commandLastFocus?.focus();
+        };
+        const openCommandPalette = () => {
+            if (!commandPalette || !commandSearch) return;
+            if (!commandPalette.hidden) {
+                commandSearch.focus();
+                return;
+            }
+            const drawerWasOpen = !isDesktop() && mobileOpen;
+            commandLastFocus = drawerWasOpen ? document.getElementById('adminSearchTrigger') : document.activeElement;
+            if (drawerWasOpen) closeDrawer(false);
+            commandPalette.hidden = false;
+            commandSearch.value = '';
+            commandIndex = 0;
+            renderCommandResults();
+            window.setTimeout(() => commandSearch.focus(), 0);
+        };
+        document.getElementById('adminSearchTrigger')?.addEventListener('click', openCommandPalette);
+        commandPalette?.querySelector('[data-command-close]')?.addEventListener('click', closeCommandPalette);
+        commandSearch?.addEventListener('input', () => { commandIndex = 0; renderCommandResults(); });
+        document.addEventListener('keydown', (event) => {
+            const commandOpen = commandPalette && !commandPalette.hidden;
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); openCommandPalette(); return; }
+            if (event.key === 'Escape') {
+                if (commandOpen) { event.preventDefault(); closeCommandPalette(); return; }
+                if (!isDesktop() && mobileOpen) closeDrawer();
+                return;
+            }
+            if (commandOpen && trapFocus(event, commandPalette)) return;
+            if (!isDesktop() && mobileOpen && trapFocus(event, sidebar)) return;
+            if (!commandOpen) return;
+            if (event.key === 'ArrowDown') { event.preventDefault(); commandIndex = Math.min(commandIndex + 1, commandMatches.length - 1); renderCommandResults(); }
+            if (event.key === 'ArrowUp') { event.preventDefault(); commandIndex = Math.max(commandIndex - 1, 0); renderCommandResults(); }
+            if (event.key === 'Enter' && commandMatches[commandIndex]) { event.preventDefault(); window.location.assign(commandMatches[commandIndex].href); }
         });
 
         document.querySelectorAll('.content table').forEach((table) => {
