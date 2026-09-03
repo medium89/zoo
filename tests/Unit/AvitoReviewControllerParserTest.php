@@ -121,6 +121,18 @@ HTML;
         $this->assertSame('Спасибо, всё прошло отлично!', $parsed[0]['text']);
     }
 
+    public function test_it_recognizes_the_business_account_as_a_response_author(): void
+    {
+        $controller = new AvitoReviewController();
+        $reflection = new ReflectionClass($controller);
+        $method = $reflection->getMethod('isOwnResponseAuthor');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke($controller, 'Екатерина zooland22'));
+        $this->assertTrue($method->invoke($controller, '  Екатерина   ZOOLAND22  '));
+        $this->assertFalse($method->invoke($controller, 'Екатерина'));
+    }
+
     private function parseReviewsFromHtml(string $html): array
     {
         $controller = new AvitoReviewController();

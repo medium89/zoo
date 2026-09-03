@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class AvitoReviewController extends Controller
 {
+    private const OWN_RESPONSE_AUTHOR = 'екатерина zooland22';
+
     public function index(Request $request)
     {
         $filters = $request->validate([
@@ -260,7 +262,10 @@ class AvitoReviewController extends Controller
 
     private function importFromHtml(string $html, string $sourceLabel)
     {
-        $parsed = $this->parseReviewsFromHtml($html);
+        $parsed = array_values(array_filter(
+            $this->parseReviewsFromHtml($html),
+            fn (array $review) => !$this->isOwnResponseAuthor($review['name'] ?? null)
+        ));
 
         if (empty($parsed)) {
             if ($this->looksLikeAvitoAccessBlocked($html)) {
@@ -322,6 +327,17 @@ class AvitoReviewController extends Controller
         return redirect()
             ->route('admin.avito-reviews.index')
             ->with('success', $sourceLabel . ': добавлено новых отзывов: ' . $added);
+    }
+
+    private function isOwnResponseAuthor(?string $author): bool
+    {
+        if ($author === null) {
+            return false;
+        }
+
+        $normalized = preg_replace('/\s+/u', ' ', mb_strtolower(trim($author))) ?? '';
+
+        return $normalized === self::OWN_RESPONSE_AUTHOR;
     }
 
     private function parseReviewsFromHtml(string $html): array
