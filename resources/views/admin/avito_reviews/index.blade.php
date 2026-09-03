@@ -14,12 +14,6 @@
                     <i class="fa fa-rotate"></i> Обновить с сайта
                 </button>
             </form>
-            <form action="{{ route('admin.avito-reviews.sort-by-date') }}" method="POST" class="mb-0">
-                @csrf
-                <button type="submit" class="btn btn-outline-primary">
-                    <i class="fa fa-arrow-up-wide-short"></i> Сортировка по дате
-                </button>
-            </form>
             <form action="{{ route('admin.avito-reviews.import') }}" method="POST" enctype="multipart/form-data" class="mb-0 d-flex align-items-center gap-2">
                 @csrf
                 <input type="file" name="html_file" accept=".html,.htm,.txt" class="form-control form-control-sm" required>
@@ -48,6 +42,7 @@
 
     <x-admin.filters :action="route('admin.avito-reviews.index')" :filters="$filters" placeholder="Автор или текст отзыва">
         <label class="admin-filter-bar__field">Статус<select name="status" class="form-select"><option value="">Все</option><option value="new" @selected(($filters['status'] ?? '') === 'new')>Новые</option><option value="published" @selected(($filters['status'] ?? '') === 'published')>Опубликованы</option><option value="hidden" @selected(($filters['status'] ?? '') === 'hidden')>Скрыты</option></select></label>
+        <label class="admin-filter-bar__field">По дате<select name="sort" class="form-select"><option value="date_desc" @selected(($filters['sort'] ?? 'date_desc') === 'date_desc')>Сначала новые</option><option value="date_asc" @selected(($filters['sort'] ?? '') === 'date_asc')>Сначала старые</option></select></label>
     </x-admin.filters>
 
     <div class="admin-grid" style="--grid-cols: 100px 1fr 140px 2fr 120px 120px 140px;">
@@ -119,6 +114,7 @@
             <form method="GET" action="{{ route('admin.avito-reviews.index') }}" class="admin-pagination-bar__per-page">
                 @if (!empty($filters['search']))<input type="hidden" name="search" value="{{ $filters['search'] }}">@endif
                 @if (!empty($filters['status']))<input type="hidden" name="status" value="{{ $filters['status'] }}">@endif
+                @if (!empty($filters['sort']))<input type="hidden" name="sort" value="{{ $filters['sort'] }}">@endif
                 <label for="reviewsPerPage">Отзывов на странице</label>
                 <select class="form-select form-select-sm" id="reviewsPerPage" name="per_page" onchange="this.form.submit()">
                     @foreach ([10, 25, 50, 100] as $perPage)

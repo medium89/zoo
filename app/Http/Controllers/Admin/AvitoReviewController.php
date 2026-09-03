@@ -19,13 +19,20 @@ class AvitoReviewController extends Controller
         $filters = $request->validate([
             'search' => 'nullable|string|max:255',
             'status' => 'nullable|in:new,published,hidden',
+            'sort' => 'nullable|in:date_desc,date_asc',
             'per_page' => 'nullable|integer|in:10,25,50,100',
         ]);
         $perPage = (int) ($filters['per_page'] ?? 25);
+        $sortDirection = ($filters['sort'] ?? 'date_desc') === 'date_asc' ? 'asc' : 'desc';
         $reviews = AvitoReview::query()
             ->when($filters['search'] ?? null, fn ($query, string $search) => $query->where(fn ($items) => $items->where('name', 'like', "%{$search}%")->orWhere('text', 'like', "%{$search}%")))
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
-            ->orderBy('order')->orderBy('id')->paginate($perPage)->withQueryString();
+            ->orderByRaw('review_date IS NULL')
+            ->orderBy('review_date', $sortDirection)
+            ->orderBy('order')
+            ->orderBy('id')
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('admin.avito_reviews.index', compact('reviews', 'filters'));
     }
@@ -172,22 +179,8 @@ class AvitoReviewController extends Controller
 
     public function sortByDate()
     {
-        $reviews = AvitoReview::query()
-            ->orderByRaw('review_date IS NULL')
-            ->orderBy('review_date')
-            ->orderBy('id')
-            ->get();
-
-        DB::transaction(function () use ($reviews) {
-            foreach ($reviews as $index => $review) {
-                $review->order = $index + 1;
-                $review->save();
-            }
-        });
-
         return redirect()
-            ->route('admin.avito-reviews.index')
-            ->with('success', 'Отзывы отсортированы по дате: от старых к новым');
+            ->route('admin.avito-reviews.index', ['sort' => 'date_desc']);
     }
 
     public function reorder(Request $request)
