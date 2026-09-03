@@ -19,11 +19,13 @@ class AvitoReviewController extends Controller
         $filters = $request->validate([
             'search' => 'nullable|string|max:255',
             'status' => 'nullable|in:new,published,hidden',
+            'per_page' => 'nullable|integer|in:10,25,50,100',
         ]);
+        $perPage = (int) ($filters['per_page'] ?? 25);
         $reviews = AvitoReview::query()
             ->when($filters['search'] ?? null, fn ($query, string $search) => $query->where(fn ($items) => $items->where('name', 'like', "%{$search}%")->orWhere('text', 'like', "%{$search}%")))
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
-            ->orderBy('order')->orderBy('id')->paginate(50)->withQueryString();
+            ->orderBy('order')->orderBy('id')->paginate($perPage)->withQueryString();
 
         return view('admin.avito_reviews.index', compact('reviews', 'filters'));
     }
