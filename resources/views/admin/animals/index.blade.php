@@ -4,14 +4,14 @@
 <div class="container-fluid">
     <div class="admin-list-page__actionbar">
         <h1 class="visually-hidden">Питомцы</h1>
-        <a href="{{ route('admin.animals.create') }}" class="btn btn-primary">Добавить</a>
+        <a href="{{ route('admin.animals.create') }}" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> Новый питомец</a>
     </div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <x-admin.filters :action="route('admin.animals.index')" :filters="$filters" placeholder="Кличка или хозяин">
+    <x-admin.filters :action="route('admin.animals.index')" :filters="$filters" placeholder="Кличка или хозяин" :auto="true">
         <label class="admin-filter-bar__field">Вид<select name="category_id" class="form-select"><option value="">Все виды</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected((string) ($filters['category_id'] ?? '') === (string) $category->id)>{{ $category->name }}</option>@endforeach</select></label>
         <label class="admin-filter-bar__field">Хозяин<select name="owner" class="form-select"><option value="">Все</option><option value="with" @selected(($filters['owner'] ?? '') === 'with')>Указан</option><option value="without" @selected(($filters['owner'] ?? '') === 'without')>Не указан</option></select></label>
     </x-admin.filters>
@@ -68,7 +68,7 @@
     @elseif(collect($filters)->except(['per_page', 'page'])->filter(fn ($value) => filled($value))->isNotEmpty())
         <section class="admin-entity-list__empty"><i class="fa fa-magnifying-glass mb-2" aria-hidden="true"></i><h2 class="h5">Ничего не нашли</h2><p class="mb-3">Попробуйте изменить фильтры или поисковый запрос.</p><a href="{{ route('admin.animals.index') }}" class="btn btn-outline-primary">Сбросить фильтры</a></section>
     @else
-        <section class="admin-entity-list__empty"><i class="fa fa-paw mb-2" aria-hidden="true"></i><h2 class="h5">Питомцев пока нет</h2><p class="mb-0">Добавьте первого питомца.</p></section>
+        <section class="admin-entity-list__empty"><i class="fa fa-paw mb-2" aria-hidden="true"></i><h2 class="h5">Питомцев пока нет</h2><p>Добавьте первого питомца.</p><a href="{{ route('admin.animals.create') }}" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> Новый питомец</a></section>
     @endif
 </div>
 @endsection

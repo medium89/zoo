@@ -4,14 +4,14 @@
 <div class="container-fluid clients-workspace">
     <header class="clients-workspace__header">
         <h1 class="visually-hidden">Клиенты</h1>
-        <button type="button" class="btn btn-primary clients-workspace__create" id="newClientWithPets"><i class="fa fa-plus" aria-hidden="true"></i><span>Добавить клиента</span></button>
+        <button type="button" class="btn btn-primary clients-workspace__create" id="newClientWithPets"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый клиент</span></button>
     </header>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <x-admin.filters :action="route('admin.clients.index')" :filters="$filters" placeholder="Имя, телефон или адрес">
+    <x-admin.filters :action="route('admin.clients.index')" :filters="$filters" placeholder="Имя, телефон или адрес" :auto="true">
         <label class="admin-filter-bar__field">Питомцы<select name="animals" class="form-select"><option value="">Все</option><option value="with" @selected(($filters['animals'] ?? '') === 'with')>Есть питомцы</option><option value="without" @selected(($filters['animals'] ?? '') === 'without')>Без питомцев</option></select></label>
         <label class="admin-filter-bar__field">Адрес<select name="address" class="form-select"><option value="">Все</option><option value="with" @selected(($filters['address'] ?? '') === 'with')>Указан</option><option value="without" @selected(($filters['address'] ?? '') === 'without')>Не указан</option></select></label>
     </x-admin.filters>
@@ -70,7 +70,7 @@
     @elseif(collect($filters)->except(['per_page', 'page'])->filter(fn ($value) => filled($value))->isNotEmpty())
         <section class="clients-workspace__empty" aria-labelledby="clientsEmptyFilteredTitle"><i class="fa fa-magnifying-glass" aria-hidden="true"></i><h2 id="clientsEmptyFilteredTitle">Ничего не нашли</h2><p>Попробуйте изменить запрос или снять часть фильтров.</p><a href="{{ route('admin.clients.index') }}" class="btn btn-outline-primary">Сбросить фильтры</a></section>
     @else
-        <section class="clients-workspace__empty" aria-labelledby="clientsEmptyTitle"><i class="fa fa-user-group" aria-hidden="true"></i><h2 id="clientsEmptyTitle">Клиентов пока нет</h2><p>Добавьте первого клиента и его питомцев — они появятся здесь.</p><button type="button" class="btn btn-primary js-open-first-client"><i class="fa fa-plus" aria-hidden="true"></i>Добавить клиента</button></section>
+        <section class="clients-workspace__empty" aria-labelledby="clientsEmptyTitle"><i class="fa fa-user-group" aria-hidden="true"></i><h2 id="clientsEmptyTitle">Клиентов пока нет</h2><p>Добавьте первого клиента и его питомцев — они появятся здесь.</p><button type="button" class="btn btn-primary js-open-first-client"><i class="fa fa-plus" aria-hidden="true"></i>Новый клиент</button></section>
     @endif
 
     @if($mapClients->isNotEmpty())

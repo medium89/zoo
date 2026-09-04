@@ -59,7 +59,7 @@ class ClientWorkspaceTest extends TestCase
             ->get(route('admin.clients.index'))
             ->assertOk()
             ->assertSee('Клиентов пока нет')
-            ->assertSee('Добавить клиента');
+            ->assertSee('Новый клиент');
     }
 
     public function test_clients_workspace_paginates_and_keeps_filters_in_footer_links(): void
@@ -77,5 +77,18 @@ class ClientWorkspaceTest extends TestCase
             ->assertSee('per_page=10', false)
             ->assertSee('animals=without', false)
             ->assertSee('address=without', false);
+    }
+
+    public function test_clients_auto_filter_reset_clears_filters_and_keeps_page_size_only_in_the_form(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.clients.index', ['search' => 'Несуществующий', 'per_page' => 50, 'page' => 2]))
+            ->assertOk()
+            ->assertSee('data-auto-filters', false)
+            ->assertSee('name="per_page" value="50"', false)
+            ->assertSee('<a href="'.route('admin.clients.index').'" class="btn btn-light admin-filter-bar__reset"', false)
+            ->assertDontSee('name="page"', false);
     }
 }

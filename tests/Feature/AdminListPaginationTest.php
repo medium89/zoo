@@ -29,7 +29,9 @@ class AdminListPaginationTest extends TestCase
             ->assertSee('name="per_page"', false)
             ->assertSee('per_page=10', false)
             ->assertSee('category_id='.$category->id, false)
-            ->assertSee('owner=without', false);
+            ->assertSee('owner=without', false)
+            ->assertSee('data-auto-filters', false)
+            ->assertDontSee('>Применить</button>', false);
     }
 
     public function test_categories_list_is_searchable_and_paginated(): void
@@ -70,7 +72,8 @@ class AdminListPaginationTest extends TestCase
             ->assertSee('name="per_page"', false)
             ->assertSee('per_page=10', false)
             ->assertSee('name="search"', false)
-            ->assertSee('value="Клиент"', false);
+            ->assertSee('value="Клиент"', false)
+            ->assertSeeInOrder(['orders-create-region', 'orders-create js-new-service-order'], false);
     }
 
     public function test_page_size_alone_does_not_turn_empty_lists_into_filter_misses(): void

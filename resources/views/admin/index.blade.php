@@ -11,7 +11,45 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root { --sidebar-width: 240px; }
+        :root {
+            --sidebar-width: 240px;
+            --admin-primary: #5d78db;
+            --admin-primary-hover: #4f68c5;
+            --admin-primary-active: #465db1;
+            --bs-primary: var(--admin-primary);
+            --bs-primary-rgb: 93, 120, 219;
+        }
+
+        /* Единый акцент для действий создания и подтверждения во всей админке. */
+        .content .btn-primary {
+            --bs-btn-color: #fff;
+            --bs-btn-bg: var(--admin-primary);
+            --bs-btn-border-color: var(--admin-primary);
+            --bs-btn-hover-color: #fff;
+            --bs-btn-hover-bg: var(--admin-primary-hover);
+            --bs-btn-hover-border-color: var(--admin-primary-hover);
+            --bs-btn-focus-shadow-rgb: 93, 120, 219;
+            --bs-btn-active-color: #fff;
+            --bs-btn-active-bg: var(--admin-primary-active);
+            --bs-btn-active-border-color: var(--admin-primary-active);
+            --bs-btn-disabled-color: #fff;
+            --bs-btn-disabled-bg: var(--admin-primary);
+            --bs-btn-disabled-border-color: var(--admin-primary);
+        }
+        .content .btn-outline-primary {
+            --bs-btn-color: var(--admin-primary);
+            --bs-btn-border-color: var(--admin-primary);
+            --bs-btn-hover-color: #fff;
+            --bs-btn-hover-bg: var(--admin-primary);
+            --bs-btn-hover-border-color: var(--admin-primary);
+            --bs-btn-focus-shadow-rgb: 93, 120, 219;
+            --bs-btn-active-color: #fff;
+            --bs-btn-active-bg: var(--admin-primary-active);
+            --bs-btn-active-border-color: var(--admin-primary-active);
+            --bs-btn-disabled-color: var(--admin-primary);
+            --bs-btn-disabled-bg: transparent;
+            --bs-btn-disabled-border-color: var(--admin-primary);
+        }
 
         body {
             min-height: 100vh;
@@ -266,7 +304,7 @@
         .admin-entity-list__footer .pagination { margin: 0; }
         .admin-entity-list__footer-pagination { min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
         .admin-entity-list__footer-pagination .pagination { flex-wrap: nowrap; width: max-content; }
-        .admin-list-page__actionbar { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+        .admin-list-page__actionbar { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 10px; margin-bottom: 20px; }
         /* List/settings/form pages keep one semantic h1 for screen readers without visual duplication. */
         #admin-content[data-admin-hide-page-heading="1"] > h1,
         #admin-content[data-admin-hide-page-heading="1"] > * > h1:first-child,
