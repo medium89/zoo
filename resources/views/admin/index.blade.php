@@ -1442,13 +1442,16 @@
 
             const path = url.pathname.replace(/\/$/, '');
             const standaloneEditors = [
-                '/zooadmin/settings',
                 '/zooadmin/about',
-                '/zooadmin/settings/telegram-bot',
                 '/zooadmin/personal-data-consent',
             ];
             const usesFullPageEditor = /^\/zooadmin\/articles(?:\/create|\/[^/]+\/edit)$/.test(path)
-                || ['/zooadmin/about', '/zooadmin/personal-data-consent'].includes(path);
+                || [
+                    '/zooadmin/settings',
+                    '/zooadmin/settings/telegram-bot',
+                    '/zooadmin/about',
+                    '/zooadmin/personal-data-consent',
+                ].includes(path);
 
             if (usesFullPageEditor) return false;
 

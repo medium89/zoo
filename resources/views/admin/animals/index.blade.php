@@ -4,7 +4,7 @@
 <section class="animals-workspace">
     <div class="admin-list-page__actionbar">
         <h1 class="visually-hidden">Питомцы</h1>
-        <a href="{{ route('admin.animals.create') }}" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> Новый питомец</a>
+        <a href="{{ route('admin.animals.create') }}" class="btn btn-primary animals-create"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый питомец</span></a>
     </div>
 
     @if(session('success'))
@@ -72,3 +72,30 @@
     @endif
 </section>
 @endsection
+
+@push('styles')
+<style>
+/* Matches the primary creation action on the orders workspace. */
+.animals-workspace .animals-create {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 13px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: .86rem;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+    .animals-workspace .animals-create { font-size: .8rem; }
+}
+
+@media (max-width: 390px) {
+    .animals-workspace .animals-create { font-size: .71rem; }
+}
+</style>
+@endpush
