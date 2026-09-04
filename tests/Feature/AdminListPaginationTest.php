@@ -77,6 +77,19 @@ class AdminListPaginationTest extends TestCase
             ->assertSeeInOrder(['orders-create-region', 'orders-create js-new-service-order'], false);
     }
 
+    public function test_service_orders_pagination_footer_is_outside_the_table_shell(): void
+    {
+        $view = File::get(resource_path('views/admin/service-orders/index.blade.php'));
+        $shellStart = strpos($view, '<section class="orders-list-shell">');
+        $footer = strpos($view, '<footer class="orders-list-footer"');
+        $shellClose = strpos($view, '    </section>'.PHP_EOL.'        @if($orders->total() > 0)', $shellStart ?: 0);
+
+        $this->assertNotFalse($shellStart);
+        $this->assertNotFalse($footer);
+        $this->assertNotFalse($shellClose);
+        $this->assertLessThan($footer, $shellClose, 'The orders pagination footer must not be inside the white list shell.');
+    }
+
     public function test_page_size_alone_does_not_turn_empty_lists_into_filter_misses(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);

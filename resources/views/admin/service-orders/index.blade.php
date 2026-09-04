@@ -75,6 +75,7 @@
         <div class="orders-empty"><i class="fa fa-clipboard-list" aria-hidden="true"></i><h2>{{ $hasOrderFilters ? 'Нет заказов по этим фильтрам' : 'Заказов пока нет' }}</h2><p>{{ $hasOrderFilters ? 'Попробуйте изменить условия поиска или сбросить их.' : 'Добавьте первый заказ, чтобы распределить работу по питомцам.' }}</p>@if($hasOrderFilters)<a class="btn btn-outline-secondary" href="{{ route('admin.service-orders.index') }}">Сбросить фильтры</a>@else<button class="btn btn-primary js-new-service-order" type="button"><i class="fa fa-plus" aria-hidden="true"></i> Новый заказ</button>@endif</div>
         @endforelse
         </section>
+    </section>
         @if($orders->total() > 0)
             <footer class="orders-list-footer" aria-label="Навигация по заказам">
                 <span>Показано {{ $orders->firstItem() }}–{{ $orders->lastItem() }} из {{ $orders->total() }} {{ trans_choice('заказа|заказов|заказов', $orders->total()) }}</span>
@@ -90,7 +91,6 @@
                 <div class="orders-list-footer__pagination">{{ $orders->onEachSide(1)->links('pagination::bootstrap-4') }}</div>
             </footer>
         @endif
-    </section>
 </section>
 <div class="modal fade admin-modal" id="serviceOrderModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-scrollable"><form method="POST" class="modal-content order-modal" id="serviceOrderForm">@csrf<input type="hidden" name="_method" id="orderMethod" value="POST">
     <div class="modal-header order-modal__header"><h5 class="modal-title" id="orderModalTitle"><i class="fa fa-pen" id="orderModalIcon" aria-hidden="true"></i><span id="orderModalTitleText">Новый заказ</span></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button></div>
