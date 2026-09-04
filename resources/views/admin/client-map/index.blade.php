@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="container-fluid client-node-page">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-        <div><h1 class="mb-1">Карта клиентов</h1><p class="text-muted mb-0">Перетащите питомца на клиента, чтобы связать их.</p></div>
+    <div class="d-flex flex-wrap justify-content-start align-items-center gap-2 mb-3">
+        <div><h1 class="mb-1">Карта клиентов</h1></div>
         <div class="d-flex gap-2">
             <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#newMapAnimalModal"><i class="fa fa-plus me-1"></i>Питомец</button>
             <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#newMapClientModal"><i class="fa fa-plus me-1"></i>Клиент</button>
