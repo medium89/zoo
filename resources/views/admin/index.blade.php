@@ -823,16 +823,11 @@
         .admin-contextual-nav__footer button { width: 100%; gap: 9px; }
         .admin-contextual-nav__footer button:hover, .admin-contextual-nav__footer button:focus-visible { background: #2d3b4d; color: #fff; outline: 0; }
         .content { min-width: 0; padding: 0 32px 32px; overflow-x: clip; }
-        .admin-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 88px; margin-bottom: 24px; border-bottom: 1px solid #e6ebf1; }
+        .admin-topbar { display: flex; align-items: center; justify-content: flex-start; gap: 16px; min-height: 88px; margin-bottom: 24px; border-bottom: 1px solid #e6ebf1; }
         .admin-topbar__search { display: flex; align-items: center; gap: 10px; width: min(440px, 100%); min-height: 42px; padding: 8px 13px; border: 1px solid #dbe3eb; border-radius: 10px; background: #fff; color: #718196; font-size: .85rem; text-align: left; }
         .admin-topbar__search:hover, .admin-topbar__search:focus-visible { border-color: #9b83ff; box-shadow: 0 0 0 3px rgba(112, 87, 214, .12); outline: 0; }
         .admin-topbar__search span { flex: 1; }
-        .admin-topbar kbd, .admin-command-palette kbd { padding: 2px 5px; border: 1px solid #dce3eb; border-radius: 5px; background: #f7f9fb; color: #8490a0; font-family: inherit; font-size: .7rem; }
-        .admin-topbar__create { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 8px 14px; border: 0; border-radius: 10px; background: #6d58d8; font-size: .85rem; font-weight: 700; box-shadow: 0 8px 18px rgba(87, 63, 189, .22); }
-        .admin-topbar__create:hover, .admin-topbar__create:focus-visible { background: #5d49c7; }
-        .admin-create-menu { min-width: 190px; padding: 7px; border: 1px solid #e1e7ee; border-radius: 11px; box-shadow: 0 16px 34px rgba(31, 47, 66, .15); }
-        .admin-create-menu .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 8px 9px; border-radius: 7px; color: #34465a; font-size: .85rem; font-weight: 600; }
-        .admin-create-menu .dropdown-item i { width: 15px; color: #765ee2; }
+        .admin-command-palette kbd { padding: 2px 5px; border: 1px solid #dce3eb; border-radius: 5px; background: #f7f9fb; color: #8490a0; font-family: inherit; font-size: .7rem; }
         .admin-command-palette[hidden] { display: none; }
         .admin-command-palette { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: start center; padding: min(12vh, 120px) 18px 18px; }
         .admin-command-palette__backdrop { position: absolute; inset: 0; background: rgba(19, 29, 42, .42); backdrop-filter: blur(2px); }
@@ -860,8 +855,6 @@
             .content { padding: 70px 14px 24px; }
             .admin-topbar__search { width: auto; flex: 1; }
             .admin-topbar__search span, .admin-topbar__search kbd { display: none; }
-            .admin-topbar__create span { display: none; }
-            .content .admin-topbar__create { width: 42px; justify-content: center; padding: 0; }
             .admin-command-palette { padding: 74px 12px 12px; }
             .admin-command-palette__hint { display: none; }
         }
@@ -957,17 +950,8 @@
     <main class="content" id="adminMain">
         <header class="admin-topbar">
             <button type="button" class="admin-topbar__search" id="adminSearchTrigger" aria-haspopup="dialog" aria-controls="adminCommandPalette">
-                <i class="fa fa-magnifying-glass" aria-hidden="true"></i><span>Поиск по админке</span><kbd>Ctrl K</kbd>
+                <i class="fa fa-magnifying-glass" aria-hidden="true"></i><span>Поиск по админке</span>
             </button>
-            <div class="dropdown">
-                <button class="btn btn-primary admin-topbar__create" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-plus" aria-hidden="true"></i><span>Создать</span></button>
-                <ul class="dropdown-menu dropdown-menu-end admin-create-menu">
-                    <li><a class="dropdown-item" href="{{ route('admin.service-orders.index') }}?create=1"><i class="fa fa-briefcase"></i>Заказ</a></li>
-                    <li><a class="dropdown-item" href="{{ route('admin.clients.create') }}"><i class="fa fa-address-book"></i>Клиента</a></li>
-                    <li><a class="dropdown-item" href="{{ route('admin.animals.create') }}"><i class="fa fa-paw"></i>Питомца</a></li>
-                    <li><a class="dropdown-item" href="{{ route('admin.articles.create') }}"><i class="fa fa-newspaper"></i>Статью</a></li>
-                </ul>
-            </div>
         </header>
         @php
             $routeName = request()->route()?->getName() ?? '';
