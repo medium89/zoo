@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\ServiceOrder;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class AdminListPaginationTest extends TestCase
@@ -102,5 +103,76 @@ class AdminListPaginationTest extends TestCase
             ->assertOk()
             ->assertSee('Заказов пока нет')
             ->assertDontSee('Нет заказов по этим фильтрам');
+    }
+
+    public function test_entity_lists_render_context_actions_as_one_accessible_menu(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $category = Category::create(['name' => 'Тестовое действие', 'slug' => 'test-action-category']);
+        $client = Client::create(['name' => 'Анна']);
+        Animal::create(['name' => 'Пушок', 'category_id' => $category->id, 'client_id' => $client->id]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.animals.index'))
+            ->assertOk()
+            ->assertSee('data-admin-actions-menu', false)
+            ->assertSee('aria-haspopup="menu"', false)
+            ->assertSeeText('Просмотреть')
+            ->assertSeeText('Редактировать')
+            ->assertSeeText('Удалить');
+
+        $this->actingAs($admin)
+            ->get(route('admin.clients.index'))
+            ->assertOk()
+            ->assertSee('data-admin-actions-menu', false)
+            ->assertSee('aria-haspopup="menu"', false)
+            ->assertSeeText('Просмотреть')
+            ->assertSeeText('Редактировать')
+            ->assertSeeText('Удалить');
+    }
+
+    public function test_contextual_action_inventory_uses_the_shared_menu_component(): void
+    {
+        $views = [
+            'admin/advantages/index.blade.php',
+            'admin/animals/index.blade.php',
+            'admin/animals/show.blade.php',
+            'admin/articles/comments.blade.php',
+            'admin/articles/index.blade.php',
+            'admin/avito_reviews/index.blade.php',
+            'admin/boarding/archive.blade.php',
+            'admin/boarding/tasks.blade.php',
+            'admin/categories/index.blade.php',
+            'admin/clients/index.blade.php',
+            'admin/clients/show.blade.php',
+            'admin/feedbacks/index.blade.php',
+            'admin/galleries/index.blade.php',
+            'admin/images/index.blade.php',
+            'admin/service-orders/archive.blade.php',
+            'admin/service-orders/index.blade.php',
+            'admin/services/index.blade.php',
+            'admin/sliders/index.blade.php',
+            'admin/socials/index.blade.php',
+            'admin/users/index.blade.php',
+        ];
+
+        foreach ($views as $view) {
+            $this->assertStringContainsString(
+                '<x-admin.actions-menu',
+                File::get(resource_path('views/'.$view)),
+                "{$view} must keep row or card actions inside the shared menu."
+            );
+        }
+
+        $component = File::get(resource_path('views/components/admin/actions-menu.blade.php'));
+        $this->assertStringContainsString('aria-haspopup="menu"', $component);
+        $this->assertStringContainsString('role="menu"', $component);
+
+        $clientMap = File::get(resource_path('views/admin/client-map/index.blade.php'));
+        $this->assertStringContainsString('client-node__menu-toggle', $clientMap);
+        $this->assertStringContainsString('fa-ellipsis-vertical', $clientMap);
+        $this->assertStringContainsString('.client-node{overflow:visible}', $clientMap);
+        $this->assertStringContainsString("event.key === 'ArrowDown'", $clientMap);
+        $this->assertStringContainsString("event.key === 'Escape'", $clientMap);
     }
 }

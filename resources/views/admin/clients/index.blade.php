@@ -39,15 +39,15 @@
                             <div data-label="Питомцы" @if(!$client->animals_count) aria-label="Питомцев пока нет" @endif>{{ $client->animals_count ?: 'Нет' }}</div>
                             <div data-label="Записи">{{ $client->boardings_count ?: 'Нет' }}</div>
                             <div class="admin-entity-list__actions actions" data-label="Действия">
-                                <div class="d-flex justify-content-end gap-2">
-                                    <a href="{{ route('admin.clients.show', $client) }}" class="btn btn-sm btn-outline-secondary" aria-label="Открыть клиента {{ $client->name }}" title="Открыть"><i class="fa fa-eye" aria-hidden="true"></i></a>
-                                    <button type="button" class="btn btn-sm btn-primary text-white js-edit-client-with-pets" data-client='@json($clientsPayload[$client->id])' aria-label="Редактировать клиента {{ $client->name }}" title="Редактировать"><i class="fa fa-pen" aria-hidden="true"></i></button>
-                                    <form action="{{ route('admin.clients.destroy', $client) }}" method="POST" class="d-inline js-delete-form" data-confirm="Удалить клиента? Связанные питомцы и записи останутся без хозяина.">
+                                <x-admin.actions-menu label="Действия с клиентом {{ $client->name }}">
+                                    <a href="{{ route('admin.clients.show', $client) }}" class="admin-actions-menu__item"><i class="fa fa-eye" aria-hidden="true"></i><span>Просмотреть</span></a>
+                                    <button type="button" class="admin-actions-menu__item js-edit-client-with-pets" data-client='@json($clientsPayload[$client->id])'><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></button>
+                                    <form action="{{ route('admin.clients.destroy', $client) }}" method="POST" class="js-delete-form" data-confirm="Удалить клиента? Связанные питомцы и записи останутся без хозяина.">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" aria-label="Удалить клиента {{ $client->name }}" title="Удалить"><i class="fa fa-trash" aria-hidden="true"></i></button>
+                                        <button type="submit" class="admin-actions-menu__item admin-actions-menu__item--danger"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span></button>
                                     </form>
-                                </div>
+                                </x-admin.actions-menu>
                             </div>
                         </div>
                     @endforeach

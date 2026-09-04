@@ -31,14 +31,14 @@
                     <input type="hidden" name="orders[{{ $slider->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="status-form">
                 </div>
                 <div class="actions">
-                    <div class="d-flex justify-content-end gap-2 align-items-center">
-                        <a href="{{ route('admin.sliders.edit', $slider) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
-                        <form action="{{ route('admin.sliders.destroy', $slider) }}" method="POST" style="display:inline-block">
+                    <x-admin.actions-menu label="Действия со слайдом">
+                        <a href="{{ route('admin.sliders.edit', $slider) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a>
+                        <form action="{{ route('admin.sliders.destroy', $slider) }}" method="POST" class="js-delete-form" data-confirm="Удалить слайд?">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить слайд?')">Удалить</button>
+                            <button type="submit" class="admin-actions-menu__item admin-actions-menu__item--danger"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span></button>
                         </form>
-                    </div>
+                    </x-admin.actions-menu>
                 </div>
             </div>
         @endforeach

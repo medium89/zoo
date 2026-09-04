@@ -41,14 +41,14 @@
                     </div>
                     <div>{{ $feedback->created_at->format('d.m.Y H:i') }}</div>
                     <div class="actions">
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('admin.feedbacks.edit', $feedback->id) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
-                            <form action="{{ route('admin.feedbacks.destroy', $feedback->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Удалить сообщение?')">
+                        <x-admin.actions-menu label="Действия с сообщением {{ $feedback->name }}">
+                            <a href="{{ route('admin.feedbacks.edit', $feedback->id) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a>
+                            <form action="{{ route('admin.feedbacks.destroy', $feedback->id) }}" method="POST" class="js-delete-form" data-confirm="Удалить сообщение?">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                                <button type="submit" class="admin-actions-menu__item admin-actions-menu__item--danger"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span></button>
                             </form>
-                        </div>
+                        </x-admin.actions-menu>
                     </div>
                 </div>
             @endforeach

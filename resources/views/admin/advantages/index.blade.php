@@ -34,14 +34,14 @@
                     <input type="hidden" name="orders[{{ $advantage->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="status-form">
                 </div>
                 <div class="actions">
-                    <div class="d-flex gap-2 align-items-center justify-content-end">
-                        <a href="{{ route('admin.advantages.edit', $advantage->id) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
-                        <form action="{{ route('admin.advantages.destroy', $advantage->id) }}" method="POST" style="display:inline-block">
+                    <x-admin.actions-menu label="Действия с преимуществом {{ $advantage->title }}">
+                        <a href="{{ route('admin.advantages.edit', $advantage->id) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a>
+                        <form action="{{ route('admin.advantages.destroy', $advantage->id) }}" method="POST" class="js-delete-form" data-confirm="Удалить преимущество?">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить?')">Удалить</button>
+                            <button type="submit" class="admin-actions-menu__item admin-actions-menu__item--danger"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span></button>
                         </form>
-                    </div>
+                    </x-admin.actions-menu>
                 </div>
             </div>
         @endforeach

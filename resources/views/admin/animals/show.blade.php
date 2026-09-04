@@ -6,7 +6,7 @@
         <h1>{{ $animal->name }}</h1>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-primary" data-admin-popup-target="#animalClientModal">Назначить хозяина</button>
-            <a href="{{ route('admin.animals.edit', $animal) }}" class="btn btn-primary">Редактировать</a>
+            <x-admin.actions-menu label="Действия с питомцем {{ $animal->name }}"><a href="{{ route('admin.animals.edit', $animal) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a></x-admin.actions-menu>
         </div>
     </div>
 
@@ -29,11 +29,13 @@
                     <p><strong>Хозяин:</strong>
                         @if($animal->client)
                             <a href="{{ route('admin.clients.show', $animal->client) }}">{{ $animal->client->name }}</a>
-                            <form action="{{ route('admin.animals.client.detach', $animal) }}" method="POST" class="d-inline ms-1">
+                            <span class="d-inline-block ms-1"><x-admin.actions-menu label="Действия с хозяином">
+                            <form action="{{ route('admin.animals.client.detach', $animal) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button type="button" class="btn btn-sm btn-danger btn-icon js-unlink-trigger" title="Отвязать хозяина" aria-label="Отвязать хозяина" data-confirm="Отвязать хозяина от питомца «{{ $animal->name }}»? Карточка клиента останется в базе."><i class="fa fa-xmark"></i></button>
+                                <button type="button" class="admin-actions-menu__item admin-actions-menu__item--danger js-unlink-trigger" data-confirm="Отвязать хозяина от питомца «{{ $animal->name }}»? Карточка клиента останется в базе."><i class="fa fa-link-slash" aria-hidden="true"></i><span>Отвязать хозяина</span></button>
                             </form>
+                            </x-admin.actions-menu></span>
                         @else
                             —
                         @endif
@@ -58,11 +60,12 @@
                                             aria-label="Увеличить фото {{ $animal->name }}">
                                         <img src="{{ Storage::url($photo->path) }}" alt="{{ $animal->name }}" style="width:140px;height:140px;object-fit:cover;border-radius:10px;cursor:zoom-in;">
                                     </button>
-                                    <form action="{{ route('admin.animals.photos.destroy', [$animal, $photo]) }}" method="POST" class="mt-2 js-delete-form" data-confirm="Удалить фото?">
+                                    <div class="mt-2 d-flex justify-content-end"><x-admin.actions-menu label="Действия с фото"><form action="{{ route('admin.animals.photos.destroy', [$animal, $photo]) }}" method="POST" class="js-delete-form" data-confirm="Удалить фото?">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger w-100">Удалить</button>
+                                        <button class="admin-actions-menu__item admin-actions-menu__item--danger" type="submit"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить фото</span></button>
                                     </form>
+                                    </x-admin.actions-menu></div>
                                 </div>
                             @endforeach
                         </div>

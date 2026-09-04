@@ -42,13 +42,13 @@
                         <input type="hidden" name="orders[{{ $article->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="articles-form">
                     </div>
                     <div class="actions">
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('admin.articles.edit', $article) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
-                            <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="d-inline" onsubmit="return confirm('Удалить статью?')">
+                        <x-admin.actions-menu label="Действия со статьёй {{ $article->title }}">
+                            <a href="{{ route('admin.articles.edit', $article) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a>
+                            <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="js-delete-form" data-confirm="Удалить статью?">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                                <button class="admin-actions-menu__item admin-actions-menu__item--danger" type="submit"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span></button>
                             </form>
-                        </div>
+                        </x-admin.actions-menu>
                     </div>
                 </div>
             @empty

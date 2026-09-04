@@ -261,6 +261,16 @@
         .admin-entity-list__row > * { min-width: 0; }
         .admin-entity-list__actions { justify-self: end; }
         .admin-entity-list__actions .d-flex { flex-wrap: nowrap; }
+        .admin-actions-menu { position: relative; display: inline-flex; justify-content: flex-end; }
+        .admin-actions-menu__toggle { display: grid; width: 34px; height: 34px; padding: 0; place-items: center; border: 0; border-radius: 9px; background: transparent; color: #657a90; font-size: 1.05rem; line-height: 1; }
+        .admin-actions-menu__toggle:hover, .admin-actions-menu__toggle[aria-expanded="true"] { background: #eef5fc; color: #246eaf; }
+        .admin-actions-menu__toggle:focus-visible { outline: 3px solid rgba(52, 121, 189, .28); outline-offset: 2px; }
+        .admin-actions-menu__popup { position: absolute; z-index: 1070; top: calc(100% + 6px); right: 0; display: grid; min-width: 174px; padding: 5px; border: 1px solid #dfe8f1; border-radius: 11px; background: #fff; box-shadow: 0 14px 30px rgba(31, 54, 79, .18); }
+        .admin-actions-menu__popup form { margin: 0; }
+        .admin-actions-menu__item { display: flex; width: 100%; align-items: center; gap: 9px; padding: 8px 9px; border: 0; border-radius: 7px; background: transparent; color: #42586e; font: inherit; font-size: .79rem; font-weight: 700; line-height: 1.25; text-align: left; text-decoration: none; }
+        .admin-actions-menu__item:hover, .admin-actions-menu__item:focus-visible { background: #eef5fc; color: #256cae; }
+        .admin-actions-menu__item--danger { color: #c74750; }
+        .admin-actions-menu__item--danger:hover, .admin-actions-menu__item--danger:focus-visible { background: #fff0f0; color: #b73b45; }
         .admin-entity-list__primary {
             display: grid;
             min-width: 0;
@@ -1928,12 +1938,12 @@
         document.querySelectorAll('button, a').forEach((btn) => {
             if (btn.closest('.modal')) return;
             const txt = (btn.textContent || '').trim();
-            if (txt === 'Редактировать' && !btn.matches('.order-actions-menu__item')) {
+            if (txt === 'Редактировать' && !btn.matches('.order-actions-menu__item, .admin-actions-menu__item')) {
                 btn.innerHTML = '<i class="fa fa-pen"></i>';
                 btn.title = 'Редактировать';
                 btn.classList.add('btn-icon');
             }
-            if (txt === 'Удалить' && !btn.matches('.order-actions-menu__item')) {
+            if (txt === 'Удалить' && !btn.matches('.order-actions-menu__item, .admin-actions-menu__item')) {
                 if (btn.hasAttribute('onclick')) btn.removeAttribute('onclick');
                 btn.innerHTML = '<i class="fa fa-trash"></i>';
                 btn.title = 'Удалить';
@@ -1942,6 +1952,54 @@
                     btn.setAttribute('type','button');
                 }
             }
+        });
+
+        // Контекстные действия строк и карточек: одно доступное меню вместо набора кнопок.
+        document.querySelectorAll('[data-admin-actions-menu]').forEach((menu) => {
+            const toggle = menu.querySelector('.admin-actions-menu__toggle');
+            const popup = menu.querySelector('.admin-actions-menu__popup');
+            if (!toggle || !popup) return;
+            const items = () => Array.from(popup.querySelectorAll('a, button')).filter((item) => !item.disabled && item.offsetParent !== null);
+            popup.querySelectorAll('a, button').forEach((item) => {
+                if (!item.hasAttribute('role')) item.setAttribute('role', 'menuitem');
+            });
+            const close = () => { popup.hidden = true; toggle.setAttribute('aria-expanded', 'false'); };
+            const open = () => {
+                popup.hidden = false;
+                toggle.setAttribute('aria-expanded', 'true');
+                requestAnimationFrame(() => items()[0]?.focus());
+            };
+            toggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const wasOpen = !popup.hidden;
+                document.querySelectorAll('[data-admin-actions-menu]').forEach((other) => {
+                    if (other !== menu) {
+                        const otherToggle = other.querySelector('.admin-actions-menu__toggle');
+                        const otherPopup = other.querySelector('.admin-actions-menu__popup');
+                        if (otherPopup) otherPopup.hidden = true;
+                        otherToggle?.setAttribute('aria-expanded', 'false');
+                    }
+                });
+                wasOpen ? close() : open();
+            });
+            menu.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') { close(); toggle.focus(); return; }
+                if (popup.hidden) return;
+                const menuItems = items();
+                const current = menuItems.indexOf(document.activeElement);
+                if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    const direction = event.key === 'ArrowDown' ? 1 : -1;
+                    menuItems[(current + direction + menuItems.length) % menuItems.length]?.focus();
+                }
+                if (event.key === 'Home') { event.preventDefault(); menuItems[0]?.focus(); }
+                if (event.key === 'End') { event.preventDefault(); menuItems.at(-1)?.focus(); }
+            });
+        });
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('[data-admin-actions-menu]')) return;
+            document.querySelectorAll('[data-admin-actions-menu] .admin-actions-menu__popup').forEach((popup) => { popup.hidden = true; });
+            document.querySelectorAll('[data-admin-actions-menu] .admin-actions-menu__toggle').forEach((toggle) => toggle.setAttribute('aria-expanded', 'false'));
         });
 
         // Глобальное подтверждение удаления через модалку

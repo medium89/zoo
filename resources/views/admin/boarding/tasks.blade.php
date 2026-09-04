@@ -77,11 +77,13 @@
                         @endif
                     </div>
                 </form>
-                <form action="{{ route('admin.boarding.tasks.destroy', $task) }}" method="POST" class="mb-4" onsubmit="return confirm('Удалить действие?')">
-                    @csrf
-                    @method('DELETE')
-                    <button class="btn btn-sm btn-outline-danger" type="submit">Удалить действие</button>
-                </form>
+                <div class="mb-4 d-flex justify-content-end"><x-admin.actions-menu label="Действия с ежедневным действием">
+                    <form action="{{ route('admin.boarding.tasks.destroy', $task) }}" method="POST" class="js-delete-form" data-confirm="Удалить действие «{{ $task->title }}»?">
+                        @csrf
+                        @method('DELETE')
+                        <button class="admin-actions-menu__item admin-actions-menu__item--danger" type="submit"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить действие</span></button>
+                    </form>
+                </x-admin.actions-menu></div>
             @empty
                 <div class="text-muted">Действий пока нет.</div>
             @endforelse

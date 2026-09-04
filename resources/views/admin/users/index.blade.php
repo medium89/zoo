@@ -29,14 +29,14 @@
                     <div data-label="Имя">{{ $user->name }}</div>
                     <div data-label="Email">{{ $user->email }}</div>
                     <div class="actions" data-label="Действия">
-                        <div class="d-flex gap-1 flex-wrap justify-content-end w-100">
-                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-primary btn-sm">Редактировать</a>
-                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="m-0">
+                        <x-admin.actions-menu label="Действия с пользователем {{ $user->name }}">
+                            <a href="{{ route('admin.users.edit', $user->id) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a>
+                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="js-delete-form" data-confirm="Удалить пользователя {{ $user->name }}?">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Вы уверены?')">Удалить</button>
+                                <button type="submit" class="admin-actions-menu__item admin-actions-menu__item--danger"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span></button>
                             </form>
-                        </div>
+                        </x-admin.actions-menu>
                     </div>
                 </div>
             @endforeach

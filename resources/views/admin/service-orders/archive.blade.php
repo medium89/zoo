@@ -29,7 +29,9 @@
             <div class="archived-order-card__aside">
                 <strong>{{ number_format($order->daily_price, 0, '.', ' ') }} ₽<small>/ день</small></strong>
                 <small>В архиве с {{ $order->archived_at?->format('d.m.Y') }}</small>
-                <form method="POST" action="{{ route('admin.service-orders.restore', $order) }}">@csrf<button class="btn btn-sm btn-outline-primary" aria-label="Восстановить заказ" title="Восстановить"><i class="fa fa-box-open"></i></button></form>
+                <x-admin.actions-menu label="Действия с архивным заказом">
+                    <form method="POST" action="{{ route('admin.service-orders.restore', $order) }}">@csrf<button class="admin-actions-menu__item" type="submit"><i class="fa fa-box-open" aria-hidden="true"></i><span>Восстановить</span></button></form>
+                </x-admin.actions-menu>
             </div>
         </article>
     @empty

@@ -130,6 +130,8 @@
 .client-node__head{touch-action:none;-webkit-user-select:none;user-select:none}.client-node__actions{display:flex;align-items:center;gap:5px;margin-left:auto}.client-node__connect,.client-node__edit,.client-node__view{width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.9);color:inherit;font-size:13px;font-weight:700;line-height:24px;cursor:pointer;touch-action:none;box-shadow:0 1px 4px rgba(38,62,87,.15)}.client-node__connect{font-size:19px;cursor:crosshair}.client-node__connect:active,.client-node__edit:active,.client-node__view:active{transform:scale(.92)}.client-node-link--preview{stroke:#3178c6;stroke-width:3;stroke-dasharray:7 6}.client-node-confirm{position:absolute;z-index:30;display:flex;align-items:center;gap:7px;padding:8px 9px;border:1px solid #dce5ee;border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(38,62,87,.2);font-size:.78rem;font-weight:700;white-space:nowrap}.client-node-confirm[hidden]{display:none}.client-node-confirm .btn{padding:3px 7px;font-size:.74rem}.client-node-zoom{display:flex;gap:4px}.client-node-zoom .btn{min-width:34px;font-weight:700}.map-form-dialog{max-width:460px}.map-form-modal{overflow:hidden;border:0;border-radius:16px;box-shadow:0 24px 64px rgba(28,45,64,.2)}.map-form-modal__header{align-items:flex-start;padding:22px 24px 18px;border-bottom:1px solid #edf1f5}.map-form-modal__header .btn-close{margin:2px 0 0 auto}.map-form-modal__eyebrow{margin-bottom:5px;color:#768699;font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.map-form-modal__eyebrow i{margin-right:5px;color:#3178c6}.map-form-modal .modal-title{color:#2d3e50;font-size:1.28rem;font-weight:800}.map-form-modal__body{padding:20px 24px 24px}.map-form-modal__lead{margin:0 0 20px;color:#78889a;font-size:.88rem;line-height:1.45}.map-form-field{display:block;margin-top:16px}.map-form-field:first-of-type{margin-top:0}.map-form-field label{display:block;margin:0 0 7px;color:#435467;font-size:.82rem;font-weight:750}.map-form-field label span{color:#d9534f}.map-form-field .form-control,.map-form-field .form-select{min-height:44px;border-color:#d9e3ec;border-radius:9px;font-size:.94rem;box-shadow:none}.map-form-field .form-control:focus,.map-form-field .form-select:focus{border-color:#76a9dd;box-shadow:0 0 0 3px rgba(49,120,198,.12)}.map-form-modal__footer{display:flex;gap:9px;justify-content:flex-end;padding:15px 24px 20px;border-top:1px solid #edf1f5}.map-form-modal__footer .btn{min-height:40px;padding:8px 15px;font-weight:700}.map-node-details__hero{display:flex;align-items:center;gap:14px;margin-bottom:22px}.map-node-details__photo{width:68px;height:68px;display:grid;place-items:center;flex:0 0 68px;border-radius:16px;background:#fff3da;object-fit:cover;font-size:28px}.map-node-details__name{color:#2d3e50;font-size:1.1rem;font-weight:800}.map-node-details__subtitle{margin-top:3px;color:#748396;font-size:.86rem}.map-node-details__list{display:grid;gap:10px}.map-node-details__row{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid #edf1f5;font-size:.9rem}.map-node-details__row:last-child{border-bottom:0}.map-node-details__label{color:#8090a0}.map-node-details__value{color:#3f5062;font-weight:700;text-align:right}.map-node-details__pets{display:flex;flex-wrap:wrap;gap:7px}.map-node-details__pet{padding:5px 9px;border-radius:999px;background:#fff3da;color:#9a641d;font-size:.8rem;font-weight:700}@media(max-width:575px){.map-form-dialog{margin:12px}.map-form-modal__header{padding:19px 19px 15px}.map-form-modal__body{padding:18px 19px 20px}.map-form-modal__footer{padding:14px 19px 18px}.map-form-modal__footer .btn{flex:1;padding-right:8px;padding-left:8px}}.client-node-viewport{background-color:#f8fafc;background-image:radial-gradient(#cbd5e1 1px,transparent 1px);background-size:20px 20px}.client-node-canvas{width:10000px;height:10000px;background:transparent}.client-node,.client-node--animal{width:248px}
 </style>
 <style>
+/* Контекстные действия ноды не конкурируют с отдельной ручкой связи. */
+.client-node{overflow:visible}.client-node__head{border-radius:11px 11px 0 0}.client-node__body{border-radius:0 0 11px 11px;background:#fff}.client-node__menu{position:relative}.client-node__menu-toggle{width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.9);color:inherit;font-size:14px;line-height:1;cursor:pointer;touch-action:none;box-shadow:0 1px 4px rgba(38,62,87,.15)}.client-node__menu-popup{position:absolute;z-index:40;top:calc(100% + 5px);right:0;display:grid;min-width:142px;padding:5px;border:1px solid #dfe8f1;border-radius:10px;background:#fff;box-shadow:0 12px 28px rgba(31,54,79,.2)}.client-node__menu-popup button{display:flex;align-items:center;gap:8px;padding:8px;border:0;border-radius:7px;background:transparent;color:#42586e;font-size:.77rem;font-weight:700;text-align:left}.client-node__menu-popup button:hover,.client-node__menu-popup button:focus-visible{background:#eef5fc;color:#256cae}.client-node__menu-popup i{width:14px;text-align:center}
 /* Формы карты используют ту же шкалу, что и редактор заказа. */
 .map-form-dialog{max-width:680px}
 .map-form-modal{border-radius:12px;box-shadow:0 18px 60px rgba(15,35,60,.18)}
@@ -175,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingUnlink = null;
     let editingNode = null;
     let viewedNode = null;
+    let openNodeActions = null;
     let zoom = Number(localStorage.getItem('zooland-client-map-zoom') || 1);
 
     const defaults = (type, index) => type === 'client'
@@ -225,19 +228,40 @@ document.addEventListener('DOMContentLoaded', () => {
         element.style.top = `${node.y}px`;
         if (node.type === 'client') {
             const photo = node.photo ? `<img class="client-node__photo" src="${escapeHtml(node.photo)}" alt="">` : `<img class="client-node__photo" src="{{ asset('images/client-placeholder.svg') }}" alt="">`;
-            element.innerHTML = `<div class="client-node__head"><i class="fa fa-user"></i> Клиент<div class="client-node__actions"><button class="client-node__view" type="button" aria-label="Посмотреть клиента"><i class="fa fa-eye"></i></button><button class="client-node__edit" type="button" aria-label="Редактировать клиента"><i class="fa fa-pen"></i></button><button class="client-node__connect" type="button" aria-label="Связать с питомцем">+</button></div></div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${escapeHtml(node.phone || 'Телефон не указан')}</div><div class="client-node__hint">Потяните + к питомцу</div></div>`;
+            element.innerHTML = `<div class="client-node__head"><i class="fa fa-user"></i> Клиент<div class="client-node__actions"><div class="client-node__menu"><button class="client-node__menu-toggle" type="button" aria-label="Действия с клиентом" aria-haspopup="menu" aria-expanded="false"><i class="fa fa-ellipsis-vertical"></i></button><div class="client-node__menu-popup" role="menu" aria-label="Действия с клиентом" hidden><button class="client-node__view" type="button" role="menuitem"><i class="fa fa-eye"></i><span>Просмотреть</span></button><button class="client-node__edit" type="button" role="menuitem"><i class="fa fa-pen"></i><span>Редактировать</span></button></div></div><button class="client-node__connect" type="button" aria-label="Связать с питомцем">+</button></div></div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${escapeHtml(node.phone || 'Телефон не указан')}</div><div class="client-node__hint">Потяните + к питомцу</div></div>`;
         } else {
             const photo = node.photo
                 ? `<img class="client-node__photo" src="${escapeHtml(node.photo)}" alt="">`
                 : '<span class="client-node__photo client-node__photo--empty">🐾</span>';
-            element.innerHTML = `<div class="client-node__head"><i class="fa fa-paw"></i> Питомец<div class="client-node__actions"><button class="client-node__view" type="button" aria-label="Посмотреть питомца"><i class="fa fa-eye"></i></button><button class="client-node__edit" type="button" aria-label="Редактировать питомца"><i class="fa fa-pen"></i></button><button class="client-node__connect" type="button" aria-label="Связать с клиентом">+</button></div></div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${node.client_id ? 'Привязан к клиенту' : 'Без хозяина'}</div></div>`;
+            element.innerHTML = `<div class="client-node__head"><i class="fa fa-paw"></i> Питомец<div class="client-node__actions"><div class="client-node__menu"><button class="client-node__menu-toggle" type="button" aria-label="Действия с питомцем" aria-haspopup="menu" aria-expanded="false"><i class="fa fa-ellipsis-vertical"></i></button><div class="client-node__menu-popup" role="menu" aria-label="Действия с питомцем" hidden><button class="client-node__view" type="button" role="menuitem"><i class="fa fa-eye"></i><span>Просмотреть</span></button><button class="client-node__edit" type="button" role="menuitem"><i class="fa fa-pen"></i><span>Редактировать</span></button></div></div><button class="client-node__connect" type="button" aria-label="Связать с клиентом">+</button></div></div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${node.client_id ? 'Привязан к клиенту' : 'Без хозяина'}</div></div>`;
         }
         element.querySelector('.client-node__head').addEventListener('pointerdown', event => startDrag(event, node, element));
         element.querySelector('.client-node__connect').addEventListener('pointerdown', event => startLink(event, node));
         element.querySelector('.client-node__edit').addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); openNodeEditor(node); });
         element.querySelector('.client-node__view').addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); openNodeDetails(node); });
+        const menu = element.querySelector('.client-node__menu');
+        const toggle = element.querySelector('.client-node__menu-toggle');
+        const popup = element.querySelector('.client-node__menu-popup');
+        const menuItems = () => Array.from(popup.querySelectorAll('[role="menuitem"]')).filter(item => !item.disabled);
+        const closeMenu = (returnFocus = false) => { popup.hidden = true; toggle.setAttribute('aria-expanded', 'false'); if (openNodeActions === closeMenu) openNodeActions = null; if (returnFocus) toggle.focus(); };
+        menu.addEventListener('pointerdown', event => event.stopPropagation());
+        toggle.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); if (!popup.hidden) return closeMenu(); openNodeActions?.(); popup.hidden = false; toggle.setAttribute('aria-expanded', 'true'); popup.querySelector('[role="menuitem"]')?.focus(); openNodeActions = closeMenu; });
+        menu.addEventListener('keydown', event => {
+            if (event.key === 'Escape') { event.preventDefault(); closeMenu(true); return; }
+            if (popup.hidden) return;
+            const items = menuItems();
+            const current = items.indexOf(document.activeElement);
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                const direction = event.key === 'ArrowDown' ? 1 : -1;
+                items[(current + direction + items.length) % items.length]?.focus();
+            }
+            if (event.key === 'Home') { event.preventDefault(); items[0]?.focus(); }
+            if (event.key === 'End') { event.preventDefault(); items.at(-1)?.focus(); }
+        });
         return element;
     };
+    document.addEventListener('pointerdown', event => { if (!event.target.closest('.client-node__menu')) openNodeActions?.(); });
     const linkPath = (animal, client) => {
         const animalCenter = animal.x + 124;
         const clientCenter = client.x + 124;
@@ -293,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }) || null;
     };
     const startDrag = (event, node, element) => {
-        if (event.target.closest('.client-node__connect, .client-node__edit, .client-node__view')) return;
+        if (event.target.closest('.client-node__connect, .client-node__edit, .client-node__view, .client-node__menu')) return;
         event.preventDefault();
         const rect = canvas.getBoundingClientRect();
         dragged = {node, element, offset: {x: (event.clientX - rect.left) / zoom - node.x, y: (event.clientY - rect.top) / zoom - node.y}};

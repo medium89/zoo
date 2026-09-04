@@ -6,7 +6,7 @@
         <h1>{{ $client->name }}</h1>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-primary" data-admin-popup-target="#clientAnimalModal">Добавить питомца</button>
-            <a href="{{ route('admin.clients.edit', $client) }}" class="btn btn-primary">Редактировать</a>
+            <x-admin.actions-menu label="Действия с клиентом {{ $client->name }}"><a href="{{ route('admin.clients.edit', $client) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a></x-admin.actions-menu>
         </div>
     </div>
 
@@ -44,11 +44,12 @@
                                     @if($animal->photos->first())
                                         <img src="{{ Storage::url($animal->photos->first()->path) }}" alt="{{ $animal->name }}" style="width:54px;height:54px;object-fit:cover;border-radius:8px;">
                                     @endif
-                                    <form action="{{ route('admin.clients.animals.detach', [$client, $animal]) }}" method="POST" class="d-inline">
+                                    <x-admin.actions-menu label="Действия с питомцем {{ $animal->name }}"><form action="{{ route('admin.clients.animals.detach', [$client, $animal]) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-danger btn-icon js-unlink-trigger" title="Отвязать питомца" aria-label="Отвязать питомца" data-confirm="Отвязать питомца «{{ $animal->name }}» от клиента? Питомец останется в базе."><i class="fa fa-xmark"></i></button>
+                                        <button type="button" class="admin-actions-menu__item admin-actions-menu__item--danger js-unlink-trigger" data-confirm="Отвязать питомца «{{ $animal->name }}» от клиента? Питомец останется в базе."><i class="fa fa-link-slash" aria-hidden="true"></i><span>Отвязать питомца</span></button>
                                     </form>
+                                    </x-admin.actions-menu>
                                 </div>
                             </div>
                         </div>

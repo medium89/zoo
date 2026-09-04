@@ -33,13 +33,13 @@
                         <div class="admin-entity-list__primary" data-label="Категория"><strong>{{ $category->name }}</strong></div>
                         <div class="admin-entity-list__muted" data-label="Slug">{{ $category->slug ?: '—' }}</div>
                         <div class="admin-entity-list__actions" data-label="Действия">
-                            <div class="d-flex justify-content-end gap-2">
-                                <a href="{{ route('admin.categories.edit', $category) }}" class="btn btn-sm btn-outline-secondary" aria-label="Редактировать {{ $category->name }}" title="Редактировать"><i class="fa fa-pen" aria-hidden="true"></i></a>
-                                <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline js-delete-form" data-confirm="Удалить категорию?">
+                            <x-admin.actions-menu label="Действия с категорией {{ $category->name }}">
+                                <a href="{{ route('admin.categories.edit', $category) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a>
+                                <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="js-delete-form" data-confirm="Удалить категорию?">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" aria-label="Удалить {{ $category->name }}" title="Удалить"><i class="fa fa-trash" aria-hidden="true"></i></button>
+                                    <button type="submit" class="admin-actions-menu__item admin-actions-menu__item--danger"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span></button>
                                 </form>
-                            </div>
+                            </x-admin.actions-menu>
                         </div>
                     </div>
                 @endforeach

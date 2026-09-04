@@ -26,11 +26,11 @@
                 <div class="card-body text-center d-flex flex-column gap-2 py-2">
                     <input type="hidden" name="numbers[{{ $gallery->id }}]" value="{{ $gallery->number }}" class="js-order-input" form="status-form">
                     <div class="d-flex align-items-center justify-content-between gap-2">
-                        <form action="{{ route('admin.galleries.destroy', $gallery->id) }}" method="POST" class="mb-0">
+                        <x-admin.actions-menu label="Действия с фотографией"><form action="{{ route('admin.galleries.destroy', $gallery->id) }}" method="POST" class="js-delete-form" data-confirm="Удалить фото?">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить фото?')">Удалить</button>
-                        </form>
+                            <button type="submit" class="admin-actions-menu__item admin-actions-menu__item--danger"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span></button>
+                        </form></x-admin.actions-menu>
                         <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
                             <input type="hidden" name="statuses[{{ $gallery->id }}]" value="0" form="status-form">
                             <input class="form-check-input" type="checkbox" name="statuses[{{ $gallery->id }}]" value="1" form="status-form" {{ $gallery->active ? 'checked' : '' }}>

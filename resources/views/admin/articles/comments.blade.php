@@ -35,12 +35,12 @@
                 </div>
                 <div>{{ $c->created_at->format('d.m.Y H:i') }}</div>
                 <div class="actions">
-                    <div class="d-flex justify-content-end gap-2">
-                        <form action="{{ route('admin.article-comments.destroy', $c) }}" method="POST" onsubmit="return confirm('Удалить комментарий?')">
+                    <x-admin.actions-menu label="Действия с комментарием">
+                        <form action="{{ route('admin.article-comments.destroy', $c) }}" method="POST" class="js-delete-form" data-confirm="Удалить комментарий?">
                             @csrf @method('DELETE')
-                            <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                            <button class="admin-actions-menu__item admin-actions-menu__item--danger" type="submit"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span></button>
                         </form>
-                    </div>
+                    </x-admin.actions-menu>
                 </div>
             </div>
         @empty

@@ -50,19 +50,18 @@
                                 <div data-label="Период">{{ $row->start_date->toDateString() }} — {{ $row->end_date->toDateString() }}</div>
                                 <div data-label="Архивировано">{{ optional($row->archived_at)->format('d.m.Y H:i') }}</div>
                                 <div class="actions" data-label="Действия">
-                                    <div class="d-flex flex-wrap gap-1 justify-content-end w-100">
+                                    <x-admin.actions-menu label="Действия с архивной записью">
                                         <form action="{{ route('admin.boarding.restore', $row) }}" method="POST" class="m-0">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-success">Восстановить</button>
+                                            <button type="submit" class="admin-actions-menu__item"><i class="fa fa-box-open" aria-hidden="true"></i><span>Восстановить</span></button>
                                         </form>
                                         <button type="button"
-                                                class="btn btn-sm btn-outline-danger js-delete-entry"
+                                                class="admin-actions-menu__item admin-actions-menu__item--danger js-delete-entry"
                                                 data-url="{{ route('admin.boarding.destroy', $row) }}"
                                                 data-id="{{ $row->id }}"
-                                                data-name="{{ $row->name }}">
-                                            Удалить
+                                                data-name="{{ $row->name }}"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span>
                                         </button>
-                                    </div>
+                                    </x-admin.actions-menu>
                                 </div>
                             </div>
                         @endforeach

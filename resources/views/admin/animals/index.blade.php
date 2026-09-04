@@ -38,15 +38,15 @@
                         <div class="admin-entity-list__muted" data-label="Хозяин">{{ $animal->client?->name ?: '—' }}</div>
                         <div data-label="Записи">{{ $animal->boardings_count ?: 'Нет' }}</div>
                         <div class="admin-entity-list__actions actions" data-label="Действия">
-                            <div class="d-flex justify-content-end gap-2">
-                                <a href="{{ route('admin.animals.show', $animal) }}" class="btn btn-sm btn-outline-secondary"><i class="fa fa-eye"></i></a>
-                                <a href="{{ route('admin.animals.edit', $animal) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
-                                <form action="{{ route('admin.animals.destroy', $animal) }}" method="POST" class="d-inline js-delete-form" data-confirm="Удалить питомца?">
+                            <x-admin.actions-menu label="Действия с питомцем {{ $animal->name }}">
+                                <a href="{{ route('admin.animals.show', $animal) }}" class="admin-actions-menu__item"><i class="fa fa-eye" aria-hidden="true"></i><span>Просмотреть</span></a>
+                                <a href="{{ route('admin.animals.edit', $animal) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a>
+                                <form action="{{ route('admin.animals.destroy', $animal) }}" method="POST" class="js-delete-form" data-confirm="Удалить питомца?">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                                    <button type="submit" class="admin-actions-menu__item admin-actions-menu__item--danger"><i class="fa fa-trash" aria-hidden="true"></i><span>Удалить</span></button>
                                 </form>
-                            </div>
+                            </x-admin.actions-menu>
                         </div>
                     </div>
                 @endforeach

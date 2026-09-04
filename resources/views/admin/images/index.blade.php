@@ -30,7 +30,7 @@
                         @if(!empty($img['size_kb']))
                             <div class="small text-muted mb-3">Размер: {{ $img['size_kb'] }} КБ ({{ $img['size_mb'] }} МБ) @if(!empty($img['dims'])) · {{ $img['dims']['w'] }}×{{ $img['dims']['h'] }} px @endif</div>
                         @endif
-                        <form action="{{ route('admin.images.refresh') }}" method="POST" class="mt-auto js-refresh-form">
+                        <form id="image-refresh-{{ $loop->index }}" action="{{ route('admin.images.refresh') }}" method="POST" class="mt-auto js-refresh-form">
                             @csrf
                             <input type="hidden" name="type" value="{{ $img['type'] }}">
                             <input type="hidden" name="id" value="{{ $img['id'] }}">
@@ -58,22 +58,24 @@
                                     <input type="number" name="crop_height" class="form-control" min="1" max="8000" placeholder="auto">
                                 </div>
                             </div>
-                            <div class="d-grid gap-2 mb-2">
-                                <button class="btn btn-outline-secondary btn-sm js-open-crop" type="button" data-url="{{ $img['url'] }}">Открыть кроп</button>
-                            </div>
                             <div class="small text-muted mb-2 js-size-estimate"></div>
-                            <button class="btn btn-primary w-100">Перегенерировать</button>
                         </form>
                         @if(!empty($img['backup']['path']))
-                            <form action="{{ route('admin.images.revert') }}" method="POST" class="mt-2">
+                            <form id="image-revert-{{ $loop->index }}" action="{{ route('admin.images.revert') }}" method="POST" class="d-none">
                                 @csrf
                                 <input type="hidden" name="type" value="{{ $img['type'] }}">
                                 <input type="hidden" name="id" value="{{ $img['id'] }}">
                                 <input type="hidden" name="field" value="{{ $img['field'] }}">
-                                <button class="btn btn-outline-secondary w-100">Откатить</button>
-                                <div class="small text-muted mt-1">Есть резерв: {{ $img['backup']['path'] }}</div>
                             </form>
                         @endif
+                        <div class="d-flex align-items-center justify-content-between gap-2 mt-2">
+                            @if(!empty($img['backup']['path']))<span class="small text-muted">Есть резервная копия</span>@else<span></span>@endif
+                            <x-admin.actions-menu label="Действия с изображением {{ $img['label'] }}">
+                                <button class="admin-actions-menu__item js-open-crop" type="button" form="image-refresh-{{ $loop->index }}" data-url="{{ $img['url'] }}"><i class="fa fa-crop-simple" aria-hidden="true"></i><span>Открыть кроп</span></button>
+                                <button class="admin-actions-menu__item" type="submit" form="image-refresh-{{ $loop->index }}"><i class="fa fa-arrows-rotate" aria-hidden="true"></i><span>Перегенерировать</span></button>
+                                @if(!empty($img['backup']['path']))<button class="admin-actions-menu__item" type="submit" form="image-revert-{{ $loop->index }}"><i class="fa fa-rotate-left" aria-hidden="true"></i><span>Откатить</span></button>@endif
+                            </x-admin.actions-menu>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -159,7 +161,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.querySelectorAll('.js-open-crop').forEach(btn=>{
         btn.addEventListener('click', ()=>{
             if(!cropModal) return;
-            const form = btn.closest('form');
+            const form = btn.form || btn.closest('form');
             activeForm = form;
             cropImg.src = btn.dataset.url;
             cropModal.show();
