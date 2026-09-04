@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Animal;
+use App\Models\Article;
+use App\Models\ArticleComment;
 use App\Models\Category;
 use App\Models\Client;
 use App\Models\ServiceOrder;
@@ -50,6 +52,37 @@ class AdminListPaginationTest extends TestCase
             ->assertSee('per_page=10', false)
             ->assertSee('name="search"', false)
             ->assertSee('value="Вид"', false);
+    }
+
+    public function test_articles_and_comments_filters_are_applied_automatically(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $article = Article::create([
+            'title' => 'Статья о кошках',
+            'slug' => 'cats-filter-test',
+            'content' => 'Текст',
+            'active' => true,
+            'order' => 1,
+        ]);
+        ArticleComment::create([
+            'article_id' => $article->id,
+            'email' => 'reader@example.com',
+            'content' => 'Полезная статья',
+            'status' => 'approved',
+            'order' => 1,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.articles.index', ['search' => 'кошках', 'status' => 'active']))
+            ->assertOk()
+            ->assertSee('data-auto-filters', false)
+            ->assertDontSee('>Применить</button>', false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.article-comments.index', ['search' => 'reader@example.com', 'status' => 'approved']))
+            ->assertOk()
+            ->assertSee('data-auto-filters', false)
+            ->assertDontSee('>Применить</button>', false);
     }
 
     public function test_service_orders_list_is_paginated_and_keeps_search_filter(): void
