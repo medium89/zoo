@@ -1,7 +1,7 @@
 @extends('admin.index')
 
 @section('content')
-<div class="container-fluid">
+<section class="animals-workspace">
     <div class="admin-list-page__actionbar">
         <h1 class="visually-hidden">Питомцы</h1>
         <a href="{{ route('admin.animals.create') }}" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> Новый питомец</a>
@@ -70,5 +70,5 @@
     @else
         <section class="admin-entity-list__empty"><i class="fa fa-paw mb-2" aria-hidden="true"></i><h2 class="h5">Питомцев пока нет</h2><p>Добавьте первого питомца.</p><a href="{{ route('admin.animals.create') }}" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> Новый питомец</a></section>
     @endif
-</div>
+</section>
 @endsection
