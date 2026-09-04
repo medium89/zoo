@@ -26,7 +26,9 @@ class ServiceOrderAdminController extends Controller
             'service' => 'nullable|in:передержка,выгул,уход',
             'from' => 'nullable|date',
             'to' => 'nullable|date',
+            'per_page' => 'nullable|integer|in:10,25,50,100',
         ]);
+        $perPage = (int) ($filters['per_page'] ?? 25);
         $orders = ServiceOrder::with(['client.photos', 'animals.services', 'animals.category', 'animals.animal.photos'])
             ->whereNull('archived_at')
             ->when($filters['search'] ?? null, function ($query, string $search) {
@@ -42,7 +44,9 @@ class ServiceOrderAdminController extends Controller
             ->when(($filters['status'] ?? null) === 'finished', fn ($query) => $query->whereDate('end_date', '<', today()))
             ->when($filters['from'] ?? null, fn ($query, string $from) => $query->whereDate('end_date', '>=', $from))
             ->when($filters['to'] ?? null, fn ($query, string $to) => $query->whereDate('start_date', '<=', $to))
-            ->orderBy('start_date')->orderByDesc('created_at')->get();
+            ->orderBy('start_date')->orderByDesc('created_at')
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('admin.service-orders.index', [
             'orders' => $orders,

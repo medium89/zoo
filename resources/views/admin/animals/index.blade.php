@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Питомцы</h1>
+    <div class="admin-list-page__actionbar">
+        <h1 class="visually-hidden">Питомцы</h1>
         <a href="{{ route('admin.animals.create') }}" class="btn btn-primary">Добавить</a>
     </div>
 
@@ -17,27 +17,27 @@
     </x-admin.filters>
 
     @if($animals->count())
-        <div class="admin-grid" style="--grid-cols: 80px 1fr 1fr 1fr 100px 160px;">
-            <div class="admin-grid-header">
-                <div>#</div>
+        <div class="admin-entity-list" style="--entity-cols: 54px minmax(170px,1.15fr) minmax(130px,1fr) minmax(140px,1fr) 90px 150px; --entity-cols-mobile: 54px minmax(0,1fr) 120px;">
+            <div class="admin-entity-list__head">
+                <div></div>
                 <div>Кличка</div>
                 <div>Категория</div>
                 <div>Хозяин</div>
                 <div>Записи</div>
                 <div class="text-end">Действия</div>
             </div>
-            <div class="admin-grid-body">
+            <div class="admin-entity-list__body">
                 @foreach($animals as $animal)
-                    <div class="admin-grid-row">
-                        <div class="text-muted">{{ $animals->firstItem() + $loop->index }}</div>
-                        <div>
+                    <div class="admin-entity-list__row">
+                        <div><img src="{{ $animal->photos->first()?->path ? Storage::url($animal->photos->first()->path) : asset('images/animal-types/other.png') }}" alt="{{ $animal->name }}" class="admin-entity-list__avatar"></div>
+                        <div class="admin-entity-list__primary" data-label="Питомец">
                             <a href="{{ route('admin.animals.show', $animal) }}">{{ $animal->name }}</a>
                             @include('admin.partials.tags-list', ['tags' => $animal->tags])
                         </div>
-                        <div>{{ $animal->category?->name ?: '—' }}</div>
-                        <div>{{ $animal->client?->name ?: '—' }}</div>
-                        <div>{{ $animal->boardings_count }}</div>
-                        <div class="actions">
+                        <div class="admin-entity-list__muted" data-label="Вид">{{ $animal->category?->name ?: '—' }}</div>
+                        <div class="admin-entity-list__muted" data-label="Хозяин">{{ $animal->client?->name ?: '—' }}</div>
+                        <div data-label="Записи">{{ $animal->boardings_count ?: 'Нет' }}</div>
+                        <div class="admin-entity-list__actions actions" data-label="Действия">
                             <div class="d-flex justify-content-end gap-2">
                                 <a href="{{ route('admin.animals.show', $animal) }}" class="btn btn-sm btn-outline-secondary"><i class="fa fa-eye"></i></a>
                                 <a href="{{ route('admin.animals.edit', $animal) }}" class="btn btn-sm btn-primary text-white"><i class="fa fa-pen"></i></a>
@@ -52,14 +52,23 @@
                 @endforeach
             </div>
         </div>
-        <div class="admin-pagination mt-4">
-            <span class="text-muted small">
-                Показано: {{ $animals->firstItem() }}–{{ $animals->lastItem() }} из {{ $animals->total() }} питомцев
-            </span>
-            {{ $animals->onEachSide(1)->links('pagination::bootstrap-4') }}
-        </div>
+        <footer class="admin-entity-list__footer">
+            <span>Показано {{ $animals->firstItem() }}–{{ $animals->lastItem() }} из {{ $animals->total() }} {{ trans_choice('питомца|питомцев|питомцев', $animals->total()) }}</span>
+            <form method="GET" action="{{ route('admin.animals.index') }}">
+                @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                    @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
+                @endforeach
+                <label for="animalsPerPage">На странице</label>
+                <select id="animalsPerPage" name="per_page" class="form-select" onchange="this.form.submit()">
+                    @foreach([10, 25, 50, 100] as $option)<option value="{{ $option }}" @selected((int) request('per_page', 25) === $option)>{{ $option }}</option>@endforeach
+                </select>
+            </form>
+            <div class="admin-entity-list__footer-pagination">{{ $animals->onEachSide(1)->links('pagination::bootstrap-4') }}</div>
+        </footer>
+    @elseif(collect($filters)->except(['per_page', 'page'])->filter(fn ($value) => filled($value))->isNotEmpty())
+        <section class="admin-entity-list__empty"><i class="fa fa-magnifying-glass mb-2" aria-hidden="true"></i><h2 class="h5">Ничего не нашли</h2><p class="mb-3">Попробуйте изменить фильтры или поисковый запрос.</p><a href="{{ route('admin.animals.index') }}" class="btn btn-outline-primary">Сбросить фильтры</a></section>
     @else
-        <div class="text-muted">Питомцев пока нет.</div>
+        <section class="admin-entity-list__empty"><i class="fa fa-paw mb-2" aria-hidden="true"></i><h2 class="h5">Питомцев пока нет</h2><p class="mb-0">Добавьте первого питомца.</p></section>
     @endif
 </div>
 @endsection

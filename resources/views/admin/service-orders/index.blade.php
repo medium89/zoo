@@ -3,7 +3,7 @@
 @section('content')
 <section class="orders-workspace" aria-labelledby="orders-workspace-title">
 <header class="orders-head">
-        <div><h1 id="orders-workspace-title">Заказы и работа</h1><p>Всего: {{ $orders->count() }} {{ trans_choice('заказ|заказа|заказов', $orders->count()) }}</p></div>
+        <div><h1 id="orders-workspace-title">Заказы и работа</h1></div>
         <div class="orders-head__actions"><a class="btn btn-outline-secondary" href="{{ route('admin.service-orders.archive.index') }}"><i class="fa fa-box-archive" aria-hidden="true"></i><span>Архив заказов</span></a><button class="btn btn-primary orders-create js-new-service-order"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый заказ</span></button></div>
  </header>
     @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
@@ -71,10 +71,25 @@
             <div class="orders-cell orders-cell--actions"><div class="order-actions-menu"><button class="btn btn-link order-actions-menu__toggle" type="button" aria-label="Действия с заказом"><i class="fa fa-ellipsis" aria-hidden="true"></i></button><div class="order-actions-menu__popup is-hidden"><button class="js-edit-service-order order-actions-menu__item" type="button" data-order='@json($orderPayload)'><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></button><form method="POST" action="{{ route('admin.service-orders.archive', $order) }}">@csrf<button class="order-actions-menu__item" type="submit"><i class="fa fa-box-archive" aria-hidden="true"></i><span>В архив</span></button></form></div></div></div>
         </article>
     @empty
-        @php($hasOrderFilters = collect($filters)->filter(fn ($value) => filled($value))->isNotEmpty())
+        @php($hasOrderFilters = collect($filters)->except(['per_page', 'page'])->filter(fn ($value) => filled($value))->isNotEmpty())
         <div class="orders-empty"><i class="fa fa-clipboard-list" aria-hidden="true"></i><h2>{{ $hasOrderFilters ? 'Нет заказов по этим фильтрам' : 'Заказов пока нет' }}</h2><p>{{ $hasOrderFilters ? 'Попробуйте изменить условия поиска или сбросить их.' : 'Добавьте первый заказ, чтобы распределить работу по питомцам.' }}</p>@if($hasOrderFilters)<a class="btn btn-outline-secondary" href="{{ route('admin.service-orders.index') }}">Сбросить фильтры</a>@else<button class="btn btn-primary js-new-service-order" type="button"><i class="fa fa-plus" aria-hidden="true"></i> Новый заказ</button>@endif</div>
-    @endforelse
+        @endforelse
         </section>
+        @if($orders->total() > 0)
+            <footer class="orders-list-footer" aria-label="Навигация по заказам">
+                <span>Показано {{ $orders->firstItem() }}–{{ $orders->lastItem() }} из {{ $orders->total() }} {{ trans_choice('заказа|заказов|заказов', $orders->total()) }}</span>
+                <form method="GET" action="{{ route('admin.service-orders.index') }}">
+                    @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                        @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
+                    @endforeach
+                    <label for="ordersPerPage">На странице</label>
+                    <select id="ordersPerPage" name="per_page" class="form-select" onchange="this.form.submit()">
+                        @foreach([10, 25, 50, 100] as $option)<option value="{{ $option }}" @selected((int) request('per_page', 25) === $option)>{{ $option }}</option>@endforeach
+                    </select>
+                </form>
+                <div class="orders-list-footer__pagination">{{ $orders->onEachSide(1)->links('pagination::bootstrap-4') }}</div>
+            </footer>
+        @endif
     </section>
 </section>
 <div class="modal fade admin-modal" id="serviceOrderModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-scrollable"><form method="POST" class="modal-content order-modal" id="serviceOrderForm">@csrf<input type="hidden" name="_method" id="orderMethod" value="POST">
@@ -554,5 +569,15 @@ document.addEventListener('DOMContentLoaded',()=>{const root=document.getElement
 #serviceOrderModal .order-summary{min-height:38px;margin-top:12px}
 #serviceOrderModal .order-modal__footer{padding:13px 18px}
 @media(max-width:767px){#serviceOrderModal .modal-dialog{max-width:none}.order-client__controls,.order-dates{grid-template-columns:1fr!important}.animal-editor__fields{padding:10px!important}.animal-service-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px!important}.animal-service-type{grid-column:1/-1}}
+</style>@endpush
+@push('styles')<style>
+.orders-workspace .orders-list-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 18px}
+.orders-workspace .orders-list-footer form{display:inline-flex;align-items:center;gap:8px;margin:0}
+.orders-workspace .orders-list-footer label{margin:0;font-weight:700}
+.orders-workspace .orders-list-footer select{width:auto;min-width:78px;height:34px;border-color:#d8e2ec;font-size:.78rem}
+.orders-workspace .orders-list-footer .pagination{margin:0}
+.orders-workspace .orders-list-footer__pagination{min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden}
+.orders-workspace .orders-list-footer__pagination .pagination{flex-wrap:nowrap;width:max-content}
+@media(max-width:575px){.orders-workspace .orders-list-footer{align-items:stretch;flex-direction:column}.orders-workspace .orders-list-footer form{justify-content:space-between}.orders-workspace .orders-list-footer .pagination{justify-content:center}}
 </style>@endpush
 @endsection

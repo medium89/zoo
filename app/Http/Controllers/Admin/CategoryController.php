@@ -10,10 +10,24 @@ use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::orderBy('name')->get();
-        return view('admin.categories.index', compact('categories'));
+        $data = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'per_page' => 'nullable|integer|in:10,25,50,100',
+        ]);
+        $perPage = (int) ($data['per_page'] ?? 25);
+        $categories = Category::query()
+            ->when($data['search'] ?? null, fn ($query, string $search) => $query->where(fn ($items) => $items
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('slug', 'like', "%{$search}%")))
+            ->orderBy('name')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $filters = $data;
+
+        return view('admin.categories.index', compact('categories', 'filters'));
     }
 
     public function create()

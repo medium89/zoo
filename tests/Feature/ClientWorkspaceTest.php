@@ -61,4 +61,21 @@ class ClientWorkspaceTest extends TestCase
             ->assertSee('Клиентов пока нет')
             ->assertSee('Добавить клиента');
     }
+
+    public function test_clients_workspace_paginates_and_keeps_filters_in_footer_links(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        foreach (range(1, 11) as $index) {
+            Client::create(['name' => "client {$index}"]);
+        }
+
+        $this->actingAs($admin)
+            ->get(route('admin.clients.index', ['search' => 'client', 'animals' => 'without', 'address' => 'without', 'per_page' => 10]))
+            ->assertOk()
+            ->assertSee('Показано 1–10 из 11')
+            ->assertSee('name="per_page"', false)
+            ->assertSee('per_page=10', false)
+            ->assertSee('animals=without', false)
+            ->assertSee('address=without', false);
+    }
 }

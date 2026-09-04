@@ -185,6 +185,137 @@
         .admin-breadcrumbs a:hover { color: #1f3345; }
         .admin-breadcrumbs li[aria-current="page"] { color: #263846; }
 
+        /* Единый спокойный вид табличных списков админки. */
+        .admin-entity-list {
+            overflow: visible;
+            border: 1px solid #e0e8f0;
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 8px 22px rgba(40, 66, 92, .045);
+        }
+        .admin-entity-list__head,
+        .admin-entity-list__row {
+            display: grid;
+            grid-template-columns: var(--entity-cols, minmax(0, 1fr));
+            align-items: center;
+            gap: 16px;
+        }
+        .admin-entity-list__head {
+            min-height: 46px;
+            padding: 0 18px;
+            border-bottom: 1px solid #e8eef4;
+            color: #75869a;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+        }
+        .admin-entity-list__body { display: grid; }
+        .admin-entity-list__row {
+            min-height: 70px;
+            padding: 12px 18px;
+            color: #405266;
+            font-size: .84rem;
+            border-bottom: 1px solid #edf2f6;
+        }
+        .admin-entity-list__row:last-child { border-bottom: 0; }
+        .admin-entity-list__row:hover { background: #fbfdff; }
+        .admin-entity-list__row > * { min-width: 0; }
+        .admin-entity-list__actions { justify-self: end; }
+        .admin-entity-list__actions .d-flex { flex-wrap: nowrap; }
+        .admin-entity-list__primary {
+            display: grid;
+            min-width: 0;
+            gap: 2px;
+        }
+        .admin-entity-list__primary a,
+        .admin-entity-list__primary strong {
+            overflow: hidden;
+            color: #2d435a;
+            font-size: .9rem;
+            font-weight: 800;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .admin-entity-list__muted { color: #7c8d9f; font-size: .78rem; }
+        .admin-entity-list__avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #eef4fa;
+        }
+        .admin-entity-list__empty {
+            padding: 38px 20px;
+            color: #7b8b9b;
+            text-align: center;
+        }
+        .admin-entity-list__footer {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px 18px;
+            margin-top: 16px;
+            color: #718397;
+            font-size: .78rem;
+        }
+        .admin-entity-list__footer form { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+        .admin-entity-list__footer label { margin: 0; font-weight: 700; }
+        .admin-entity-list__footer select { width: auto; min-width: 78px; height: 34px; border-color: #d8e2ec; font-size: .78rem; }
+        .admin-entity-list__footer .pagination { margin: 0; }
+        .admin-entity-list__footer-pagination { min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+        .admin-entity-list__footer-pagination .pagination { flex-wrap: nowrap; width: max-content; }
+        .admin-list-page__actionbar { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+        /* List/settings/form pages keep one semantic h1 for screen readers without visual duplication. */
+        #admin-content[data-admin-hide-page-heading="1"] > h1,
+        #admin-content[data-admin-hide-page-heading="1"] > * > h1:first-child,
+        #admin-content[data-admin-hide-page-heading="1"] > * > header h1:first-child {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        @media (max-width: 1199.98px) {
+            .admin-entity-list__head { display: none; }
+            .admin-entity-list { border: 0; background: transparent; box-shadow: none; }
+            .admin-entity-list__body { gap: 10px; }
+            .admin-entity-list__row {
+                grid-template-columns: var(--entity-cols-mobile, minmax(0, 1fr));
+                min-height: 0;
+                padding: 14px;
+                border: 1px solid #e0e8f0;
+                border-radius: 12px;
+                background: #fff;
+                box-shadow: 0 6px 16px rgba(40, 66, 92, .04);
+            }
+            .admin-entity-list__row > [data-label]::before {
+                display: block;
+                margin-bottom: 3px;
+                color: #8191a2;
+                content: attr(data-label);
+                font-size: .67rem;
+                font-weight: 800;
+                letter-spacing: .02em;
+                text-transform: uppercase;
+            }
+            .admin-entity-list__actions { justify-self: stretch; }
+            .admin-entity-list__footer { margin-top: 14px; }
+        }
+        @media (max-width: 575.98px) {
+            .admin-entity-list__row { grid-template-columns: 1fr; gap: 10px; }
+            .admin-entity-list__row > [data-label]::before { margin-bottom: 2px; }
+            .admin-entity-list__actions .d-flex { justify-content: flex-start; }
+            .admin-entity-list__footer { align-items: stretch; flex-direction: column; }
+            .admin-entity-list__footer form { justify-content: space-between; }
+            .admin-entity-list__footer .pagination { justify-content: center; }
+        }
+
         .admin-to-top {
             position: fixed;
             right: 18px;
@@ -955,66 +1086,12 @@
         </header>
         @php
             $routeName = request()->route()?->getName() ?? '';
-            $currentPath = trim(request()->path(), '/');
-            $breadcrumbSections = [
-                'dashboard' => ['Главная', route('admin.dashboard')],
-                'settings' => ['Настройки', route('admin.settings')],
-                'telegram-bot-settings' => ['Telegram-бот', route('admin.telegram-bot-settings.edit')],
-                'personal-data-consent' => ['Согласие ПДн', route('admin.personal-data-consent.edit')],
-                'clients' => ['Клиенты', route('admin.clients.index')],
-                'client-map' => ['Карта клиентов', route('admin.client-map.index')],
-                'animals' => ['Питомцы', route('admin.animals.index')],
-                'categories' => ['Категории животных', route('admin.categories.index')],
-                'boarding' => ['Передержка', route('admin.boarding.index')],
-                'service-orders' => ['Заказы и работа', route('admin.service-orders.index')],
-                'feedbacks' => ['Обратная связь', route('admin.feedbacks.index')],
-                'avito-reviews' => ['Отзывы Avito', route('admin.avito-reviews.index')],
-                'sliders' => ['Слайдер', route('admin.sliders.index')],
-                'about' => ['Обо мне', route('admin.about.edit')],
-                'advantages' => ['Преимущества', route('admin.advantages.index')],
-                'services' => ['Услуги', route('admin.services.index')],
-                'galleries' => ['Фотоальбом', route('admin.galleries.index')],
-                'images' => ['Изображения', route('admin.images.index')],
-                'socials' => ['Социальные контакты', route('admin.socials.index')],
-                'articles' => ['Статьи', route('admin.articles.index')],
-                'article-comments' => ['Комментарии', route('admin.article-comments.index')],
-                'nav-links' => ['Меню сайта', route('admin.nav-links.index')],
-                'users' => ['Пользователи', route('admin.users.index')],
-            ];
-            $sectionKey = collect(array_keys($breadcrumbSections))
-                ->first(fn ($key) => str_starts_with($currentPath, 'zooadmin/'.$key));
-            $breadcrumbs = [];
-            if ($sectionKey && $sectionKey !== 'dashboard') {
-                $breadcrumbs[] = ['Главная', route('admin.dashboard'), false];
-                $section = $breadcrumbSections[$sectionKey];
-                $isSectionRoot = in_array($routeName, ["admin.{$sectionKey}.index", 'admin.settings', 'admin.about.edit', 'admin.telegram-bot-settings.edit', 'admin.personal-data-consent.edit'], true);
-                $breadcrumbs[] = [$section[0], $isSectionRoot ? null : $section[1], $isSectionRoot];
-                if (!$isSectionRoot) {
-                    $pageLabel = match (true) {
-                        $routeName === 'admin.boarding.animals' => 'Питомцы',
-                        str_contains($routeName, '.create') => 'Новая запись',
-                        str_contains($routeName, '.edit') => 'Редактирование',
-                        str_contains($routeName, '.show') => 'Карточка',
-                        str_contains($routeName, '.archive') => 'Архив',
-                        str_contains($routeName, '.tasks') => 'Действия',
-                        default => 'Раздел',
-                    };
-                    $breadcrumbs[] = [$pageLabel, null, true];
-                }
-            }
+            // Keep the dashboard and detail pages' headings; list/form shells use the sidebar label instead.
+            $hidePageHeading = $routeName !== 'admin.dashboard'
+                && !str_contains($routeName, '.show')
+                && !str_contains($routeName, '.tasks');
         @endphp
-        @if($breadcrumbs)
-            <nav class="admin-breadcrumbs" aria-label="Навигационная цепочка">
-                <ol>
-                    @foreach($breadcrumbs as [$label, $url, $isCurrent])
-                        <li @if($isCurrent) aria-current="page" @endif>
-                            @if($url)<a href="{{ $url }}">{{ $label }}</a>@else{{ $label }}@endif
-                        </li>
-                    @endforeach
-                </ol>
-            </nav>
-        @endif
-        <div id="admin-content">
+        <div id="admin-content" data-admin-hide-page-heading="{{ $hidePageHeading ? '1' : '0' }}">
             @yield('content')
         </div>
     </main>
@@ -1084,6 +1161,13 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const adminContent = document.getElementById('admin-content');
+        if (adminContent?.dataset.adminHidePageHeading === '1') {
+            const pageHeading = adminContent.querySelector('h1');
+            if (pageHeading && !pageHeading.closest('.modal')) {
+                pageHeading.classList.add('visually-hidden');
+            }
+        }
         const sidebar = document.getElementById('sidebar');
         const toggleButton = document.getElementById('sidebarToggle');
         const backdrop = document.getElementById('sidebarBackdrop');

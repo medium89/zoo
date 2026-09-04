@@ -19,7 +19,9 @@ class ClientAdminController extends Controller
             'search' => 'nullable|string|max:255',
             'animals' => 'nullable|in:with,without',
             'address' => 'nullable|in:with,without',
+            'per_page' => 'nullable|integer|in:10,25,50,100',
         ]);
+        $perPage = (int) ($filters['per_page'] ?? 25);
         $clients = Client::with(['animals.category', 'photos'])->withCount(['animals', 'boardings'])
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(fn ($items) => $items->where('name', 'like', "%{$search}%")
@@ -31,7 +33,7 @@ class ClientAdminController extends Controller
             ->when(($filters['address'] ?? null) === 'with', fn ($query) => $query->whereNotNull('address')->where('address', '!=', ''))
             ->when(($filters['address'] ?? null) === 'without', fn ($query) => $query->where(fn ($items) => $items->whereNull('address')->orWhere('address', '')))
             ->orderBy('name')
-            ->paginate(20)->withQueryString();
+            ->paginate($perPage)->withQueryString();
         $mapClients = Client::query()
             ->whereNotNull('address')
             ->where('address', '!=', '')

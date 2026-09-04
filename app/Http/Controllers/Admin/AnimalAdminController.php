@@ -19,7 +19,9 @@ class AnimalAdminController extends Controller
             'search' => 'nullable|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
             'owner' => 'nullable|in:with,without',
+            'per_page' => 'nullable|integer|in:10,25,50,100',
         ]);
+        $perPage = (int) ($filters['per_page'] ?? 25);
         $animals = Animal::with(['client', 'category'])
             ->withCount(['boardings', 'photos'])
             ->when($filters['search'] ?? null, function ($query, string $search) {
@@ -30,7 +32,7 @@ class AnimalAdminController extends Controller
             ->when(($filters['owner'] ?? null) === 'with', fn ($query) => $query->whereNotNull('client_id'))
             ->when(($filters['owner'] ?? null) === 'without', fn ($query) => $query->whereNull('client_id'))
             ->orderBy('name')
-            ->paginate(20)->withQueryString();
+            ->paginate($perPage)->withQueryString();
         $categories = Category::orderBy('name')->get(['id', 'name']);
 
         return view('admin.animals.index', compact('animals', 'categories', 'filters'));
