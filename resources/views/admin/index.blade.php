@@ -1071,7 +1071,7 @@
 @php
     $adminNavigation = [
         'work' => ['label' => 'Работа', 'icon' => 'fa-briefcase', 'items' => [
-            ['Главная', 'admin.dashboard', 'zooadmin/dashboard*'], ['Заказы и работа', 'admin.service-orders.index', 'zooadmin/service-orders'],
+            ['Дашборд', 'admin.dashboard', 'zooadmin/dashboard*'], ['Заказы и работа', 'admin.service-orders.index', 'zooadmin/service-orders'],
             ['Клиенты', 'admin.clients.index', 'zooadmin/clients*'], ['Питомцы', 'admin.animals.index', 'zooadmin/animals*'],
             ['Календарь', 'admin.boarding.index', 'zooadmin/boarding*'], ['Архив заказов', 'admin.service-orders.archive.index', 'zooadmin/service-orders/archive*'],
             ['Карта клиентов', 'admin.client-map.index', 'zooadmin/client-map*'], ['Категории животных', 'admin.categories.index', 'zooadmin/categories*'],
