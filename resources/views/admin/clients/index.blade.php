@@ -20,40 +20,42 @@
 
     @if($clients->count())
         <section class="clients-workspace__list" aria-label="Список клиентов">
-            <div class="clients-card-grid">
-                @foreach($clients as $client)
-                    <article class="client-workspace-card">
-                        <div class="client-workspace-card__top">
-                            <img src="{{ $client->avatarUrl() }}" alt="" class="client-workspace-card__avatar">
-                            <div class="client-workspace-card__identity">
-                                <a href="{{ route('admin.clients.show', $client) }}" class="client-workspace-card__name">{{ $client->name }}</a>
-                                @if($client->phone)<a href="tel:{{ preg_replace('/[^+0-9]/', '', $client->phone) }}" class="client-workspace-card__phone">{{ $client->phone }}</a>@else <span class="client-workspace-card__muted">Телефон не указан</span>@endif
+            <div class="admin-grid" style="--grid-cols: 64px 54px 1.3fr 1fr 120px 120px 170px;">
+                <div class="admin-grid-header">
+                    <div>#</div>
+                    <div></div>
+                    <div>Клиент</div>
+                    <div>Телефон</div>
+                    <div>Питомцы</div>
+                    <div>Записи</div>
+                    <div class="text-end">Действия</div>
+                </div>
+                <div class="admin-grid-body">
+                    @foreach($clients as $client)
+                        <div class="admin-grid-row">
+                            <div class="text-muted">{{ $client->id }}</div>
+                            <div><img src="{{ $client->avatarUrl() }}" alt="{{ $client->name }}" class="client-list-avatar"></div>
+                            <div>
+                                <a href="{{ route('admin.clients.show', $client) }}">{{ $client->name }}</a>
+                                @include('admin.partials.tags-list', ['tags' => $client->tags])
                             </div>
-                            <div class="client-card-menu">
-                                <button type="button" class="btn client-card-menu__toggle" aria-label="Действия с клиентом {{ $client->name }}" aria-haspopup="true" aria-controls="client-actions-{{ $client->id }}" aria-expanded="false"><i class="fa fa-ellipsis" aria-hidden="true"></i></button>
-                                <div class="client-card-menu__popover" id="client-actions-{{ $client->id }}" role="menu" hidden>
-                                    <a href="{{ route('admin.clients.show', $client) }}" class="client-card-menu__item" role="menuitem"><i class="fa fa-arrow-up-right-from-square" aria-hidden="true"></i>Открыть</a>
-                                    <button type="button" class="client-card-menu__item order-actions-menu__item js-edit-client-with-pets" role="menuitem" data-client='@json($clientsPayload[$client->id])'><i class="fa fa-pen" aria-hidden="true"></i>Редактировать</button>
-                                    <form action="{{ route('admin.clients.destroy', $client) }}" method="POST" class="js-delete-form" data-confirm="Удалить клиента? Связанные питомцы и записи останутся без хозяина.">
+                            <div>{{ $client->phone ?: '—' }}</div>
+                            <div @if(!$client->animals_count) aria-label="Питомцев пока нет" @endif>{{ $client->animals_count }}</div>
+                            <div>{{ $client->boardings_count }}</div>
+                            <div class="actions">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ route('admin.clients.show', $client) }}" class="btn btn-sm btn-outline-secondary" aria-label="Открыть клиента {{ $client->name }}" title="Открыть"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                    <button type="button" class="btn btn-sm btn-primary text-white js-edit-client-with-pets" data-client='@json($clientsPayload[$client->id])' aria-label="Редактировать клиента {{ $client->name }}" title="Редактировать"><i class="fa fa-pen" aria-hidden="true"></i></button>
+                                    <form action="{{ route('admin.clients.destroy', $client) }}" method="POST" class="d-inline js-delete-form" data-confirm="Удалить клиента? Связанные питомцы и записи останутся без хозяина.">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="client-card-menu__item client-card-menu__item--danger order-actions-menu__item" role="menuitem"><i class="fa fa-trash" aria-hidden="true"></i>Удалить</button>
+                                        <button type="submit" class="btn btn-sm btn-danger" aria-label="Удалить клиента {{ $client->name }}" title="Удалить"><i class="fa fa-trash" aria-hidden="true"></i></button>
                                     </form>
                                 </div>
                             </div>
                         </div>
-                        @if(filled($client->tags))<div class="client-workspace-card__tags">@include('admin.partials.tags-list', ['tags' => $client->tags])</div>@endif
-                        @if($client->address)<p class="client-workspace-card__address"><i class="fa fa-location-dot" aria-hidden="true"></i><span>{{ $client->address }}</span></p>@endif
-                        @if($client->animals->isNotEmpty())
-                            <div class="client-workspace-card__pets" aria-label="Питомцы">
-                                @foreach($client->animals->take(3) as $animal)<span class="client-workspace-card__pet">{{ $animal->name }}</span>@endforeach
-                                @if($client->animals_count > 3)<span class="client-workspace-card__pet client-workspace-card__pet--more">+{{ $client->animals_count - 3 }}</span>@endif
-                            </div>
-                        @else
-                            <div class="client-workspace-card__pets client-workspace-card__pets--empty">Питомцев пока нет</div>
-                        @endif
-                    </article>
-                @endforeach
+                    @endforeach
+                </div>
             </div>
         </section>
         <div class="clients-workspace__pagination">{{ $clients->links() }}</div>

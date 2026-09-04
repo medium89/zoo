@@ -12,7 +12,7 @@ class ClientWorkspaceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_clients_workspace_shows_compact_cards_and_preserves_filters(): void
+    public function test_clients_workspace_shows_rows_and_preserves_filters(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
         $client = Client::create([
@@ -28,11 +28,11 @@ class ClientWorkspaceTest extends TestCase
             ->get(route('admin.clients.index', ['search' => 'Анастасия', 'animals' => 'with', 'address' => 'with']))
             ->assertOk()
             ->assertSee('clients-workspace')
+            ->assertSee('admin-grid')
             ->assertSee('Анастасия')
-            ->assertSee('Дейзи')
+            ->assertSee('Питомцы')
             ->assertSee('+7 999 123-45-67')
-            ->assertSee('id="client-actions-'.$client->id.'" role="menu"', false)
-            ->assertSee('aria-controls="client-actions-'.$client->id.'"', false)
+            ->assertSee('js-edit-client-with-pets', false)
             ->assertSee('name="animals"', false)
             ->assertSee('value="with" selected', false)
             ->assertSee('name="address"', false)
