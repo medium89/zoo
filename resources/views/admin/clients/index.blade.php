@@ -4,7 +4,6 @@
 <div class="container-fluid clients-workspace">
     <header class="clients-workspace__header">
         <div>
-            <p class="clients-workspace__eyebrow">База клиентов</p>
             <div class="clients-workspace__title-row"><h1>Клиенты</h1><span class="clients-workspace__count">{{ $clients->total() }}</span></div>
         </div>
         <button type="button" class="btn btn-primary clients-workspace__create" id="newClientWithPets"><i class="fa fa-plus" aria-hidden="true"></i><span>Добавить клиента</span></button>
@@ -21,7 +20,6 @@
 
     @if($clients->count())
         <section class="clients-workspace__list" aria-label="Список клиентов">
-            <div class="clients-workspace__list-head"><span>Все клиенты</span><span>{{ $clients->total() }} {{ trans_choice('клиент|клиента|клиентов', $clients->total()) }}</span></div>
             <div class="clients-card-grid">
                 @foreach($clients as $client)
                     <article class="client-workspace-card">
@@ -54,7 +52,6 @@
                         @else
                             <div class="client-workspace-card__pets client-workspace-card__pets--empty">Питомцев пока нет</div>
                         @endif
-                        @if($client->boardings_count > 0)<div class="client-workspace-card__records"><i class="fa fa-calendar-check" aria-hidden="true"></i>Записей: {{ $client->boardings_count }}</div>@endif
                     </article>
                 @endforeach
             </div>
