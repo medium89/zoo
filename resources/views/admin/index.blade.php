@@ -980,10 +980,13 @@
         .admin-rail__button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
         .admin-rail__button:hover, .admin-rail__button:focus-visible { color: #fff; background: #253244; outline: 0; }
         .admin-rail__button.is-active { color: #fff; background: #6d58d8; box-shadow: 0 8px 18px rgba(87, 63, 189, .34); }
-        .admin-contextual-nav { position: absolute; inset: 0 0 0 var(--admin-rail-width); display: flex; flex-direction: column; width: var(--admin-context-width); padding: 25px 14px 15px; background: #202b39; overflow-y: auto; }
+        .admin-contextual-nav { position: absolute; inset: 0 0 0 var(--admin-rail-width); display: flex; flex-direction: column; width: var(--admin-context-width); padding: 18px 14px 15px; background: #202b39; overflow-y: auto; }
+        .admin-sidebar-search { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 42px; margin: 0 0 18px; padding: 8px 11px; border: 1px solid #3a4a5d; border-radius: 10px; background: #293849; color: #d9e3ee; font: inherit; font-size: .84rem; font-weight: 600; text-align: left; }
+        .admin-sidebar-search:hover, .admin-sidebar-search:focus-visible { border-color: #9b83ff; background: #2e4053; color: #fff; box-shadow: 0 0 0 3px rgba(155, 131, 255, .16); outline: 0; }
+        .admin-sidebar-search span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .admin-contextual-nav__group { display: none; }
         .admin-contextual-nav__group.is-active { display: grid; gap: 3px; }
-        .admin-contextual-nav__title { margin: 5px 10px 16px; color: #fff; font-size: .95rem; font-weight: 800; }
+        .admin-contextual-nav__title { margin: 0 10px 16px; color: #fff; font-size: .95rem; font-weight: 800; }
         .admin-contextual-nav a, .admin-contextual-nav__footer button { display: flex; align-items: center; min-height: 40px; padding: 9px 11px; border: 0; border-radius: 9px; background: transparent; color: #b9c5d3; font-size: .87rem; font-weight: 600; text-decoration: none; text-align: left; }
         .admin-contextual-nav a:hover, .admin-contextual-nav a:focus-visible, .admin-contextual-nav a.active { background: #2d3b4d; color: #fff; outline: 0; }
         .admin-contextual-nav a.active { box-shadow: inset 3px 0 0 #9b83ff; }
@@ -991,11 +994,7 @@
         .admin-contextual-nav__footer form { margin: 0; }
         .admin-contextual-nav__footer button { width: 100%; gap: 9px; }
         .admin-contextual-nav__footer button:hover, .admin-contextual-nav__footer button:focus-visible { background: #2d3b4d; color: #fff; outline: 0; }
-        .content { min-width: 0; padding: 0 32px 32px; overflow-x: clip; }
-        .admin-topbar { display: flex; align-items: center; justify-content: flex-start; gap: 16px; min-height: 88px; margin-bottom: 24px; border-bottom: 1px solid #e6ebf1; }
-        .admin-topbar__search { display: flex; align-items: center; gap: 10px; width: min(440px, 100%); min-height: 42px; padding: 8px 13px; border: 1px solid #dbe3eb; border-radius: 10px; background: #fff; color: #718196; font-size: .85rem; text-align: left; }
-        .admin-topbar__search:hover, .admin-topbar__search:focus-visible { border-color: #9b83ff; box-shadow: 0 0 0 3px rgba(112, 87, 214, .12); outline: 0; }
-        .admin-topbar__search span { flex: 1; }
+        .content { min-width: 0; padding: 32px; overflow-x: clip; }
         .admin-command-palette kbd { padding: 2px 5px; border: 1px solid #dce3eb; border-radius: 5px; background: #f7f9fb; color: #8490a0; font-family: inherit; font-size: .7rem; }
         .admin-command-palette[hidden] { display: none; }
         .admin-command-palette { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: start center; padding: min(12vh, 120px) 18px 18px; }
@@ -1018,12 +1017,9 @@
             .admin-contextual-nav { width: calc(100% - var(--admin-rail-width)); }
             .sidebar-backdrop { z-index: 1010; }
             .content { padding: 72px 16px 28px; }
-            .admin-topbar { min-height: 54px; margin-bottom: 22px; }
         }
         @media (max-width: 575.98px) {
             .content { padding: 70px 14px 24px; }
-            .admin-topbar__search { width: auto; flex: 1; }
-            .admin-topbar__search span, .admin-topbar__search kbd { display: none; }
             .admin-command-palette { padding: 74px 12px 12px; }
             .admin-command-palette__hint { display: none; }
         }
@@ -1100,6 +1096,9 @@
             @endforeach
         </div>
         <div class="admin-contextual-nav" aria-label="Навигация текущего раздела">
+            <button type="button" class="admin-sidebar-search" id="adminSearchTrigger" aria-haspopup="dialog" aria-controls="adminCommandPalette">
+                <i class="fa fa-magnifying-glass" aria-hidden="true"></i><span>Поиск по админке</span>
+            </button>
             @foreach($adminNavigation as $key => $group)
                 <section id="admin-group-{{ $key }}" class="admin-contextual-nav__group {{ $key === $activeNavigationGroup ? 'is-active' : '' }}" data-admin-group="{{ $key }}" data-admin-group-label="{{ $group['label'] }}" aria-label="{{ $group['label'] }}" aria-hidden="{{ $key === $activeNavigationGroup ? 'false' : 'true' }}">
                     <p class="admin-contextual-nav__title">{{ $group['label'] }}</p>
@@ -1117,11 +1116,6 @@
         </div>
     </nav>
     <main class="content" id="adminMain">
-        <header class="admin-topbar">
-            <button type="button" class="admin-topbar__search" id="adminSearchTrigger" aria-haspopup="dialog" aria-controls="adminCommandPalette">
-                <i class="fa fa-magnifying-glass" aria-hidden="true"></i><span>Поиск по админке</span>
-            </button>
-        </header>
         @php
             $routeName = request()->route()?->getName() ?? '';
             // Keep the dashboard and detail pages' headings; list/form shells use the sidebar label instead.
@@ -1847,7 +1841,7 @@
                 return;
             }
             const drawerWasOpen = !isDesktop() && mobileOpen;
-            commandLastFocus = drawerWasOpen ? document.getElementById('adminSearchTrigger') : document.activeElement;
+            commandLastFocus = drawerWasOpen ? document.getElementById('sidebarToggle') : document.activeElement;
             if (drawerWasOpen) closeDrawer(false);
             commandPalette.hidden = false;
             commandSearch.value = '';
