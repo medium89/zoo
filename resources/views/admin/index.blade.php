@@ -302,7 +302,7 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             gap: 12px 18px;
             margin-top: 16px;
             color: #718397;
@@ -314,6 +314,7 @@
         .admin-entity-list__footer .pagination { margin: 0; }
         .admin-entity-list__footer-pagination { min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
         .admin-entity-list__footer-pagination .pagination { flex-wrap: nowrap; width: max-content; }
+        .admin-entity-list__footer-pagination { margin-left: auto; }
         .admin-list-page__actionbar { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 10px; margin-bottom: 20px; }
         /* List/settings/form pages keep one semantic h1 for screen readers without visual duplication. */
         #admin-content[data-admin-hide-page-heading="1"] > h1,
@@ -361,6 +362,7 @@
             .admin-entity-list__actions .d-flex { justify-content: flex-start; }
             .admin-entity-list__footer { align-items: stretch; flex-direction: column; }
             .admin-entity-list__footer form { justify-content: space-between; }
+            .admin-entity-list__footer-pagination { margin-left: 0; }
             .admin-entity-list__footer .pagination { justify-content: center; }
         }
 

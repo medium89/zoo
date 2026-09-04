@@ -576,13 +576,14 @@ document.addEventListener('DOMContentLoaded',()=>{const root=document.getElement
 @media(max-width:767px){#serviceOrderModal .modal-dialog{max-width:none}.order-client__controls,.order-dates{grid-template-columns:1fr!important}.animal-editor__fields{padding:10px!important}.animal-service-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px!important}.animal-service-type{grid-column:1/-1}}
 </style>@endpush
 @push('styles')<style>
-.orders-workspace .orders-list-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 18px}
+.orders-workspace .orders-list-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:12px 18px}
 .orders-workspace .orders-list-footer form{display:inline-flex;align-items:center;gap:8px;margin:0}
 .orders-workspace .orders-list-footer label{margin:0;font-weight:700}
 .orders-workspace .orders-list-footer select{width:auto;min-width:78px;height:34px;border-color:#d8e2ec;font-size:.78rem}
 .orders-workspace .orders-list-footer .pagination{margin:0}
 .orders-workspace .orders-list-footer__pagination{min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden}
+.orders-workspace .orders-list-footer__pagination{margin-left:auto}
 .orders-workspace .orders-list-footer__pagination .pagination{flex-wrap:nowrap;width:max-content}
-@media(max-width:575px){.orders-workspace .orders-list-footer{align-items:stretch;flex-direction:column}.orders-workspace .orders-list-footer form{justify-content:space-between}.orders-workspace .orders-list-footer .pagination{justify-content:center}}
+@media(max-width:575px){.orders-workspace .orders-list-footer{align-items:stretch;flex-direction:column}.orders-workspace .orders-list-footer form{justify-content:space-between}.orders-workspace .orders-list-footer__pagination{margin-left:0}.orders-workspace .orders-list-footer .pagination{justify-content:center}}
 </style>@endpush
 @endsection
