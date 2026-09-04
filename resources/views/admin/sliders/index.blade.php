@@ -2,8 +2,9 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Слайды</h1>
-    <a href="{{ route('admin.sliders.create') }}" class="btn btn-primary">Добавить слайд</a>
+    <a href="{{ route('admin.sliders.create') }}" class="btn btn-primary d-none">Добавить слайд</a>
 </div>
+<x-admin.fab label="Добавить слайд" :href="route('admin.sliders.create')" />
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif

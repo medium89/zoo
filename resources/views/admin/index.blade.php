@@ -396,6 +396,58 @@
             transform: translateY(-2px);
         }
 
+        .admin-fab {
+            position: fixed;
+            right: 22px;
+            bottom: calc(22px + env(safe-area-inset-bottom));
+            z-index: 1250;
+            display: grid;
+            place-items: center;
+            width: 52px;
+            height: 52px;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: var(--admin-primary);
+            color: #fff;
+            box-shadow: 0 10px 26px rgba(55, 72, 155, .3);
+            text-decoration: none;
+            cursor: pointer;
+            transition: width .18s ease, height .18s ease, transform .18s ease, background .18s ease, opacity .18s ease;
+        }
+        .admin-fab:hover, .admin-fab:focus-visible {
+            width: 62px;
+            height: 62px;
+            background: var(--admin-primary-hover);
+            color: #fff;
+            transform: translateY(-3px);
+            outline: 0;
+        }
+        .admin-fab:focus-visible { box-shadow: 0 0 0 4px rgba(93, 120, 219, .28), 0 12px 28px rgba(55, 72, 155, .3); }
+        .admin-fab i { font-size: 1.25rem; }
+        .admin-fab::after {
+            position: absolute;
+            right: calc(100% + 10px);
+            top: 50%;
+            padding: 7px 10px;
+            border-radius: 8px;
+            background: #202b39;
+            color: #fff;
+            content: attr(data-tooltip);
+            font-size: .78rem;
+            font-weight: 700;
+            line-height: 1.2;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-50%) translateX(4px);
+            transition: opacity .15s ease, transform .15s ease;
+        }
+        .admin-fab:hover::after, .admin-fab:focus-visible::after { opacity: 1; transform: translateY(-50%) translateX(0); }
+        body.modal-open .admin-fab { opacity: 0; pointer-events: none; }
+        .admin-fab--map-animal { right: 88px; }
+        .admin-fab--map-client { right: 22px; }
+
         .sidebar-backdrop {
             display: none;
         }
@@ -1034,6 +1086,11 @@
             .content { padding: 70px 14px 24px; }
             .admin-command-palette { padding: 74px 12px 12px; }
             .admin-command-palette__hint { display: none; }
+            .admin-fab { right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: 50px; height: 50px; }
+            .admin-fab:hover, .admin-fab:focus-visible { width: 56px; height: 56px; }
+            .admin-fab::after { right: calc(100% + 8px); font-size: .74rem; }
+            .admin-fab--map-animal { right: 78px; }
+            .admin-fab--map-client { right: 16px; }
         }
 
         /* WYSIWYG базовые размеры */
@@ -1219,6 +1276,12 @@
         const editorModalBody = document.getElementById('adminEditorModalBody');
         const editorModalTitle = document.getElementById('adminEditorModalTitle');
         const editorModal = editorModalEl ? new bootstrap.Modal(editorModalEl) : null;
+        document.querySelectorAll('[data-fab-target]').forEach(fab => fab.addEventListener('click', () => {
+            const target = document.querySelector(fab.dataset.fabTarget);
+            // Page scripts may attach their handlers in their own DOMContentLoaded callback.
+            // Defer one task so the FAB always invokes the fully initialized trigger.
+            if (target) window.setTimeout(() => target.click(), 0);
+        }));
         const editorScrollKey = `admin-editor-scroll:${window.location.pathname}${window.location.search}`;
         const tagClassificationUrl = @json(route('admin.tags.classify'));
         const yandexMapsApiKey = @json(config('services.yandex.maps_api_key'));

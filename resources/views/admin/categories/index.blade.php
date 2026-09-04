@@ -4,7 +4,7 @@
 <div class="container-fluid admin-list-page">
     <h1 class="visually-hidden">Категории животных</h1>
     <div class="admin-list-page__actionbar">
-        <a href="{{ route('admin.categories.create') }}" class="btn btn-primary"><i class="fa fa-plus me-1" aria-hidden="true"></i>Добавить категорию</a>
+        <a href="{{ route('admin.categories.create') }}" class="btn btn-primary d-none"><i class="fa fa-plus me-1" aria-hidden="true"></i>Добавить категорию</a>
     </div>
 
     @if(session('success'))
@@ -62,4 +62,5 @@
         <section class="admin-entity-list__empty"><i class="fa fa-layer-group mb-2" aria-hidden="true"></i><h2 class="h5">Категорий пока нет</h2><p class="mb-0">Добавьте первый вид животного.</p></section>
     @endif
 </div>
+<x-admin.fab label="Добавить категорию" :href="route('admin.categories.create')" />
 @endsection

@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Отзывы Avito</h1>
         <div class="d-flex gap-2 align-items-center">
-            <a href="{{ route('admin.avito-reviews.create') }}" class="btn btn-success">
+            <a href="{{ route('admin.avito-reviews.create') }}" class="btn btn-success d-none">
                 <i class="fa fa-plus"></i> Новый отзыв
             </a>
             <form action="{{ route('admin.avito-reviews.refresh') }}" method="POST" class="mb-0">
@@ -125,6 +125,7 @@
     @endif
     </div>
 </div>
+<x-admin.fab label="Добавить отзыв" :href="route('admin.avito-reviews.create')" />
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
     const firstOrder = {{ $reviews->firstItem() ?? 1 }};

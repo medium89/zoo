@@ -2,8 +2,9 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Фотоальбом</h1>
-    <a href="{{ route('admin.galleries.create') }}" class="btn btn-primary">Добавить фото</a>
+    <a href="{{ route('admin.galleries.create') }}" class="btn btn-primary d-none">Добавить фото</a>
 </div>
+<x-admin.fab label="Добавить фото" :href="route('admin.galleries.create')" />
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif

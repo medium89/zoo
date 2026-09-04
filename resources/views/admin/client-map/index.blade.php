@@ -5,10 +5,12 @@
     <div class="d-flex flex-wrap justify-content-start align-items-center gap-2 mb-3">
         <div><h1 class="mb-1">Карта клиентов</h1></div>
         <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#newMapAnimalModal"><i class="fa fa-plus me-1"></i>Питомец</button>
-            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#newMapClientModal"><i class="fa fa-plus me-1"></i>Клиент</button>
+            <button class="btn btn-outline-primary d-none" id="newMapAnimalButton" type="button" data-bs-toggle="modal" data-bs-target="#newMapAnimalModal"><i class="fa fa-plus me-1"></i>Питомец</button>
+            <button class="btn btn-primary d-none" id="newMapClientButton" type="button" data-bs-toggle="modal" data-bs-target="#newMapClientModal"><i class="fa fa-plus me-1"></i>Клиент</button>
         </div>
     </div>
+    <x-admin.fab label="Добавить питомца" target="#newMapAnimalButton" class="admin-fab--map-animal" />
+    <x-admin.fab label="Добавить клиента" target="#newMapClientButton" class="admin-fab--map-client" />
 
     <div class="client-node-toolbar">
         <span><i class="fa fa-arrows-up-down-left-right"></i> Тяните ноды за шапку</span><span><i class="fa fa-link"></i> Крестик на линии разрывает связь</span>

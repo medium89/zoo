@@ -3,8 +3,9 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Услуги</h1>
-    <a href="{{ route('admin.services.create') }}" class="btn btn-primary">Добавить</a>
+    <a href="{{ route('admin.services.create') }}" class="btn btn-primary d-none">Добавить</a>
 </div>
+<x-admin.fab label="Добавить услугу" :href="route('admin.services.create')" />
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif

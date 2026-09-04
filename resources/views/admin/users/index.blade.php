@@ -5,7 +5,7 @@
     <h1 class="h3 mb-2 text-gray-800">Управление пользователями</h1>
     <p class="mb-4">Здесь вы можете управлять пользователями вашего сайта.</p>
 
-    <a href="{{ route('admin.users.create') }}" class="btn btn-success mb-3">Добавить нового пользователя</a>
+    <a href="{{ route('admin.users.create') }}" class="btn btn-success mb-3 d-none">Добавить нового пользователя</a>
 
     @if (session('success'))
         <div class="alert alert-success">
@@ -43,4 +43,5 @@
         </div>
     </div>
 </div>
+<x-admin.fab label="Добавить пользователя" :href="route('admin.users.create')" />
 @endsection 

@@ -188,4 +188,33 @@ class AdminListPaginationTest extends TestCase
         $this->assertStringContainsString("event.key === 'ArrowDown'", $clientMap);
         $this->assertStringContainsString("event.key === 'Escape'", $clientMap);
     }
+
+    public function test_creation_fabs_cover_primary_creation_pages_and_defer_trigger_clicks(): void
+    {
+        $layout = File::get(resource_path('views/admin/index.blade.php'));
+        $fab = File::get(resource_path('views/components/admin/fab.blade.php'));
+
+        $this->assertStringContainsString("window.setTimeout(() => target.click(), 0)", $layout);
+        $this->assertStringContainsString('data-fab-target', $fab);
+
+        foreach ([
+            'admin/clients/index.blade.php' => 'Добавить клиента',
+            'admin/animals/index.blade.php' => 'Добавить питомца',
+            'admin/service-orders/index.blade.php' => 'Новый заказ',
+            'admin/client-map/index.blade.php' => 'Добавить клиента',
+        ] as $view => $label) {
+            $contents = File::get(resource_path('views/'.$view));
+            $this->assertStringContainsString('<x-admin.fab', $contents, $view.' must expose a creation FAB.');
+            $this->assertStringContainsString($label, $contents, $view.' must keep its creation label.');
+        }
+
+        foreach ([
+            'admin/clients/index.blade.php',
+            'admin/animals/index.blade.php',
+            'admin/service-orders/index.blade.php',
+        ] as $view) {
+            $contents = File::get(resource_path('views/'.$view));
+            $this->assertStringNotContainsString('class="btn btn-primary js-new-service-order"', $contents, $view.' must not expose a visible empty-state create button.');
+        }
+    }
 }

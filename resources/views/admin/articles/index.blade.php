@@ -4,7 +4,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Статьи</h1>
-        <a href="{{ route('admin.articles.create') }}" class="btn btn-primary">Добавить</a>
+        <a href="{{ route('admin.articles.create') }}" class="btn btn-primary d-none">Добавить</a>
     </div>
 
     @if(session('success'))
@@ -59,6 +59,7 @@
 
     {{ $articles->links() }}
 </div>
+<x-admin.fab label="Добавить статью" :href="route('admin.articles.create')" />
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
     const renumber = ()=>{

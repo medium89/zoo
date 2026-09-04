@@ -4,7 +4,7 @@
 <section class="clients-workspace">
     <header class="clients-workspace__header">
         <h1 class="visually-hidden">Клиенты</h1>
-        <button type="button" class="btn btn-primary clients-workspace__create" id="newClientWithPets"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый клиент</span></button>
+        <button type="button" class="btn btn-primary clients-workspace__create d-none" id="newClientWithPets"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый клиент</span></button>
     </header>
 
     @if(session('success'))
@@ -70,7 +70,7 @@
     @elseif(collect($filters)->except(['per_page', 'page'])->filter(fn ($value) => filled($value))->isNotEmpty())
         <section class="clients-workspace__empty" aria-labelledby="clientsEmptyFilteredTitle"><i class="fa fa-magnifying-glass" aria-hidden="true"></i><h2 id="clientsEmptyFilteredTitle">Ничего не нашли</h2><p>Попробуйте изменить запрос или снять часть фильтров.</p><a href="{{ route('admin.clients.index') }}" class="btn btn-outline-primary">Сбросить фильтры</a></section>
     @else
-        <section class="clients-workspace__empty" aria-labelledby="clientsEmptyTitle"><i class="fa fa-user-group" aria-hidden="true"></i><h2 id="clientsEmptyTitle">Клиентов пока нет</h2><p>Добавьте первого клиента и его питомцев — они появятся здесь.</p><button type="button" class="btn btn-primary js-open-first-client"><i class="fa fa-plus" aria-hidden="true"></i>Новый клиент</button></section>
+        <section class="clients-workspace__empty" aria-labelledby="clientsEmptyTitle"><i class="fa fa-user-group" aria-hidden="true"></i><h2 id="clientsEmptyTitle">Клиентов пока нет</h2><p>Добавьте первого клиента и его питомцев с помощью кнопки «+».</p></section>
     @endif
 
     @if($mapClients->isNotEmpty())
@@ -87,6 +87,7 @@
         </section>
     @endif
 </section>
+<x-admin.fab label="Добавить клиента" target="#newClientWithPets" />
 
 <div class="modal fade admin-modal" id="clientCreateModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable client-create-dialog">
