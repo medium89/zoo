@@ -40,7 +40,7 @@
         </div>
     @endif
 
-    <x-admin.filters :action="route('admin.avito-reviews.index')" :filters="$filters" placeholder="Автор или текст отзыва">
+    <x-admin.filters :action="route('admin.avito-reviews.index')" :filters="$filters" placeholder="Автор или текст отзыва" :auto="true">
         <label class="admin-filter-bar__field">Статус<select name="status" class="form-select"><option value="">Все</option><option value="new" @selected(($filters['status'] ?? '') === 'new')>Новые</option><option value="published" @selected(($filters['status'] ?? '') === 'published')>Опубликованы</option><option value="hidden" @selected(($filters['status'] ?? '') === 'hidden')>Скрыты</option></select></label>
         <label class="admin-filter-bar__field">По дате<select name="sort" class="form-select"><option value="date_desc" @selected(($filters['sort'] ?? 'date_desc') === 'date_desc')>Сначала новые</option><option value="date_asc" @selected(($filters['sort'] ?? '') === 'date_asc')>Сначала старые</option></select></label>
     </x-admin.filters>

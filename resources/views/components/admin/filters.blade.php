@@ -40,8 +40,8 @@
                     form.requestSubmit();
                 };
 
-                form.querySelectorAll('select').forEach((select) => {
-                    select.addEventListener('change', submit);
+                form.querySelectorAll('select, input[type="date"], input[type="datetime-local"], input[type="month"], input[type="week"]').forEach((field) => {
+                    field.addEventListener('change', submit);
                 });
 
                 if (!search) return;
