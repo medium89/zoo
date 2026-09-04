@@ -4,7 +4,7 @@
 <section class="orders-workspace" aria-labelledby="orders-workspace-title">
 <header class="orders-head">
         <div><h1 id="orders-workspace-title">Заказы и работа</h1><p>Всего: {{ $orders->count() }} {{ trans_choice('заказ|заказа|заказов', $orders->count()) }}</p></div>
-        <div class="orders-head__actions"><a class="btn btn-outline-secondary" href="{{ route('admin.service-orders.archive.index') }}"><i class="fa fa-box-archive" aria-hidden="true"></i><span>Архив</span></a><button class="btn btn-primary orders-create js-new-service-order"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый заказ</span></button></div>
+        <div class="orders-head__actions"><a class="btn btn-outline-secondary" href="{{ route('admin.service-orders.archive.index') }}"><i class="fa fa-box-archive" aria-hidden="true"></i><span>Архив заказов</span></a><button class="btn btn-primary orders-create js-new-service-order"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый заказ</span></button></div>
  </header>
     @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
     @if(isset($errors) && $errors->any())<div class="alert alert-danger"><strong>Заказ не сохранён.</strong><ul class="mb-0 mt-2">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
@@ -75,7 +75,6 @@
         <div class="orders-empty"><i class="fa fa-clipboard-list" aria-hidden="true"></i><h2>{{ $hasOrderFilters ? 'Нет заказов по этим фильтрам' : 'Заказов пока нет' }}</h2><p>{{ $hasOrderFilters ? 'Попробуйте изменить условия поиска или сбросить их.' : 'Добавьте первый заказ, чтобы распределить работу по питомцам.' }}</p>@if($hasOrderFilters)<a class="btn btn-outline-secondary" href="{{ route('admin.service-orders.index') }}">Сбросить фильтры</a>@else<button class="btn btn-primary js-new-service-order" type="button"><i class="fa fa-plus" aria-hidden="true"></i> Новый заказ</button>@endif</div>
     @endforelse
         </section>
-        @if($orders->isNotEmpty())<footer class="orders-list-footer">Всего заказов: {{ $orders->count() }}</footer>@endif
     </section>
 </section>
 <div class="modal fade admin-modal" id="serviceOrderModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-scrollable"><form method="POST" class="modal-content order-modal" id="serviceOrderForm">@csrf<input type="hidden" name="_method" id="orderMethod" value="POST">
@@ -112,6 +111,320 @@
 </style>@endpush
 @push('styles')<style>
 .animal-service-row{background:transparent!important;border:0!important;padding:8px 0!important}.animal-service-type{background:transparent!important}.animal-service-type::before{display:none!important}.animal-service-type img{width:30px;height:30px;object-fit:contain;flex:0 0 30px}
+</style>@endpush
+@push('styles')<style>
+/* Orders list presentation: a quiet table on wide screens and self-contained cards below 1100px. */
+.orders-workspace .orders-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+.orders-workspace .orders-head > div:first-child,
+.orders-workspace .orders-head h1,
+.orders-workspace .orders-head__actions {
+    min-width: 0;
+}
+.orders-workspace .orders-head__actions .btn-outline-secondary {
+    border-color: #d8e0e9;
+    background: #fff;
+    color: #506276;
+}
+.orders-workspace .orders-head__actions .btn-outline-secondary:hover,
+.orders-workspace .orders-head__actions .btn-outline-secondary:focus-visible {
+    border-color: #a9bfd6;
+    background: #f7faff;
+    color: #2d5f91;
+}
+.orders-workspace .orders-head__actions .btn-primary {
+    border-color: #5d78db;
+    background: #5d78db;
+    box-shadow: 0 6px 14px rgba(83, 108, 205, .2);
+}
+.orders-workspace .orders-list-shell {
+    overflow: visible;
+    border-color: #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(32, 52, 74, .055);
+}
+.orders-workspace .orders-filters {
+    grid-template-columns: minmax(220px, 1.6fr) minmax(145px, .85fr) minmax(145px, .85fr) minmax(245px, 1.15fr) auto;
+    gap: 9px;
+    padding: 13px 14px;
+    background: #fbfcfe;
+    border-bottom-color: #e8edf3;
+}
+.orders-workspace .orders-filter {
+    height: 42px;
+    border-color: #d9e2eb;
+    border-radius: 9px;
+    background: #fff;
+    font-size: .81rem;
+}
+.orders-workspace .orders-filter--date {
+    padding-inline: 11px;
+}
+.orders-workspace .orders-filter--date input {
+    max-width: 101px;
+    font-size: .79rem;
+}
+.orders-workspace .orders-filter-reset {
+    height: 42px;
+    padding-inline: 12px;
+    border-color: #d9e2eb;
+    border-radius: 9px;
+    color: #65758a;
+    font-size: .8rem;
+}
+.orders-workspace .orders-table {
+    overflow: visible;
+    background: #fff;
+}
+.orders-workspace .orders-table__head,
+.orders-workspace .orders-table__row {
+    grid-template-columns: minmax(150px, 1.1fr) minmax(160px, 1.05fr) minmax(165px, 1.2fr) minmax(120px, .8fr) minmax(108px, .72fr) minmax(100px, .7fr) 40px;
+    gap: 13px;
+}
+.orders-workspace .orders-table__head {
+    min-height: 42px;
+    padding: 0 18px;
+    background: #f8fafc;
+    color: #8a98a8;
+    font-size: .66rem;
+    letter-spacing: .06em;
+}
+.orders-workspace .orders-table__row {
+    min-height: 92px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #edf1f5;
+}
+.orders-workspace .orders-table__row:last-child {
+    border-bottom: 0;
+}
+.orders-workspace .orders-table__row:hover {
+    background: #fcfdff;
+}
+.orders-workspace .orders-cell {
+    min-width: 0;
+    font-size: .83rem;
+}
+.orders-workspace .orders-client-avatar {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    border-color: #e8edf3;
+}
+.orders-workspace .orders-cell--client {
+    gap: 10px;
+}
+.orders-workspace .orders-cell--client > div,
+.orders-workspace .orders-pet > span:last-child {
+    min-width: 0;
+}
+.orders-workspace .orders-cell--client strong {
+    font-size: .84rem;
+}
+.orders-workspace .orders-cell--animals {
+    gap: 6px;
+}
+.orders-workspace .orders-pet {
+    gap: 8px;
+}
+.orders-workspace .orders-pet__image {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+}
+.orders-workspace .orders-pet strong {
+    font-size: .8rem;
+}
+.orders-workspace .orders-pet small {
+    color: #8b98a8;
+    font-size: .68rem;
+}
+.orders-workspace .orders-cell--services {
+    align-content: center;
+    gap: 5px;
+}
+.orders-workspace .order-service-chip {
+    max-width: 100%;
+    min-height: 27px;
+    padding: 4px 8px;
+    border-color: #e1e8f1;
+    border-radius: 7px;
+    background: #f8fafc;
+    font-size: .69rem;
+}
+.orders-workspace .order-service-chip small {
+    overflow-wrap: anywhere;
+    font-size: .63rem;
+}
+.orders-workspace .orders-cell--period {
+    color: #526477;
+    font-size: .79rem;
+    font-weight: 600;
+}
+.orders-workspace .orders-cell--price strong {
+    font-size: .84rem;
+}
+.orders-workspace .orders-cell--price small {
+    color: #8a98a8;
+}
+.orders-workspace .order-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 5px 9px;
+    font-size: .67rem;
+    white-space: nowrap;
+}
+.orders-workspace .order-actions-menu__toggle {
+    width: 34px;
+    height: 34px;
+    border: 1px solid transparent;
+    color: #738296;
+}
+.orders-workspace .order-actions-menu__toggle:hover,
+.orders-workspace .order-actions-menu__toggle:focus-visible {
+    border-color: #dce5ee;
+    background: #f6f9fc;
+    color: #3f658d;
+    outline: 0;
+}
+.orders-workspace .order-actions-menu__popup {
+    right: 0;
+    top: 38px;
+    width: 190px;
+    padding: 6px;
+    border-color: #dce5ee;
+    border-radius: 10px;
+}
+.orders-workspace .orders-empty {
+    margin: 14px;
+    border: 1px dashed #d8e2ed;
+    border-radius: 12px;
+    background: #fbfcfe;
+}
+
+@media (max-width: 1350px) {
+    .orders-workspace .orders-filters {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .orders-workspace .orders-filter--search {
+        grid-column: 1 / -1;
+    }
+    .orders-workspace .orders-table {
+        padding: 10px;
+        background: #f7f9fc;
+    }
+    .orders-workspace .orders-table__head {
+        display: none;
+    }
+    .orders-workspace .orders-table__row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) max-content;
+        gap: 11px 14px;
+        min-width: 0;
+        min-height: 0;
+        margin: 0 0 10px;
+        padding: 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(34, 52, 73, .035);
+    }
+    .orders-workspace .orders-table__row:last-child {
+        margin-bottom: 0;
+    }
+    .orders-workspace .orders-cell--client { grid-column: 1 / 3; grid-row: 1; }
+    .orders-workspace .orders-cell--actions { grid-column: 3; grid-row: 1; }
+    .orders-workspace .orders-cell--animals { grid-column: 1; grid-row: 2; }
+    .orders-workspace .orders-cell--services { grid-column: 2 / 4; grid-row: 2; justify-content: flex-start; }
+    .orders-workspace .orders-cell--period { grid-column: 1; grid-row: 3; }
+    .orders-workspace .orders-cell--price { grid-column: 2; grid-row: 3; text-align: right; }
+    .orders-workspace .orders-table__row > .orders-cell:nth-last-child(2) { grid-column: 3; grid-row: 3; justify-self: end; }
+    .orders-workspace .order-actions-menu__popup { z-index: 1095; }
+    .orders-workspace .orders-empty { margin: 0; }
+}
+
+@media (max-width: 767px) {
+    .orders-workspace .orders-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+    .orders-workspace .orders-head__actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+        width: 100%;
+    }
+    .orders-workspace .orders-head__actions .btn {
+        min-width: 0;
+        padding-inline: 8px;
+        font-size: .78rem;
+    }
+    .orders-workspace .orders-head__actions .btn span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .orders-workspace .orders-filters {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 12px;
+    }
+    .orders-workspace .orders-filter--search { grid-column: auto; }
+    .orders-workspace .orders-filter--date {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 5px;
+        height: auto;
+        min-height: 42px;
+    }
+    .orders-workspace .orders-filter--date input {
+        width: 100%;
+        max-width: none;
+    }
+    .orders-workspace .orders-filter-reset {
+        width: 100%;
+    }
+    .orders-workspace .orders-table {
+        padding: 8px;
+    }
+    .orders-workspace .orders-table__row {
+        gap: 11px 10px;
+        padding: 13px;
+    }
+    .orders-workspace .orders-cell--client strong {
+        font-size: .82rem;
+    }
+    .orders-workspace .orders-client-avatar {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+    }
+    .orders-workspace .orders-cell--price::before {
+        content: 'Стоимость: ';
+        color: #8793a1;
+        font-weight: 400;
+    }
+    .orders-workspace .order-service-chip {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .orders-workspace .order-actions-menu__popup {
+        right: 0;
+        top: 38px;
+        max-width: calc(100vw - 32px);
+    }
+}
+
+@media (max-width: 390px) {
+    .orders-workspace .orders-head h1 { font-size: 1.62rem; }
+    .orders-workspace .orders-head__actions .btn { font-size: .71rem; }
+    .orders-workspace .orders-filter { font-size: .76rem; }
+    .orders-workspace .orders-table__row { padding: 11px; }
+    .orders-workspace .orders-cell { font-size: .78rem; }
+    .orders-workspace .orders-cell--period { font-size: .75rem; }
+    .orders-workspace .order-status { font-size: .64rem; }
+}
 </style>@endpush
 @push('scripts')<script>
 document.addEventListener('DOMContentLoaded',()=>{const modal=new bootstrap.Modal(document.getElementById('serviceOrderModal')),form=document.getElementById('serviceOrderForm'),positions=document.getElementById('orderAnimals'),saved=@json($animalsPayload),cats=@json($categoriesPayload),esc=v=>String(v||'').replaceAll('&','&amp;').replaceAll('"','&quot;'),types=['передержка','выгул','уход'];
