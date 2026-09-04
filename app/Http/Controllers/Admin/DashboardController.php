@@ -45,7 +45,8 @@ class DashboardController extends Controller
         foreach ($activeToday as $order) {
             foreach ($order->animals as $animal) {
                 $categoryKey = $animal->animal?->category_id ?: $animal->category_id;
-                $activeBySpecies[$categoryKey ? (string) $categoryKey : 'unassigned'] += $animal->quantity;
+                $key = $categoryKey ? (string) $categoryKey : 'unassigned';
+                $activeBySpecies[$key] = ($activeBySpecies[$key] ?? 0) + $animal->quantity;
             }
         }
 
@@ -60,34 +61,38 @@ class DashboardController extends Controller
 
                 $seenAnimals[$animalKey] = true;
                 $categoryKey = $animal->animal?->category_id ?: $animal->category_id;
-                $species[$categoryKey ? (string) $categoryKey : 'unassigned'] += $animal->quantity;
+                $key = $categoryKey ? (string) $categoryKey : 'unassigned';
+                $species[$key] = ($species[$key] ?? 0) + $animal->quantity;
             }
         }
 
+        $upcomingEnd = $today->copy()->addDays(6);
         $upcoming = ServiceOrder::with(['animals.animal', 'animals.services'])
             ->whereNull('archived_at')
-            ->where(function ($query) use ($today) {
-                $query->whereBetween('start_date', [$today, $today->copy()->addDays(7)])
-                    ->orWhereBetween('end_date', [$today, $today->copy()->addDays(7)]);
+            ->where(function ($query) use ($today, $upcomingEnd) {
+                $query->whereBetween('start_date', [$today, $upcomingEnd])
+                    ->orWhereBetween('end_date', [$today, $upcomingEnd]);
             })
             ->orderBy('start_date')
-            ->limit(8)
             ->get()
-            ->map(function (ServiceOrder $order) use ($today): array {
-                $isArrival = $order->start_date->greaterThanOrEqualTo($today);
+            ->flatMap(function (ServiceOrder $order) use ($today, $upcomingEnd) {
                 $animals = $order->animals
                     ->map(fn ($animal) => $animal->animal?->name ?: $animal->label ?: 'Питомец')
                     ->unique()->implode(', ');
                 $services = $order->animals->flatMap->services
                     ->pluck('service_type')->unique()->implode(', ');
 
-                return [
-                    'date' => ($isArrival ? $order->start_date : $order->end_date)->locale('ru')->translatedFormat('j F'),
-                    'type' => $isArrival ? 'Заезд' : 'Выезд',
-                    'name' => $animals,
-                    'service' => $services,
-                ];
-            });
+                return collect([
+                    $this->upcomingEvent($order->start_date, 'Заезд', $animals, $services, $today, $upcomingEnd),
+                    $this->upcomingEvent($order->end_date, 'Выезд', $animals, $services, $today, $upcomingEnd),
+                ])->filter();
+            })
+            ->sortBy([
+                ['sort_date', 'asc'],
+                ['sort_type', 'asc'],
+            ])
+            ->take(8)
+            ->values();
 
         return view('admin.dashboard', [
             'period' => $period,
@@ -178,6 +183,28 @@ class DashboardController extends Controller
         }
 
         return array_values($buckets);
+    }
+
+    private function upcomingEvent(
+        Carbon $date,
+        string $type,
+        string $animals,
+        string $services,
+        Carbon $from,
+        Carbon $to,
+    ): ?array {
+        if (!$date->betweenIncluded($from, $to)) {
+            return null;
+        }
+
+        return [
+            'date' => $date->copy()->locale('ru')->translatedFormat('j F'),
+            'sort_date' => $date->toDateString(),
+            'sort_type' => $type === 'Заезд' ? 0 : 1,
+            'type' => $type,
+            'name' => $animals,
+            'service' => $services ?: 'Услуга не указана',
+        ];
     }
 
 }
