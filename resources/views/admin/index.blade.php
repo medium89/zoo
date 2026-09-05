@@ -424,8 +424,8 @@
 
         .admin-fab {
             position: fixed;
-            right: 22px;
-            bottom: calc(22px + env(safe-area-inset-bottom));
+            right: 30px;
+            bottom: calc(30px + env(safe-area-inset-bottom));
             z-index: 1250;
             display: grid;
             place-items: center;
@@ -442,8 +442,8 @@
             transition: width .18s ease, height .18s ease, right .18s ease, bottom .18s ease, transform .18s ease, background .18s ease, opacity .18s ease;
         }
         .admin-fab:hover, .admin-fab:focus-visible {
-            right: 6px;
-            bottom: calc(6px + env(safe-area-inset-bottom));
+            right: 14px;
+            bottom: calc(14px + env(safe-area-inset-bottom));
             width: 62px;
             height: 62px;
             background: var(--admin-primary-hover);
@@ -473,10 +473,10 @@
         }
         .admin-fab:hover::after, .admin-fab:focus-visible::after { opacity: 1; transform: translateY(-50%) translateX(0); }
         body.modal-open .admin-fab { opacity: 0; pointer-events: none; }
-        .admin-fab--map-animal { right: 88px; }
-        .admin-fab--map-client { right: 22px; }
-        .admin-fab--map-animal:hover, .admin-fab--map-animal:focus-visible { right: 72px; }
-        .admin-fab--map-client:hover, .admin-fab--map-client:focus-visible { right: 6px; }
+        .admin-fab--map-animal { right: 96px; }
+        .admin-fab--map-client { right: 30px; }
+        .admin-fab--map-animal:hover, .admin-fab--map-animal:focus-visible { right: 80px; }
+        .admin-fab--map-client:hover, .admin-fab--map-client:focus-visible { right: 14px; }
 
         .sidebar-backdrop {
             display: none;
@@ -1116,13 +1116,13 @@
             .content { padding: 70px 14px 24px; }
             .admin-command-palette { padding: 74px 12px 12px; }
             .admin-command-palette__hint { display: none; }
-            .admin-fab { right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: 44px; height: 44px; }
-            .admin-fab:hover, .admin-fab:focus-visible { right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); width: 56px; height: 56px; }
+            .admin-fab { right: 24px; bottom: calc(24px + env(safe-area-inset-bottom)); width: 44px; height: 44px; }
+            .admin-fab:hover, .admin-fab:focus-visible { right: 18px; bottom: calc(18px + env(safe-area-inset-bottom)); width: 56px; height: 56px; }
             .admin-fab::after { right: calc(100% + 8px); font-size: .74rem; }
-            .admin-fab--map-animal { right: 78px; }
-            .admin-fab--map-client { right: 16px; }
-            .admin-fab--map-animal:hover, .admin-fab--map-animal:focus-visible { right: 72px; }
-            .admin-fab--map-client:hover, .admin-fab--map-client:focus-visible { right: 10px; }
+            .admin-fab--map-animal { right: 86px; }
+            .admin-fab--map-client { right: 24px; }
+            .admin-fab--map-animal:hover, .admin-fab--map-animal:focus-visible { right: 80px; }
+            .admin-fab--map-client:hover, .admin-fab--map-client:focus-visible { right: 18px; }
         }
 
         /* WYSIWYG базовые размеры */
