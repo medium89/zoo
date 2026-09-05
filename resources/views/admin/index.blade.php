@@ -439,14 +439,16 @@
             box-shadow: 0 10px 26px rgba(55, 72, 155, .3);
             text-decoration: none;
             cursor: pointer;
-            transition: width .18s ease, height .18s ease, transform .18s ease, background .18s ease, opacity .18s ease;
+            transition: width .18s ease, height .18s ease, right .18s ease, bottom .18s ease, transform .18s ease, background .18s ease, opacity .18s ease;
         }
         .admin-fab:hover, .admin-fab:focus-visible {
+            right: 6px;
+            bottom: calc(6px + env(safe-area-inset-bottom));
             width: 62px;
             height: 62px;
             background: var(--admin-primary-hover);
             color: #fff;
-            transform: translateY(-3px);
+            transform: none;
             outline: 0;
         }
         .admin-fab:focus-visible { box-shadow: 0 0 0 4px rgba(93, 120, 219, .28), 0 12px 28px rgba(55, 72, 155, .3); }
@@ -473,6 +475,8 @@
         body.modal-open .admin-fab { opacity: 0; pointer-events: none; }
         .admin-fab--map-animal { right: 88px; }
         .admin-fab--map-client { right: 22px; }
+        .admin-fab--map-animal:hover, .admin-fab--map-animal:focus-visible { right: 72px; }
+        .admin-fab--map-client:hover, .admin-fab--map-client:focus-visible { right: 6px; }
 
         .sidebar-backdrop {
             display: none;
@@ -1113,10 +1117,12 @@
             .admin-command-palette { padding: 74px 12px 12px; }
             .admin-command-palette__hint { display: none; }
             .admin-fab { right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: 44px; height: 44px; }
-            .admin-fab:hover, .admin-fab:focus-visible { width: 56px; height: 56px; }
+            .admin-fab:hover, .admin-fab:focus-visible { right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); width: 56px; height: 56px; }
             .admin-fab::after { right: calc(100% + 8px); font-size: .74rem; }
             .admin-fab--map-animal { right: 78px; }
             .admin-fab--map-client { right: 16px; }
+            .admin-fab--map-animal:hover, .admin-fab--map-animal:focus-visible { right: 72px; }
+            .admin-fab--map-client:hover, .admin-fab--map-client:focus-visible { right: 10px; }
         }
 
         /* WYSIWYG базовые размеры */
