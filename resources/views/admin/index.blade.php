@@ -170,6 +170,7 @@
             padding: 0 11px;
             border: 1px solid #d8e1eb;
             border-radius: 9px;
+            background: #fff;
             color: #78879a;
         }
 
