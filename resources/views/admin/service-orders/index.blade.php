@@ -4,7 +4,7 @@
 <section class="orders-workspace" aria-labelledby="orders-workspace-title">
 <header class="orders-head">
         <h1 id="orders-workspace-title" class="visually-hidden">Заказы и работа</h1>
-        <div class="orders-create-region orders-head__actions" aria-label="Действия с заказами"><button class="btn btn-primary orders-create js-new-service-order d-none"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый заказ</span></button><a class="btn btn-outline-secondary" href="{{ route('admin.service-orders.archive.index') }}"><i class="fa fa-box-archive" aria-hidden="true"></i><span>Архив заказов</span></a></div>
+        <div class="orders-create-region orders-head__actions" aria-label="Действия с заказами"><button class="btn btn-primary orders-create js-new-service-order d-none"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый заказ</span></button></div>
  </header>
     @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
     @if(isset($errors) && $errors->any())<div class="alert alert-danger"><strong>Заказ не сохранён.</strong><ul class="mb-0 mt-2">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
