@@ -180,7 +180,7 @@
         .admin-filter-bar__field { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 39px; margin: 0; padding: 0 10px; border: 1px solid #d8e1eb; border-radius: 9px; background: #fff; color: #617287; font-size: .72rem; font-weight: 700; }
         .admin-filter-bar__field:focus-within { border-color: #6da3dd; box-shadow: 0 0 0 3px rgba(49, 120, 198, .11); }
         .admin-filter-bar__field .form-select { min-width: 150px; height: 35px; padding-top: 0; padding-bottom: 0; border: 0; background-color: transparent; font-size: .84rem; color: #304255; font-weight: 600; }
-        .admin-filter-bar__field .admin-filter-select { position: relative; min-width: 150px; flex: 1 1 auto; }
+        .admin-filter-bar__field .admin-filter-select { position: relative; min-width: 180px; flex: 1 1 auto; }
         .admin-filter-bar__field .admin-filter-select__native { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; padding: 0; }
         .admin-filter-select__toggle { display: flex; width: 100%; min-width: 0; height: 35px; align-items: center; justify-content: space-between; gap: 10px; padding: 0 4px 0 0; border: 0; border-radius: 7px; background: transparent; color: #304255; font-size: .84rem; font-weight: 650; line-height: 1.2; text-align: left; cursor: pointer; }
         .admin-filter-select__toggle span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
