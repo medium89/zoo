@@ -11,16 +11,7 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <form method="GET" action="{{ route('admin.categories.index') }}" class="admin-filter-bar" role="search">
-        <label class="admin-filter-bar__search">
-            <i class="fa fa-magnifying-glass" aria-hidden="true"></i>
-            <input type="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Название или slug" autocomplete="off">
-        </label>
-        <button type="submit" class="btn btn-primary admin-filter-bar__apply">Применить</button>
-        @if(filled($filters['search'] ?? null))
-            <a href="{{ route('admin.categories.index') }}" class="btn btn-light admin-filter-bar__reset"><i class="fa fa-arrow-rotate-left" aria-hidden="true"></i><span>Сбросить</span></a>
-        @endif
-    </form>
+    <x-admin.filters :action="route('admin.categories.index')" :filters="$filters" placeholder="Название или slug" :auto="true" />
 
     @if($categories->count())
         <section class="admin-entity-list" aria-label="Список категорий" style="--entity-cols: minmax(190px,1.25fr) minmax(170px,1fr) 150px; --entity-cols-mobile: 1fr 120px;">

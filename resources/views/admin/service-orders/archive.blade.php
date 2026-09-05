@@ -9,7 +9,7 @@
 
     @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
 
-    <x-admin.filters :action="route('admin.service-orders.archive.index')" :filters="$filters" placeholder="Клиент или питомец">
+    <x-admin.filters :action="route('admin.service-orders.archive.index')" :filters="$filters" placeholder="Клиент или питомец" :auto="true">
         <label class="admin-filter-bar__field">Услуга<select name="service" class="form-select"><option value="">Все</option><option value="передержка" @selected(($filters['service'] ?? '') === 'передержка')>Передержка</option><option value="выгул" @selected(($filters['service'] ?? '') === 'выгул')>Выгул</option><option value="уход" @selected(($filters['service'] ?? '') === 'уход')>Уход</option></select></label>
     </x-admin.filters>
 
