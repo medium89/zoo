@@ -177,16 +177,16 @@
         .admin-filter-bar__search:focus-within { border-color: #6da3dd; box-shadow: 0 0 0 3px rgba(49, 120, 198, .11); }
         .admin-filter-bar__label { flex: 0 0 auto; color: #617287; font-size: .72rem; font-weight: 700; }
         .admin-filter-bar__search input { min-width: 0; width: 100%; border: 0; outline: 0; color: #304255; font-size: .88rem; }
-        .admin-filter-bar__field { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 39px; margin: 0; padding: 0 10px; border: 1px solid #d8e1eb; border-radius: 9px; background: #fff; color: #617287; font-size: .72rem; font-weight: 700; }
+        .admin-filter-bar__field { position: relative; display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 39px; margin: 0; padding: 0 10px; border: 1px solid #d8e1eb; border-radius: 9px; background: #fff; color: #617287; font-size: .72rem; font-weight: 700; }
         .admin-filter-bar__field:focus-within { border-color: #6da3dd; box-shadow: 0 0 0 3px rgba(49, 120, 198, .11); }
         .admin-filter-bar__field .form-select { min-width: 150px; height: 35px; padding-top: 0; padding-bottom: 0; border: 0; background-color: transparent; font-size: .84rem; color: #304255; font-weight: 600; }
-        .admin-filter-bar__field .admin-filter-select { position: relative; min-width: 180px; flex: 1 1 auto; }
+        .admin-filter-bar__field .admin-filter-select { position: static; min-width: 180px; flex: 1 1 auto; }
         .admin-filter-bar__field .admin-filter-select__native { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; padding: 0; }
         .admin-filter-select__toggle { display: flex; width: 100%; min-width: 0; height: 35px; align-items: center; justify-content: space-between; gap: 10px; padding: 0 4px 0 0; border: 0; border-radius: 7px; background: transparent; color: #304255; font-size: .84rem; font-weight: 650; line-height: 1.2; text-align: left; cursor: pointer; }
         .admin-filter-select__toggle span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .admin-filter-select__toggle i { color: #8090a1; font-size: .68rem; transition: transform .16s ease; }
         .admin-filter-select.is-open .admin-filter-select__toggle i { transform: rotate(180deg); }
-        .admin-filter-select__menu { position: absolute; z-index: 1095; top: calc(100% + 7px); right: 0; left: 0; display: grid; gap: 3px; min-width: 174px; max-height: min(280px, 45vh); overflow-y: auto; padding: 6px; border: 1px solid #dce4ed; border-radius: 10px; background: #fff; box-shadow: 0 14px 30px rgba(28,43,61,.16); }
+        .admin-filter-select__menu { position: absolute; z-index: 1095; top: calc(100% + 7px); right: -1px; left: -1px; display: grid; gap: 3px; min-width: 174px; max-height: min(280px, 45vh); overflow-y: auto; padding: 6px; border: 1px solid #dce4ed; border-radius: 10px; background: #fff; box-shadow: 0 14px 30px rgba(28,43,61,.16); }
         .admin-filter-select__menu.is-hidden { display: none; }
         .admin-filter-select__option { display: flex; width: 100%; min-height: 34px; align-items: center; padding: 7px 9px; border: 0; border-radius: 6px; background: transparent; color: #45576b; font-size: .81rem; font-weight: 600; line-height: 1.25; text-align: left; cursor: pointer; }
         .admin-filter-select__option:hover, .admin-filter-select__option:focus-visible { outline: 0; background: #eef5fd; color: #1763b7; }
