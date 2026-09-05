@@ -153,11 +153,11 @@
             align-items: end;
             gap: 10px;
             margin: 0 0 20px;
-            padding: 13px;
-            border: 1px solid #e0e7ef;
-            border-radius: 14px;
-            background: #fff;
-            box-shadow: 0 4px 14px rgba(26, 39, 57, .035);
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
         }
 
         .admin-filter-bar__search {
