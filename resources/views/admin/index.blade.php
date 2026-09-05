@@ -429,8 +429,8 @@
             z-index: 1250;
             display: grid;
             place-items: center;
-            width: 52px;
-            height: 52px;
+            width: 30px;
+            height: 30px;
             padding: 0;
             border: 0;
             border-radius: 50%;
@@ -450,7 +450,7 @@
             outline: 0;
         }
         .admin-fab:focus-visible { box-shadow: 0 0 0 4px rgba(93, 120, 219, .28), 0 12px 28px rgba(55, 72, 155, .3); }
-        .admin-fab i { font-size: 1.25rem; }
+        .admin-fab i { font-size: .9rem; }
         .admin-fab::after {
             position: absolute;
             right: calc(100% + 10px);
@@ -1112,7 +1112,7 @@
             .content { padding: 70px 14px 24px; }
             .admin-command-palette { padding: 74px 12px 12px; }
             .admin-command-palette__hint { display: none; }
-            .admin-fab { right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: 50px; height: 50px; }
+            .admin-fab { right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: 44px; height: 44px; }
             .admin-fab:hover, .admin-fab:focus-visible { width: 56px; height: 56px; }
             .admin-fab::after { right: calc(100% + 8px); font-size: .74rem; }
             .admin-fab--map-animal { right: 78px; }
