@@ -3,15 +3,17 @@
     'filters' => [],
     'placeholder' => 'Поиск',
     'auto' => false,
+    'attached' => false,
 ])
 
 @php($hasActiveFilters = collect($filters)->except(['per_page', 'page'])->filter(fn ($value) => filled($value))->isNotEmpty())
 
-<form method="GET" action="{{ $action }}" class="admin-filter-bar" role="search" @if($auto) data-auto-filters @endif>
+<form method="GET" action="{{ $action }}" class="admin-filter-bar @if($attached) admin-filter-bar--attached @endif" role="search" @if($auto) data-auto-filters @endif @if($attached) data-filter-layout="attached" @endif>
     @if(filled($filters['per_page'] ?? null))
         <input type="hidden" name="per_page" value="{{ $filters['per_page'] }}">
     @endif
     <label class="admin-filter-bar__search">
+        <span class="admin-filter-bar__label">Поиск</span>
         <i class="fa fa-magnifying-glass" aria-hidden="true"></i>
         <input type="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ $placeholder }}" autocomplete="off">
     </label>

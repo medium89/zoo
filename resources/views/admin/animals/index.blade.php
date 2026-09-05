@@ -11,7 +11,7 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <x-admin.filters :action="route('admin.animals.index')" :filters="$filters" placeholder="Кличка или хозяин" :auto="true">
+    <x-admin.filters :action="route('admin.animals.index')" :filters="$filters" placeholder="Кличка или хозяин" :auto="true" :attached="true">
         <label class="admin-filter-bar__field">Вид<select name="category_id" class="form-select"><option value="">Все виды</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected((string) ($filters['category_id'] ?? '') === (string) $category->id)>{{ $category->name }}</option>@endforeach</select></label>
         <label class="admin-filter-bar__field">Хозяин<select name="owner" class="form-select"><option value="">Все</option><option value="with" @selected(($filters['owner'] ?? '') === 'with')>Указан</option><option value="without" @selected(($filters['owner'] ?? '') === 'without')>Не указан</option></select></label>
     </x-admin.filters>

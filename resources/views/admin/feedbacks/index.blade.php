@@ -11,7 +11,7 @@
         </div>
     @endif
 
-    <x-admin.filters :action="route('admin.feedbacks.index')" :filters="$filters" placeholder="Имя, телефон или текст" :auto="true">
+    <x-admin.filters :action="route('admin.feedbacks.index')" :filters="$filters" placeholder="Имя, телефон или текст" :auto="true" :attached="true">
         <label class="admin-filter-bar__field">Статус<select name="status" class="form-select"><option value="">Все</option><option value="new" @selected(($filters['status'] ?? '') === 'new')>Новые</option><option value="in_progress" @selected(($filters['status'] ?? '') === 'in_progress')>В работе</option><option value="completed" @selected(($filters['status'] ?? '') === 'completed')>Завершены</option><option value="cancelled" @selected(($filters['status'] ?? '') === 'cancelled')>Отменены</option></select></label>
     </x-admin.filters>
 
