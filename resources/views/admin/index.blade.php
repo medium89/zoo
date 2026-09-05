@@ -316,6 +316,11 @@
         .admin-entity-list__footer-pagination .pagination { flex-wrap: nowrap; width: max-content; }
         .admin-entity-list__footer-pagination { margin-left: auto; }
         .admin-list-page__actionbar { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 10px; margin-bottom: 20px; }
+        /* Creation moved to the global FAB; empty legacy action rows must not leave a blank gap. */
+        .admin-list-page__actionbar:has(> .d-none:only-child),
+        .clients-workspace__header:has(> h1.visually-hidden):has(> .d-none) {
+            display: none;
+        }
         /* List/settings/form pages keep one semantic h1 for screen readers without visual duplication. */
         #admin-content[data-admin-hide-page-heading="1"] > h1,
         #admin-content[data-admin-hide-page-heading="1"] > * > h1:first-child,
