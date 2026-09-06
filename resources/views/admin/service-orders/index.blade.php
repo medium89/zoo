@@ -195,6 +195,7 @@
 }
 .orders-workspace .orders-table {
     overflow: visible;
+    border-radius: 13px;
     background: #fff;
 }
 .orders-workspace .orders-table__head,
@@ -205,7 +206,7 @@
 .orders-workspace .orders-table__head {
     min-height: 42px;
     padding: 0 18px;
-    border-radius: 14px 14px 0 0;
+    border-radius: 13px 13px 0 0;
     background: #f8fafc;
     color: #8a98a8;
     font-size: .66rem;
@@ -218,7 +219,7 @@
 }
 .orders-workspace .orders-table__row:last-child {
     border-bottom: 0;
-    border-radius: 0 0 14px 14px;
+    border-radius: 0 0 13px 13px;
 }
 .orders-workspace .orders-table__row:hover {
     background: #fcfdff;
