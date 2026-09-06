@@ -2,10 +2,7 @@
 
 @section('content')
 <section class="orders-workspace" aria-labelledby="orders-workspace-title">
-<header class="orders-head">
-        <h1 id="orders-workspace-title" class="visually-hidden">Заказы и работа</h1>
-        <div class="orders-create-region orders-head__actions" aria-label="Действия с заказами"><button class="btn btn-primary orders-create js-new-service-order d-none"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый заказ</span></button></div>
- </header>
+<h1 id="orders-workspace-title" class="visually-hidden">Заказы и работа</h1>
     @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
     @if(isset($errors) && $errors->any())<div class="alert alert-danger"><strong>Заказ не сохранён.</strong><ul class="mb-0 mt-2">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
     <form class="orders-filters" method="GET" action="{{ route('admin.service-orders.index') }}">
@@ -170,9 +167,9 @@
 .orders-workspace .orders-filters {
     grid-template-columns: minmax(220px, 1.6fr) minmax(145px, .85fr) minmax(145px, .85fr) minmax(245px, 1.15fr) auto;
     gap: 9px;
-    padding: 13px 14px;
-    background: #fbfcfe;
-    border-bottom-color: #e8edf3;
+    padding: 13px 0;
+    background: transparent;
+    border: 0;
 }
 .orders-workspace .orders-filter {
     height: 42px;
