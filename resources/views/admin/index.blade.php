@@ -2076,52 +2076,62 @@
             }
         });
 
-        // Контекстные действия строк и карточек: одно доступное меню вместо набора кнопок.
-        document.querySelectorAll('[data-admin-actions-menu]').forEach((menu) => {
+        // Делегирование сохраняет работу меню и для карточек, загруженных в общую модалку после открытия страницы.
+        const closeAdminActionsMenus = (except = null) => {
+            document.querySelectorAll('[data-admin-actions-menu]').forEach((menu) => {
+                if (menu === except) return;
+                const popup = menu.querySelector('.admin-actions-menu__popup');
+                const toggle = menu.querySelector('.admin-actions-menu__toggle');
+                if (popup) popup.hidden = true;
+                toggle?.setAttribute('aria-expanded', 'false');
+            });
+        };
+        const adminActionsMenuItems = (popup) => Array.from(popup.querySelectorAll('a, button'))
+            .filter((item) => !item.disabled && item.offsetParent !== null);
+
+        document.addEventListener('click', (event) => {
+            const toggle = event.target.closest('.admin-actions-menu__toggle');
+            const menu = toggle?.closest('[data-admin-actions-menu]');
+            if (toggle && menu) {
+                event.preventDefault();
+                event.stopPropagation();
+                const popup = menu.querySelector('.admin-actions-menu__popup');
+                if (!popup) return;
+                popup.querySelectorAll('a, button').forEach((item) => {
+                    if (!item.hasAttribute('role')) item.setAttribute('role', 'menuitem');
+                });
+                const shouldOpen = popup.hidden;
+                closeAdminActionsMenus(menu);
+                popup.hidden = !shouldOpen;
+                toggle.setAttribute('aria-expanded', String(shouldOpen));
+                if (shouldOpen) requestAnimationFrame(() => adminActionsMenuItems(popup)[0]?.focus());
+                return;
+            }
+
+            if (!event.target.closest('[data-admin-actions-menu]')) closeAdminActionsMenus();
+        });
+        document.addEventListener('keydown', (event) => {
+            const menu = event.target.closest('[data-admin-actions-menu]');
+            if (!menu) return;
             const toggle = menu.querySelector('.admin-actions-menu__toggle');
             const popup = menu.querySelector('.admin-actions-menu__popup');
             if (!toggle || !popup) return;
-            const items = () => Array.from(popup.querySelectorAll('a, button')).filter((item) => !item.disabled && item.offsetParent !== null);
-            popup.querySelectorAll('a, button').forEach((item) => {
-                if (!item.hasAttribute('role')) item.setAttribute('role', 'menuitem');
-            });
-            const close = () => { popup.hidden = true; toggle.setAttribute('aria-expanded', 'false'); };
-            const open = () => {
-                popup.hidden = false;
-                toggle.setAttribute('aria-expanded', 'true');
-                requestAnimationFrame(() => items()[0]?.focus());
-            };
-            toggle.addEventListener('click', (event) => {
-                event.stopPropagation();
-                const wasOpen = !popup.hidden;
-                document.querySelectorAll('[data-admin-actions-menu]').forEach((other) => {
-                    if (other !== menu) {
-                        const otherToggle = other.querySelector('.admin-actions-menu__toggle');
-                        const otherPopup = other.querySelector('.admin-actions-menu__popup');
-                        if (otherPopup) otherPopup.hidden = true;
-                        otherToggle?.setAttribute('aria-expanded', 'false');
-                    }
-                });
-                wasOpen ? close() : open();
-            });
-            menu.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') { close(); toggle.focus(); return; }
-                if (popup.hidden) return;
-                const menuItems = items();
-                const current = menuItems.indexOf(document.activeElement);
-                if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-                    event.preventDefault();
-                    const direction = event.key === 'ArrowDown' ? 1 : -1;
-                    menuItems[(current + direction + menuItems.length) % menuItems.length]?.focus();
-                }
-                if (event.key === 'Home') { event.preventDefault(); menuItems[0]?.focus(); }
-                if (event.key === 'End') { event.preventDefault(); menuItems.at(-1)?.focus(); }
-            });
-        });
-        document.addEventListener('click', (event) => {
-            if (event.target.closest('[data-admin-actions-menu]')) return;
-            document.querySelectorAll('[data-admin-actions-menu] .admin-actions-menu__popup').forEach((popup) => { popup.hidden = true; });
-            document.querySelectorAll('[data-admin-actions-menu] .admin-actions-menu__toggle').forEach((toggle) => toggle.setAttribute('aria-expanded', 'false'));
+            if (event.key === 'Escape') {
+                popup.hidden = true;
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.focus();
+                return;
+            }
+            if (popup.hidden) return;
+            const items = adminActionsMenuItems(popup);
+            const current = items.indexOf(document.activeElement);
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                const direction = event.key === 'ArrowDown' ? 1 : -1;
+                items[(current + direction + items.length) % items.length]?.focus();
+            }
+            if (event.key === 'Home') { event.preventDefault(); items[0]?.focus(); }
+            if (event.key === 'End') { event.preventDefault(); items.at(-1)?.focus(); }
         });
 
         // Глобальное подтверждение удаления через модалку
