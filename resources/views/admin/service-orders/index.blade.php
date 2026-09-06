@@ -579,6 +579,69 @@ document.addEventListener('DOMContentLoaded',()=>{const root=document.getElement
 @media(max-width:767px){#serviceOrderModal .modal-dialog{max-width:none}.order-client__controls,.order-dates{grid-template-columns:1fr!important}.animal-editor__fields{padding:10px!important}.animal-service-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px!important}.animal-service-type{grid-column:1/-1}}
 </style>@endpush
 @push('styles')<style>
+/* Dynamic controls in the editor are popovers, not part of the form flow. */
+#serviceOrderModal .is-hidden{display:none!important}
+#serviceOrderModal .animal-service-add{position:relative;z-index:2}
+#serviceOrderModal .animal-service-add__menu,
+#serviceOrderModal .pet-action-menu__popup,
+#serviceOrderModal .add-animal-popover{
+    position:absolute;
+    z-index:1095!important;
+    min-width:172px;
+    padding:6px;
+    border:1px solid #dbe5f0;
+    border-radius:9px;
+    background:#fff;
+    box-shadow:0 14px 30px rgba(35,54,77,.16);
+}
+#serviceOrderModal .animal-service-add__menu{top:calc(100% + 6px);right:0;display:grid;gap:2px}
+#serviceOrderModal .animal-service-add__menu button{
+    display:flex;
+    align-items:center;
+    width:100%;
+    min-height:32px;
+    padding:6px 9px;
+    border:0;
+    border-radius:6px;
+    background:transparent;
+    color:#40546a;
+    font-size:.78rem;
+    font-weight:650;
+    line-height:1.2;
+    text-align:left;
+}
+#serviceOrderModal .animal-service-add__menu button:hover,
+#serviceOrderModal .animal-service-add__menu button:focus-visible{background:#edf4ff;color:#1768d5;outline:0}
+#serviceOrderModal .pet-action-menu{position:relative}
+#serviceOrderModal .pet-action-menu__popup{top:calc(100% + 6px);right:0;display:grid;gap:2px;min-width:184px}
+#serviceOrderModal .pet-action-menu__popup a{
+    display:flex;
+    align-items:center;
+    min-height:33px;
+    padding:7px 9px;
+    border-radius:6px;
+    color:#40546a;
+    font-size:.78rem;
+    font-weight:650;
+    line-height:1.2;
+    text-decoration:none;
+    white-space:nowrap;
+}
+#serviceOrderModal .pet-action-menu__popup a:hover,
+#serviceOrderModal .pet-action-menu__popup a:focus-visible{background:#edf4ff;color:#1768d5;outline:0}
+#serviceOrderModal .order-add-pet{position:relative}
+#serviceOrderModal .add-animal-popover{top:calc(100% + 7px);left:0;width:min(320px,calc(100vw - 72px));padding:13px}
+#serviceOrderModal .add-animal-popover .form-label{display:block;margin:0;color:#64748b;font-size:.75rem;font-weight:700}
+#serviceOrderModal .add-animal-popover .form-control{height:36px;margin-top:5px;border-color:#d9e4f1;font-size:.82rem}
+#serviceOrderModal .add-animal-popover .btn{min-height:34px;border-radius:7px;font-size:.8rem}
+#serviceOrderModal .add-animal-results{margin-top:6px;box-shadow:none}
+@media(max-width:767px){
+    #serviceOrderModal .animal-service-add__menu{right:0;left:auto}
+    #serviceOrderModal .pet-action-menu__popup{right:0;left:auto}
+    #serviceOrderModal .add-animal-popover{width:min(320px,calc(100vw - 52px))}
+}
+</style>@endpush
+@push('styles')<style>
 .orders-workspace .orders-list-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:12px 18px}
 .orders-workspace .orders-list-footer form{display:inline-flex;align-items:center;gap:8px;margin:0}
 .orders-workspace .orders-list-footer label{margin:0;font-weight:700}
