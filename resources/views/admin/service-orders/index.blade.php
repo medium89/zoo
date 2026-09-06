@@ -205,6 +205,7 @@
 .orders-workspace .orders-table__head {
     min-height: 42px;
     padding: 0 18px;
+    border-radius: 14px 14px 0 0;
     background: #f8fafc;
     color: #8a98a8;
     font-size: .66rem;
@@ -217,6 +218,7 @@
 }
 .orders-workspace .orders-table__row:last-child {
     border-bottom: 0;
+    border-radius: 0 0 14px 14px;
 }
 .orders-workspace .orders-table__row:hover {
     background: #fcfdff;
