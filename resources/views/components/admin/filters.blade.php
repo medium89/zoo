@@ -13,7 +13,6 @@
         <input type="hidden" name="per_page" value="{{ $filters['per_page'] }}">
     @endif
     <label class="admin-filter-bar__search">
-        <span class="admin-filter-bar__label">Поиск</span>
         <i class="fa fa-magnifying-glass" aria-hidden="true"></i>
         <input type="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ $placeholder }}" autocomplete="off">
     </label>
