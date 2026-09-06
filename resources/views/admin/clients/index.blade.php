@@ -193,6 +193,8 @@
 <style>
     /* The shared entity list is the visual shell; this wrapper only keeps map/list spacing. */
     .clients-workspace__list { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+    .clients-workspace .admin-filter-bar,
+    .clients-workspace .admin-filter-bar--attached { margin-bottom: 12px; }
 </style>
 @endpush
 

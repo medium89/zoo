@@ -107,7 +107,7 @@ class AdminListPaginationTest extends TestCase
             ->assertSee('per_page=10', false)
             ->assertSee('name="search"', false)
             ->assertSee('value="Клиент"', false)
-            ->assertSeeInOrder(['orders-create-region', 'orders-create js-new-service-order'], false);
+            ->assertSee('data-fab-target=".js-new-service-order"', false);
     }
 
     public function test_service_orders_pagination_footer_is_outside_the_table_shell(): void
