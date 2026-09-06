@@ -31,6 +31,8 @@ class ClientWorkspaceTest extends TestCase
             ->assertSee('admin-grid')
             ->assertSee('Анастасия')
             ->assertSee('Питомцы')
+            ->assertSee('client-pet__image', false)
+            ->assertSee('Дейзи')
             ->assertSee('+7 999 123-45-67')
             ->assertSee('js-edit-client-with-pets', false)
             ->assertSee('name="animals"', false)

@@ -22,7 +22,7 @@ class ClientAdminController extends Controller
             'per_page' => 'nullable|integer|in:10,25,50,100',
         ]);
         $perPage = (int) ($filters['per_page'] ?? 25);
-        $clients = Client::with(['animals.category', 'photos'])->withCount(['animals', 'boardings'])
+        $clients = Client::with(['animals.category', 'animals.photos', 'photos'])->withCount(['animals', 'boardings'])
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(fn ($items) => $items->where('name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%")
