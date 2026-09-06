@@ -2,27 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Отзывы Avito</h1>
-        <div class="d-flex gap-2 align-items-center">
-            <a href="{{ route('admin.avito-reviews.create') }}" class="btn btn-success d-none">
-                <i class="fa fa-plus"></i> Новый отзыв
-            </a>
-            <form action="{{ route('admin.avito-reviews.refresh') }}" method="POST" class="mb-0">
-                @csrf
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa fa-rotate"></i> Обновить с сайта
-                </button>
-            </form>
-            <form action="{{ route('admin.avito-reviews.import') }}" method="POST" enctype="multipart/form-data" class="mb-0 d-flex align-items-center gap-2">
-                @csrf
-                <input type="file" name="html_file" accept=".html,.htm,.txt" class="form-control form-control-sm" required>
-                <button type="submit" class="btn btn-outline-secondary btn-sm">
-                    Импорт из файла
-                </button>
-            </form>
-        </div>
-    </div>
+    <h1 class="visually-hidden">Отзывы Avito</h1>
 
     @if (session('success'))
         <div class="alert alert-success">
@@ -40,10 +20,25 @@
         </div>
     @endif
 
-    <x-admin.filters :action="route('admin.avito-reviews.index')" :filters="$filters" placeholder="Автор или текст отзыва" :auto="true" :attached="true">
-        <label class="admin-filter-bar__field">Статус<select name="status" class="form-select"><option value="">Все</option><option value="new" @selected(($filters['status'] ?? '') === 'new')>Новые</option><option value="published" @selected(($filters['status'] ?? '') === 'published')>Опубликованы</option><option value="hidden" @selected(($filters['status'] ?? '') === 'hidden')>Скрыты</option></select></label>
-        <label class="admin-filter-bar__field">По дате<select name="sort" class="form-select"><option value="date_desc" @selected(($filters['sort'] ?? 'date_desc') === 'date_desc')>Сначала новые</option><option value="date_asc" @selected(($filters['sort'] ?? '') === 'date_asc')>Сначала старые</option></select></label>
-    </x-admin.filters>
+    <div class="avito-reviews-toolbar">
+        <x-admin.filters :action="route('admin.avito-reviews.index')" :filters="$filters" placeholder="Автор или текст отзыва" :auto="true" :attached="true">
+            <label class="admin-filter-bar__field">Статус<select name="status" class="form-select"><option value="">Все</option><option value="new" @selected(($filters['status'] ?? '') === 'new')>Новые</option><option value="published" @selected(($filters['status'] ?? '') === 'published')>Опубликованы</option><option value="hidden" @selected(($filters['status'] ?? '') === 'hidden')>Скрыты</option></select></label>
+            <label class="admin-filter-bar__field">По дате<select name="sort" class="form-select"><option value="date_desc" @selected(($filters['sort'] ?? 'date_desc') === 'date_desc')>Сначала новые</option><option value="date_asc" @selected(($filters['sort'] ?? '') === 'date_asc')>Сначала старые</option></select></label>
+        </x-admin.filters>
+        <x-admin.actions-menu label="Управление отзывами Avito">
+            <form action="{{ route('admin.avito-reviews.refresh') }}" method="POST">
+                @csrf
+                <button type="submit" class="admin-actions-menu__item"><i class="fa fa-rotate" aria-hidden="true"></i><span>Обновить с сайта</span></button>
+            </form>
+            <form action="{{ route('admin.avito-reviews.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <label class="admin-actions-menu__item avito-import-action">
+                    <i class="fa fa-file-import" aria-hidden="true"></i><span>Импорт из файла</span>
+                    <input type="file" name="html_file" accept=".html,.htm,.txt" class="visually-hidden" required onchange="if(this.files.length)this.form.submit()">
+                </label>
+            </form>
+        </x-admin.actions-menu>
+    </div>
 
     <div class="admin-grid" style="--grid-cols: 100px 1fr 140px 2fr 120px 120px 140px;">
         <div class="admin-grid-header">
@@ -157,6 +152,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 @push('styles')
 <style>
+.avito-reviews-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}.avito-reviews-toolbar>.admin-filter-bar{flex:1;min-width:0;margin:0}.avito-reviews-toolbar>.admin-actions-menu{flex:0 0 auto}.avito-reviews-toolbar>.admin-actions-menu>.admin-actions-menu__toggle{width:40px;height:40px;border:1px solid #dce4ed;background:#fff}.avito-import-action{margin:0;cursor:pointer}.avito-import-action input{position:absolute!important}@media(max-width:767px){.avito-reviews-toolbar{align-items:flex-start}.avito-reviews-toolbar>.admin-filter-bar{flex:1}.avito-reviews-toolbar>.admin-actions-menu{margin-top:12px}}
 .admin-pagination-bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:flex-start;padding:14px 0;border:0;border-radius:0;background:transparent}.admin-pagination-bar__summary{color:#63748a;font-size:.86rem}.admin-pagination-bar__per-page{display:flex;align-items:center;gap:8px;color:#55677c;font-size:.82rem;font-weight:700}.admin-pagination-bar__per-page .form-select{width:auto;min-width:74px}.admin-pagination-bar__pages{margin-left:auto}.admin-pagination-bar__pages .pagination{margin:0}.admin-pagination-bar__pages .page-link{color:#3d638d}.admin-pagination-bar__pages .active .page-link{background:#3979bb;border-color:#3979bb}@media(max-width:640px){.admin-pagination-bar{align-items:stretch}.admin-pagination-bar__per-page{justify-content:space-between}.admin-pagination-bar__pages{overflow:auto;margin-left:0}.admin-pagination-bar__pages .pagination{width:max-content}}
 </style>
 @endpush

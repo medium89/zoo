@@ -140,7 +140,7 @@
         .sidebar a:hover { background: #2b3038; color: #fff; padding-left: 20px; }
 
         .content {
-            padding: 32px;
+            padding: 5px 32px 32px;
             flex: 1 1 0;
             min-width: 0;
             width: auto;
@@ -341,12 +341,6 @@
         .admin-entity-list__footer-pagination { min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
         .admin-entity-list__footer-pagination .pagination { flex-wrap: nowrap; width: max-content; }
         .admin-entity-list__footer-pagination { margin-left: auto; }
-        .admin-list-page__actionbar { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 10px; margin-bottom: 20px; }
-        /* Creation moved to the global FAB; empty legacy action rows must not leave a blank gap. */
-        .admin-list-page__actionbar:has(> .d-none:only-child),
-        .clients-workspace__header:has(> h1.visually-hidden):has(> .d-none) {
-            display: none;
-        }
         /* List/settings/form pages keep one semantic h1 for screen readers without visual duplication. */
         #admin-content[data-admin-hide-page-heading="1"] > h1,
         #admin-content[data-admin-hide-page-heading="1"] > * > h1:first-child,
@@ -1119,7 +1113,7 @@
         .admin-contextual-nav__footer form { margin: 0; }
         .admin-contextual-nav__footer button { width: 100%; gap: 9px; }
         .admin-contextual-nav__footer button:hover, .admin-contextual-nav__footer button:focus-visible { background: #2d3b4d; color: #fff; outline: 0; }
-        .content { min-width: 0; padding: 32px; overflow-x: clip; }
+        .content { min-width: 0; padding: 5px 32px 32px; overflow-x: clip; }
         .admin-command-palette kbd { padding: 2px 5px; border: 1px solid #dce3eb; border-radius: 5px; background: #f7f9fb; color: #8490a0; font-family: inherit; font-size: .7rem; }
         .admin-command-palette[hidden] { display: none; }
         .admin-command-palette { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: start center; padding: min(12vh, 120px) 18px 18px; }

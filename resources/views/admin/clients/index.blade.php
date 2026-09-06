@@ -2,10 +2,7 @@
 
 @section('content')
 <section class="clients-workspace">
-    <header class="clients-workspace__header">
-        <h1 class="visually-hidden">Клиенты</h1>
-        <button type="button" class="btn btn-primary clients-workspace__create d-none" id="newClientWithPets"><i class="fa fa-plus" aria-hidden="true"></i><span>Новый клиент</span></button>
-    </header>
+    <h1 class="visually-hidden">Клиенты</h1>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -88,6 +85,7 @@
     @endif
 </section>
 <x-admin.fab label="Добавить клиента" target="#newClientWithPets" />
+<button type="button" class="d-none" id="newClientWithPets" tabindex="-1" aria-hidden="true"></button>
 
 <div class="modal fade admin-modal" id="clientCreateModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable client-create-dialog">

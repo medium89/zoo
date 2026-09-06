@@ -3,9 +3,6 @@
 @section('content')
 <div class="container-fluid admin-list-page">
     <h1 class="visually-hidden">Категории животных</h1>
-    <div class="admin-list-page__actionbar">
-        <a href="{{ route('admin.categories.create') }}" class="btn btn-primary d-none"><i class="fa fa-plus me-1" aria-hidden="true"></i>Добавить категорию</a>
-    </div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
