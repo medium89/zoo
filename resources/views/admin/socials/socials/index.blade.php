@@ -1,6 +1,6 @@
 @extends('admin.index')
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center">
     <h1>Социальные контакты</h1>
     <a href="{{ route('admin.socials.create') }}" class="btn btn-primary">Добавить контакт</a>
 </div>

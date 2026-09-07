@@ -1,6 +1,6 @@
 @extends('admin.index')
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center">
     <h1>Фотоальбом</h1>
     <a href="{{ route('admin.galleries.create') }}" class="btn btn-primary d-none">Добавить фото</a>
 </div>

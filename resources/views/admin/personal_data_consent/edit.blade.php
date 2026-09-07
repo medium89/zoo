@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <h1 class="mb-3">Согласие на обработку персональных данных</h1>
+    <h1>Согласие на обработку персональных данных</h1>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -34,4 +34,3 @@
 @section('scripts')
     @include('admin.partials.wysiwyg-scripts')
 @endsection
-

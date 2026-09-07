@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center">
         <h1>{{ $client->name }}</h1>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-primary" data-admin-popup-target="#clientAnimalModal">Добавить питомца</button>

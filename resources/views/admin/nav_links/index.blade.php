@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center">
         <h1>Меню сайта</h1>
     </div>
 
@@ -41,4 +41,3 @@
     </form>
 </div>
 @endsection
-

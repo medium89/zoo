@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center">
         <h1>Животные передержки</h1>
         <div class="d-flex gap-2">
             <a href="{{ route('admin.boarding.archive') }}" class="btn btn-outline-secondary">Архив</a>

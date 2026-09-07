@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center">
         <h1>Статьи</h1>
         <a href="{{ route('admin.articles.create') }}" class="btn btn-primary d-none">Добавить</a>
     </div>

@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid">
     @php($animalName = $boarding->animal?->name ?: $boarding->name)
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center">
         <div>
             <h1 class="mb-1">Действия: {{ $animalName }}</h1>
             <div class="text-muted">{{ $boarding->start_date->format('d.m.Y') }} — {{ $boarding->end_date->format('d.m.Y') }}</div>

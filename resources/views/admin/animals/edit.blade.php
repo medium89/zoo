@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <h1 class="mb-3">Редактировать питомца</h1>
+    <h1>Редактировать питомца</h1>
     @if($errors->any())
         <div class="alert alert-danger">{{ $errors->first() }}</div>
     @endif
