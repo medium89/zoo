@@ -63,7 +63,7 @@
                 <div class="row g-4">
                     @forelse($articles as $article)
                         <div class="col-md-6 col-xl-4">
-                            <div class="card h-100 shadow-sm border-0 article-card">
+                            <article class="card h-100 border-0 article-card">
                                 @php
                                     $cover = $article->cover_path ? asset('storage/'.$article->cover_path) : null;
                                     if(!$cover && $article->images->first()){
@@ -72,21 +72,21 @@
                                     $placeholder = 'data:image/svg+xml;utf8,'.rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360"><rect width="600" height="360" fill="%23415366"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23ffffff" font-size="24" font-family="Arial, sans-serif">Нет изображения</text></svg>');
                                 @endphp
                                 <a href="{{ route('articles.show', $article) }}" class="article-card__cover-link">
-                                    <img src="{{ $cover ?? $placeholder }}" class="card-img-top" alt="{{ $article->title }}" style="object-fit:contain;background:#fff;max-height:200px;">
+                                    <img src="{{ $cover ?? $placeholder }}" class="article-card__cover" alt="{{ $article->title }}">
                                 </a>
-                                <div class="card-body d-flex flex-column">
-                                    <h4 class="card-title fw-bold mb-3">
+                                <div class="card-body article-card__body">
+                                    <h4 class="article-card__title">
                                         <a href="{{ route('articles.show', $article) }}" class="article-card__title-link">{{ $article->title }}</a>
                                     </h4>
                                     @if($article->excerpt)
-                                        <p class="card-text text-muted">{{ \Illuminate\Support\Str::limit(strip_tags($article->excerpt), 160) }}</p>
+                                        <p class="article-card__excerpt">{{ strip_tags($article->excerpt) }}</p>
                                     @endif
-                                    <div class="mt-auto d-flex justify-content-between align-items-center">
-                                        <span class="text-muted small">{{ $article->created_at->format('d.m.Y') }}</span>
-                                        <a href="{{ route('articles.show', $article) }}" class="btn btn-outline-primary btn-sm">Читать</a>
+                                    <div class="article-card__footer">
+                                        <time datetime="{{ ($article->published_at ?: $article->created_at)->toDateString() }}">{{ ($article->published_at ?: $article->created_at)->locale('ru')->translatedFormat('j F Y') }}</time>
+                                        <a href="{{ route('articles.show', $article) }}" class="article-card__read-more">Читать <span aria-hidden="true">→</span></a>
                                     </div>
                                 </div>
-                            </div>
+                            </article>
                         </div>
                     @empty
                         <div class="col-12 text-muted">Статей пока нет.</div>
@@ -141,22 +141,106 @@
     .article-breadcrumbs .breadcrumb-item + .breadcrumb-item::before{
         color: #adb5bd;
     }
-    .article-card img{
-        border-top-left-radius: 0.75rem;
-        border-top-right-radius: 0.75rem;
-    }
     .article-card{
-        border-radius: 12px;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgba(37,31,52,.08);
+        overflow: hidden;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .article-card:hover{
+        transform: translateY(-3px);
+        box-shadow: 0 14px 32px rgba(37,31,52,.13);
     }
     .article-card__cover-link{
         display: block;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        background: #f3eff7;
+    }
+    .article-card__cover{
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transition: transform .3s ease;
+    }
+    .article-card:hover .article-card__cover{
+        transform: scale(1.025);
+    }
+    .article-card__body{
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        padding: 18px 18px 16px;
+    }
+    .article-card__title{
+        display: -webkit-box;
+        min-height: 3.75em;
+        margin: 0 0 11px;
+        overflow: hidden;
+        color: #24202b;
+        font-size: 1.08rem;
+        font-weight: 700;
+        line-height: 1.25;
+        letter-spacing: -.012em;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
     }
     .article-card__title-link{
         color: inherit;
         text-decoration: none;
+        text-transform: none;
     }
     .article-card__title-link:hover{
-        text-decoration: underline;
+        color: var(--color-secondary);
+        text-decoration: none;
+    }
+    .article-card__excerpt{
+        display: -webkit-box;
+        margin: 0 0 18px;
+        overflow: hidden;
+        color: #686170;
+        font-size: .9rem;
+        line-height: 1.55;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+    }
+    .article-card__footer{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: auto;
+        padding-top: 14px;
+        border-top: 1px solid #eee9f2;
+    }
+    .article-card__footer time{
+        color: #8a8290;
+        font-size: .78rem;
+        line-height: 1.2;
+    }
+    .article-card__read-more{
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--color-secondary);
+        font-size: .82rem;
+        font-weight: 700;
+        line-height: 1.2;
+        text-decoration: none;
+        text-transform: none;
+    }
+    .article-card__read-more span{
+        font-size: 1rem;
+        transition: transform .18s ease;
+    }
+    .article-card__read-more:hover{
+        color: var(--color-secondary-hover);
+    }
+    .article-card__read-more:hover span{
+        transform: translateX(3px);
     }
     .filter-card__header{
         background: #8c4dc7;
