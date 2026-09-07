@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-fluid client-node-page">
-    <div class="d-flex flex-wrap justify-content-start align-items-center gap-2 mb-3">
+    <div class="d-flex flex-wrap justify-content-start align-items-center gap-2">
         <div><h1 class="mb-1">Карта клиентов</h1></div>
         <div class="d-flex gap-2">
             <button class="btn btn-outline-primary d-none" id="newMapAnimalButton" type="button" data-bs-toggle="modal" data-bs-target="#newMapAnimalModal"><i class="fa fa-plus me-1"></i>Питомец</button>
