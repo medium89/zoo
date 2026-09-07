@@ -283,15 +283,17 @@
     .toc-nav a{
         display: block;
         margin: 0;
-        padding: 6px 0;
+        padding: 7px 10px;
         border: none;
+        border-radius: 9px;
         background: transparent;
+        box-shadow: inset 0 0 0 1px transparent;
         text-decoration: none;
         font-size: 0.97rem;
         letter-spacing: 0.02em;
         text-transform: none;
         color: var(--color-primary);
-        transition: color 0.2s ease;
+        transition: color .2s ease, background-color .2s ease, box-shadow .2s ease;
     }
     .toc-nav a:last-child{
         margin-bottom: 0;
@@ -301,6 +303,8 @@
     }
     .toc-nav a.active{
         color: var(--color-secondary);
+        background: rgba(140,77,199,.055);
+        box-shadow: inset 0 0 0 1px var(--color-secondary);
     }
     .toc-nav .toc-sub{
         margin-left: 0;
@@ -459,9 +463,33 @@ document.addEventListener('DOMContentLoaded', function(){
         tocNav.innerHTML = '';
         tocNav.appendChild(list);
 
+        const links = Array.from(tocNav.querySelectorAll('a'));
+        let scrollTicking = false;
+        const setActiveLink = (index) => {
+            links.forEach((link, linkIndex) => link.classList.toggle('active', linkIndex === index));
+        };
+        const updateActiveLink = () => {
+            let activeIndex = 0;
+            headings.forEach((heading, index) => {
+                if (heading.getBoundingClientRect().top <= 150) activeIndex = index;
+            });
+            setActiveLink(activeIndex);
+            scrollTicking = false;
+        };
+        const requestActiveLinkUpdate = () => {
+            if (scrollTicking) return;
+            scrollTicking = true;
+            window.requestAnimationFrame(updateActiveLink);
+        };
+
+        updateActiveLink();
+        window.addEventListener('scroll', requestActiveLinkUpdate, {passive: true});
+        window.addEventListener('resize', requestActiveLinkUpdate);
+
         tocNav.addEventListener('click', (e)=>{
             if (e.target.tagName.toLowerCase() !== 'a') return;
             e.preventDefault();
+            setActiveLink(links.indexOf(e.target));
             const id = e.target.getAttribute('href').replace('#','');
             const target = document.getElementById(id);
             if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
