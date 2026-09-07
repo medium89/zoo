@@ -140,7 +140,7 @@
         .sidebar a:hover { background: #2b3038; color: #fff; padding-left: 20px; }
 
         .content {
-            padding: 5px 32px 32px;
+            padding: 20px 32px 32px;
             flex: 1 1 0;
             min-width: 0;
             width: auto;
@@ -1113,7 +1113,7 @@
         .admin-contextual-nav__footer form { margin: 0; }
         .admin-contextual-nav__footer button { width: 100%; gap: 9px; }
         .admin-contextual-nav__footer button:hover, .admin-contextual-nav__footer button:focus-visible { background: #2d3b4d; color: #fff; outline: 0; }
-        .content { min-width: 0; padding: 5px 32px 32px; overflow-x: clip; }
+        .content { min-width: 0; padding: 20px 32px 32px; overflow-x: clip; }
         .admin-command-palette kbd { padding: 2px 5px; border: 1px solid #dce3eb; border-radius: 5px; background: #f7f9fb; color: #8490a0; font-family: inherit; font-size: .7rem; }
         .admin-command-palette[hidden] { display: none; }
         .admin-command-palette { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: start center; padding: min(12vh, 120px) 18px 18px; }
