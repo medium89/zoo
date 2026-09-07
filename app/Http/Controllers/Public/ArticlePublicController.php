@@ -13,13 +13,16 @@ use Carbon\Carbon;
 
 class ArticlePublicController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $q = Article::with('images')->where('active', true);
 
         $search = request('search');
         $from = request('from');
         $to = request('to');
+        $sort = in_array($request->query('sort'), ['newest', 'oldest'], true)
+            ? $request->query('sort')
+            : 'newest';
 
         if ($search) {
             $q->where(function($sub) use ($search){
@@ -45,12 +48,17 @@ class ArticlePublicController extends Controller
             });
         }
 
-        $articles = $q->orderBy('order')->orderByDesc('published_at')->orderByDesc('created_at')->paginate(9)->appends(request()->query());
+        $dateDirection = $sort === 'oldest' ? 'asc' : 'desc';
+        $articles = $q
+            ->orderByRaw("COALESCE(published_at, created_at) {$dateDirection}")
+            ->orderBy('id', $dateDirection)
+            ->paginate(9)
+            ->appends(request()->query());
         $categories = Category::whereHas('articles', function($sub){
             $sub->where('active', true);
         })->orderBy('name')->get();
 
-        return view('articles.index', compact('articles', 'search', 'from', 'to', 'categories', 'categorySlug'));
+        return view('articles.index', compact('articles', 'search', 'from', 'to', 'sort', 'categories', 'categorySlug'));
     }
 
     public function show(Article $article)

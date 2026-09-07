@@ -51,6 +51,13 @@
                                 </select>
                             </div>
                             @endif
+                            <div>
+                                <label class="form-label small text-muted mb-1">Порядок статей</label>
+                                <select name="sort" class="form-select">
+                                    <option value="newest" {{ ($sort ?? 'newest') === 'newest' ? 'selected' : '' }}>Сначала новые</option>
+                                    <option value="oldest" {{ ($sort ?? 'newest') === 'oldest' ? 'selected' : '' }}>Сначала старые</option>
+                                </select>
+                            </div>
                             <div class="d-flex gap-2">
                                 <button class="btn btn-primary flex-grow-1" type="submit">Применить</button>
                                 <a href="{{ route('articles.index') }}" class="btn btn-outline-secondary" title="Сбросить"><i class="fa fa-rotate-left"></i></a>

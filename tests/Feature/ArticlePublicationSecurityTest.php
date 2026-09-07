@@ -23,6 +23,34 @@ class ArticlePublicationSecurityTest extends TestCase
         $this->get(route('articles.show', $article))->assertNotFound();
     }
 
+    public function test_public_articles_are_newest_first_by_default_and_can_be_reversed(): void
+    {
+        Article::create([
+            'title' => 'Старая статья',
+            'slug' => 'old-article',
+            'content' => 'Текст',
+            'active' => true,
+            'order' => 1,
+            'published_at' => '2026-01-10 12:00:00',
+        ]);
+        Article::create([
+            'title' => 'Новая статья',
+            'slug' => 'new-article',
+            'content' => 'Текст',
+            'active' => true,
+            'order' => 999,
+            'published_at' => '2026-08-10 12:00:00',
+        ]);
+
+        $this->get(route('articles.index'))
+            ->assertOk()
+            ->assertSeeInOrder(['Новая статья', 'Старая статья']);
+
+        $this->get(route('articles.index', ['sort' => 'oldest']))
+            ->assertOk()
+            ->assertSeeInOrder(['Старая статья', 'Новая статья']);
+    }
+
     public function test_new_comment_is_sent_to_moderation(): void
     {
         $article = Article::create([
