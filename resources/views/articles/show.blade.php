@@ -227,8 +227,8 @@
     }
     .article-content h1{
         margin: 0 0 1.25rem;
-        font-size: clamp(2rem, 3.4vw, 3rem);
-        line-height: 1.15;
+        font-size: clamp(1.85rem, 2.8vw, 2.45rem);
+        line-height: 1.18;
     }
     .article-content h2{
         margin: 2.15rem 0 .85rem !important;
