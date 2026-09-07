@@ -313,7 +313,7 @@
     }
     .toc-nav .toc-list{
         margin: 0;
-        padding: 14px 18px 18px;
+        padding: 24px 18px 18px;
         list-style: none;
     }
     .toc-nav .toc-item{
