@@ -169,7 +169,7 @@
 .orders-workspace .orders-filters {
     grid-template-columns: minmax(220px, 1.6fr) minmax(145px, .85fr) minmax(145px, .85fr) minmax(245px, 1.15fr) auto;
     gap: 9px;
-    padding: 13px 0;
+    padding: 0 0 13px;
     background: transparent;
     border: 0;
 }
