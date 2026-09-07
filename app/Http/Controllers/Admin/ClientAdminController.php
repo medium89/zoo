@@ -104,8 +104,13 @@ class ClientAdminController extends Controller
             'animals.photos',
             'animals.category',
             'animals.boardings' => fn ($query) => $query->latest('start_date'),
+            'animals.serviceOrderAnimals',
             'boardings.animal.photos',
             'boardings.animal.category',
+            'serviceOrders' => fn ($query) => $query->latest('start_date'),
+            'serviceOrders.animals.animal.photos',
+            'serviceOrders.animals.category',
+            'serviceOrders.animals.services',
         ]);
 
         $availableAnimals = Animal::with('client')

@@ -1,11 +1,29 @@
 @extends('admin.index')
 
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
+<div class="client-profile-view">
+    @php
+        $orders = $client->serviceOrders->sortByDesc('start_date');
+        $activeOrdersCount = $orders->filter(fn ($order) => !$order->archived_at && $order->end_date?->endOfDay()->isFuture())->count();
+        $monthNames = [1 => 'янв', 2 => 'фев', 3 => 'мар', 4 => 'апр', 5 => 'мая', 6 => 'июн', 7 => 'июл', 8 => 'авг', 9 => 'сен', 10 => 'окт', 11 => 'ноя', 12 => 'дек'];
+        $shortDate = fn ($date) => $date ? $date->format('j').' '.$monthNames[(int) $date->format('n')] : '—';
+        $wordForm = function (int $number, array $forms): string {
+            $remainder100 = $number % 100;
+            $remainder10 = $number % 10;
+            if ($remainder100 >= 11 && $remainder100 <= 19) return $forms[2];
+            if ($remainder10 === 1) return $forms[0];
+            if ($remainder10 >= 2 && $remainder10 <= 4) return $forms[1];
+            return $forms[2];
+        };
+        $capitalize = fn (string $value) => mb_strtoupper(mb_substr($value, 0, 1)).mb_substr($value, 1);
+        $sourceLabels = ['telegram_bot' => 'Telegram', 'telegram' => 'Telegram', 'admin' => 'Админка', 'web' => 'Сайт'];
+        $statusLabels = ['active' => 'В работе', 'planned' => 'Запланирован', 'finished' => 'Завершён', 'archived' => 'В архиве'];
+    @endphp
+
+    <div class="client-profile-view__heading">
         <h1>{{ $client->name }}</h1>
-        <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-primary" data-admin-popup-target="#clientAnimalModal">Добавить питомца</button>
+        <div class="client-profile-view__actions">
+            <button type="button" class="btn btn-primary" data-admin-popup-target="#clientAnimalModal"><i class="fa fa-plus" aria-hidden="true"></i><span>Добавить питомца</span></button>
             <x-admin.actions-menu label="Действия с клиентом {{ $client->name }}"><a href="{{ route('admin.clients.edit', $client) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a></x-admin.actions-menu>
         </div>
     </div>
@@ -14,97 +32,109 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <div class="row g-3">
-        <div class="col-lg-4">
-            <div class="card h-100">
-                <div class="card-header">Информация</div>
-                <div class="card-body">
-                    <img src="{{ $client->avatarUrl() }}" alt="{{ $client->name }}" class="client-profile-avatar mb-3">
-                    <p><strong>Телефон:</strong> {{ $client->phone ?: '—' }}</p>
-                    <p><strong>Адрес:</strong> {{ $client->address ?: '—' }}</p>
-                    @if(!empty($client->tags))
-                        <div class="mb-3"><strong>Теги:</strong>@include('admin.partials.tags-list', ['tags' => $client->tags])</div>
-                    @endif
-                    <p class="mb-0"><strong>Заметка:</strong><br>{{ $client->note ?: '—' }}</p>
+    <section class="client-profile-summary">
+        <img src="{{ $client->avatarUrl() }}" alt="{{ $client->name }}" class="client-profile-summary__avatar">
+        <div class="client-profile-summary__main">
+            <div class="client-profile-summary__contacts">
+                <div class="client-profile-contact">
+                    <span class="client-profile-contact__icon"><i class="fa fa-phone" aria-hidden="true"></i></span>
+                    <div><small>Телефон</small>@if($client->phone)<a href="tel:{{ preg_replace('/[^+\d]/', '', $client->phone) }}">{{ $client->phone }}</a>@else<strong class="is-empty">Не указан</strong>@endif</div>
+                </div>
+                <div class="client-profile-contact client-profile-contact--wide">
+                    <span class="client-profile-contact__icon"><i class="fa fa-location-dot" aria-hidden="true"></i></span>
+                    <div><small>Адрес</small><strong class="{{ $client->address ? '' : 'is-empty' }}">{{ $client->address ?: 'Не указан' }}</strong></div>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-8">
-            <div class="card h-100">
-                <div class="card-header">Питомцы</div>
-                <div class="card-body">
-                    @forelse($client->animals as $animal)
-                        <div class="border rounded p-3 mb-2">
-                            <div class="d-flex justify-content-between gap-2">
-                                <div>
-                                    <a href="{{ route('admin.animals.show', $animal) }}" class="fw-bold">{{ $animal->name }}</a>
-                                    <div class="text-muted small">{{ $animal->category?->name ?: 'категория не указана' }} · записей: {{ $animal->boardings->count() }}</div>
-                                </div>
-                                <div class="d-flex align-items-start gap-2">
-                                    @if($animal->photos->first())
-                                        <img src="{{ Storage::url($animal->photos->first()->path) }}" alt="{{ $animal->name }}" style="width:54px;height:54px;object-fit:cover;border-radius:8px;">
-                                    @endif
-                                    <x-admin.actions-menu label="Действия с питомцем {{ $animal->name }}"><form action="{{ route('admin.clients.animals.detach', [$client, $animal]) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="admin-actions-menu__item admin-actions-menu__item--danger js-unlink-trigger" data-confirm="Отвязать питомца «{{ $animal->name }}» от клиента? Питомец останется в базе."><i class="fa fa-link-slash" aria-hidden="true"></i><span>Отвязать питомца</span></button>
-                                    </form>
-                                    </x-admin.actions-menu>
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-muted">У клиента пока нет питомцев.</div>
-                    @endforelse
-                </div>
+            <div class="client-profile-stats">
+                <div><strong>{{ $client->animals->count() }}</strong><span>{{ $wordForm($client->animals->count(), ['питомец', 'питомца', 'питомцев']) }}</span></div>
+                <div><strong>{{ $orders->count() }}</strong><span>{{ $wordForm($orders->count(), ['заказ', 'заказа', 'заказов']) }}</span></div>
+                <div><strong>{{ $activeOrdersCount }}</strong><span>активных</span></div>
             </div>
-        </div>
-    </div>
-
-    <div class="card mt-3">
-        <div class="card-header">История записей</div>
-        <div class="card-body">
-            @if($client->boardings->count())
-                <div class="table-responsive">
-                    <table class="table align-middle boarding-history-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Питомец</th>
-                                <th>Услуга</th>
-                                <th>Период</th>
-                                <th>Источник</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($client->boardings->sortByDesc('start_date') as $boarding)
-                                <tr>
-                                    <td>{{ $boarding->id }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            @if($boarding->animal?->photos->first())
-                                                <img src="{{ Storage::url($boarding->animal->photos->first()->path) }}" alt="{{ $boarding->animal->name }}" style="width:38px;height:38px;object-fit:cover;border-radius:8px;">
-                                            @endif
-                                            @if($boarding->animal)
-                                                <a href="{{ route('admin.animals.show', $boarding->animal) }}">{{ $boarding->animal->name }}</a>
-                                            @else
-                                                {{ $boarding->name }}
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>{{ $boarding->service_type }}</td>
-                                    <td>{{ $boarding->start_date->toDateString() }} — {{ $boarding->end_date->toDateString() }}</td>
-                                    <td>{{ $boarding->source ?? 'admin' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="text-muted">Записей пока нет.</div>
+            @if(!empty($client->tags))
+                <div class="client-profile-summary__tags">@include('admin.partials.tags-list', ['tags' => $client->tags])</div>
             @endif
+            <div class="client-profile-summary__meta"><i class="fa fa-clock" aria-hidden="true"></i> Клиент добавлен {{ $client->created_at->format('d.m.Y') }}</div>
         </div>
-    </div>
+    </section>
+
+    @if($client->note)
+        <section class="client-profile-note">
+            <div class="client-profile-section-title"><span><i class="fa fa-note-sticky" aria-hidden="true"></i> Заметка</span></div>
+            <p>{{ $client->note }}</p>
+        </section>
+    @endif
+
+    <section class="client-profile-section">
+        <div class="client-profile-section-title">
+            <span><i class="fa fa-paw" aria-hidden="true"></i> Питомцы</span>
+            <b>{{ $client->animals->count() }}</b>
+        </div>
+        @if($client->animals->isNotEmpty())
+            <div class="client-profile-pets">
+                @foreach($client->animals as $animal)
+                    @php
+                        $animalRecords = $animal->serviceOrderAnimals->count() ?: $animal->boardings->count();
+                        $animalPhoto = $animal->photos->first();
+                    @endphp
+                    <article class="client-profile-pet">
+                        <a href="{{ route('admin.animals.show', $animal) }}" class="client-profile-pet__avatar" aria-label="Открыть карточку питомца {{ $animal->name }}">
+                            @if($animalPhoto)
+                                <img src="{{ Storage::url($animalPhoto->path) }}" alt="{{ $animal->name }}">
+                            @else
+                                <i class="fa fa-paw" aria-hidden="true"></i>
+                            @endif
+                        </a>
+                        <div class="client-profile-pet__copy">
+                            <a href="{{ route('admin.animals.show', $animal) }}">{{ $animal->name }}</a>
+                            <span>{{ $animal->category?->name ?: 'Вид не указан' }}</span>
+                            <small><i class="fa fa-calendar-check" aria-hidden="true"></i> {{ $animalRecords }} {{ $wordForm($animalRecords, ['запись', 'записи', 'записей']) }}</small>
+                        </div>
+                        <x-admin.actions-menu label="Действия с питомцем {{ $animal->name }}">
+                            <a href="{{ route('admin.animals.show', $animal) }}" class="admin-actions-menu__item"><i class="fa fa-eye" aria-hidden="true"></i><span>Просмотреть</span></a>
+                            <a href="{{ route('admin.animals.edit', $animal) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a>
+                            <form action="{{ route('admin.clients.animals.detach', [$client, $animal]) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="admin-actions-menu__item admin-actions-menu__item--danger js-unlink-trigger" data-confirm="Отвязать питомца «{{ $animal->name }}» от клиента? Питомец останется в базе."><i class="fa fa-link-slash" aria-hidden="true"></i><span>Отвязать питомца</span></button>
+                            </form>
+                        </x-admin.actions-menu>
+                    </article>
+                @endforeach
+            </div>
+        @else
+            <div class="client-profile-empty"><i class="fa fa-paw" aria-hidden="true"></i><span>У клиента пока нет питомцев</span><button type="button" data-admin-popup-target="#clientAnimalModal">Добавить первого</button></div>
+        @endif
+    </section>
+
+    <section class="client-profile-section">
+        <div class="client-profile-section-title">
+            <span><i class="fa fa-briefcase" aria-hidden="true"></i> Последние заказы</span>
+            <b>{{ $orders->count() }}</b>
+        </div>
+        @if($orders->isNotEmpty())
+            <div class="client-profile-orders">
+                @foreach($orders->take(6) as $order)
+                    @php
+                        $orderPets = $order->animals->map(fn ($position) => $position->animal?->name ?: $position->label)->filter()->join(', ');
+                        $orderServices = $order->animals->flatMap(fn ($position) => $position->services)->pluck('service_type')->filter()->unique()->map($capitalize)->join(', ');
+                        $status = $order->archived_at ? 'archived' : ($order->status ?: ($order->end_date?->isPast() ? 'finished' : 'planned'));
+                    @endphp
+                    <article class="client-profile-order">
+                        <span class="client-profile-order__icon"><i class="fa fa-calendar-day" aria-hidden="true"></i></span>
+                        <div class="client-profile-order__main">
+                            <strong>{{ $orderPets ?: 'Питомец не указан' }}</strong>
+                            <span>{{ $orderServices ?: 'Услуга не указана' }}</span>
+                        </div>
+                        <div class="client-profile-order__period"><strong>{{ $shortDate($order->start_date) }} — {{ $shortDate($order->end_date) }}</strong><span>{{ $order->start_date?->format('Y') }}</span></div>
+                        <span class="client-profile-order__status client-profile-order__status--{{ $status }}">{{ $statusLabels[$status] ?? 'Заказ' }}</span>
+                        <small class="client-profile-order__source">{{ $sourceLabels[$order->source] ?? 'Админка' }}</small>
+                    </article>
+                @endforeach
+            </div>
+        @else
+            <div class="client-profile-empty client-profile-empty--orders"><i class="fa fa-calendar-xmark" aria-hidden="true"></i><span>У клиента пока нет заказов</span></div>
+        @endif
+    </section>
 </div>
 <div class="modal fade admin-modal admin-secondary-modal" id="clientAnimalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -153,7 +183,3 @@
     </div>
 </div>
 @endsection
-
-@push('styles')
-<style>.client-profile-avatar{width:96px;height:96px;object-fit:cover;border-radius:18px;background:#eaf3ff}</style>
-@endpush
