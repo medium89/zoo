@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center">
         <h1>Сообщения обратной связи</h1>
     </div>
     @if (session('success'))
