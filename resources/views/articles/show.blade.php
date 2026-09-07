@@ -289,7 +289,8 @@
         background: transparent;
         box-shadow: inset 0 0 0 1px transparent;
         text-decoration: none;
-        font-size: 0.97rem;
+        font-size: inherit;
+        line-height: 1.35;
         letter-spacing: 0.02em;
         text-transform: none;
         color: var(--color-primary);
@@ -317,16 +318,18 @@
     .toc-nav .toc-item{
         position: relative;
         padding-left: 18px;
+        font-size: .97rem;
     }
     .toc-nav .toc-item::before{
         position: absolute;
-        top: 14px;
+        top: calc(7px + .675em);
         left: 1px;
         width: 7px;
         height: 7px;
         border-radius: 50%;
         background: var(--color-secondary);
         content: '';
+        transform: translateY(-50%);
     }
     .toc-nav .toc-item-h3{
         margin-left: 10px;
@@ -338,8 +341,10 @@
     .article-content ul{
         margin: .25rem 0 1.2rem;
         padding-left: 1.45rem;
+        list-style: disc outside !important;
     }
     .article-content li{
+        display: list-item;
         margin-bottom: .38rem;
         padding-left: .2rem;
         line-height: 1.55;
