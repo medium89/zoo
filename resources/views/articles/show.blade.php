@@ -11,7 +11,7 @@
 <section class="article-hero" @if($heroBackground) style="--hero-bg: url('{{ $heroBackground }}');" @endif>
     <div class="container hero-container">
         <div class="hero-header text-center">
-            <h1 class="fw-bold mb-0 article-title-lg">{{ $article->title }}</h1>
+            <div class="fw-bold mb-0 article-title-lg">{{ $article->title }}</div>
         </div>
     </div>
 </section>
@@ -53,6 +53,7 @@
                 @endphp
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body article-content" id="articleContent">
+                        <h1>{{ $article->title }}</h1>
                         {!! $contentHtml !!}
                         <div class="article-meta text-muted mt-4">
                             Опубликовано: {{ $article->published_at? $article->published_at->format('d.m.Y') : $article->created_at->format('d.m.Y') }}
@@ -168,7 +169,7 @@
         background: transparent;
         border-radius: 14px;
     }
-    .hero-header h1{
+    .hero-header .article-title-lg{
         color: #fff;
         margin: 0;
     }
