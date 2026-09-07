@@ -61,10 +61,12 @@ class AnimalAdminController extends Controller
     public function show(Animal $animal)
     {
         $animal->load([
-            'client',
+            'client.photos',
             'category',
             'photos',
             'boardings' => fn ($query) => $query->latest('start_date'),
+            'serviceOrderAnimals.serviceOrder',
+            'serviceOrderAnimals.services',
         ]);
 
         $clientsPayload = Client::orderBy('name')->get(['id', 'name', 'phone'])

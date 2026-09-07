@@ -125,6 +125,41 @@ PROMPT,
         ];
     }
 
+    public function classifyPersonGender(string $name): string
+    {
+        $apiKey = config('services.aitunnel.api_key');
+        if (!$apiKey) {
+            throw new RuntimeException('AITUNNEL_API_KEY is not configured.');
+        }
+
+        $response = Http::withToken($apiKey)
+            ->acceptJson()
+            ->timeout(15)
+            ->post($this->baseUrl().'/chat/completions', [
+                'model' => config('services.aitunnel.chat_model', 'gemini-2.5-flash-lite'),
+                'temperature' => 0,
+                'response_format' => ['type' => 'json_object'],
+                'messages' => [
+                    ['role' => 'system', 'content' => <<<'PROMPT'
+Определи вероятный пол человека только по имени для выбора нейтральной иллюстрации профиля.
+Верни только JSON: {"gender":"male|female|unknown"}.
+Не угадывай, если это организация, кличка, никнейм, фамилия без имени или данных недостаточно: верни unknown.
+PROMPT],
+                    ['role' => 'user', 'content' => trim($name)],
+                ],
+            ]);
+
+        if (!$response->ok()) {
+            throw new RuntimeException('AITunnel gender classification failed: '.$response->status());
+        }
+
+        $content = $response->json('choices.0.message.content');
+        $decoded = is_string($content) ? json_decode($content, true) : null;
+        $gender = is_array($decoded) ? ($decoded['gender'] ?? 'unknown') : 'unknown';
+
+        return in_array($gender, ['male', 'female'], true) ? $gender : 'unknown';
+    }
+
     private function baseUrl(): string
     {
         return rtrim(config('services.aitunnel.base_url', 'https://api.aitunnel.ru/v1'), '/');

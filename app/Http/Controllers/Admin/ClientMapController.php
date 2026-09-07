@@ -132,7 +132,7 @@ class ClientMapController extends Controller
     private function clientPayload(Client $client): array
     {
         return ['id' => $client->id, 'name' => $client->name, 'phone' => $client->phone, 'address' => $client->address, 'x' => $client->map_x, 'y' => $client->map_y,
-            'photo' => $client->photos->first()?->path ? Storage::url($client->photos->first()->path) : null];
+            'photo' => $client->avatarUrl()];
     }
 
     private function animalPayload(Animal $animal): array

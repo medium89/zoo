@@ -874,6 +874,22 @@
         .client-profile-empty { display: flex; min-height: 92px; align-items: center; justify-content: center; gap: 8px; padding: 18px; color: #8594a3; font-size: .8rem; }
         .client-profile-empty i { color: #9bb5ce; }
         .client-profile-empty button { padding: 0; border: 0; background: transparent; color: #2874bc; font-size: inherit; font-weight: 750; }
+        .client-profile-empty a { color: #2874bc; font-weight: 750; text-decoration: none; }
+
+        .animal-profile-summary__photo { width: 116px; height: 116px; padding: 0; overflow: hidden; border: 0; border-radius: 25px; background: transparent; cursor: zoom-in; }
+        .animal-profile-summary__photo .client-profile-summary__avatar { display: block; }
+        .animal-profile-owner { display: flex; min-width: 0; align-items: center; gap: 12px; padding: 13px 15px; }
+        .animal-profile-owner > img { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 13px; background: #edf3fa; object-fit: cover; }
+        .animal-profile-owner > div { display: grid; min-width: 0; flex: 1; gap: 2px; }
+        .animal-profile-owner > div a { overflow: hidden; color: #304960; font-size: .88rem; font-weight: 850; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+        .animal-profile-owner > div span { color: #8492a1; font-size: .72rem; }
+        .animal-profile-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .animal-profile-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 11px; padding: 12px; }
+        .animal-profile-gallery article { position: relative; min-width: 0; overflow: visible; border: 1px solid #e1e9f1; border-radius: 12px; background: #f8fbfe; }
+        .animal-profile-gallery article > button { display: block; width: 100%; padding: 0; overflow: hidden; border: 0; border-radius: 11px; background: transparent; cursor: zoom-in; }
+        .animal-profile-gallery img { display: block; width: 100%; height: 112px; object-fit: cover; }
+        .animal-profile-gallery .admin-actions-menu { position: absolute; top: 6px; right: 6px; }
+        .animal-profile-gallery .admin-actions-menu__toggle { border-color: rgba(255,255,255,.78); background: rgba(255,255,255,.92); box-shadow: 0 3px 12px rgba(32,48,65,.14); }
 
         @media (max-width: 767.98px) {
             .client-profile-summary { grid-template-columns: 88px minmax(0, 1fr); gap: 14px; padding: 14px; }
@@ -886,6 +902,8 @@
             .client-profile-order__period { grid-area: period; }
             .client-profile-order__status { grid-area: status; }
             .client-profile-order__source { grid-area: source; }
+            .animal-profile-summary__photo { width: 88px; height: 88px; border-radius: 20px; }
+            .animal-profile-notes { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 575.98px) {
@@ -893,6 +911,7 @@
             .client-profile-view__actions .btn { width: 38px; padding: 0; justify-content: center; }
             .client-profile-summary { grid-template-columns: 68px minmax(0, 1fr); }
             .client-profile-summary__avatar { width: 68px; height: 68px; border-width: 3px; border-radius: 17px; }
+            .animal-profile-summary__photo { width: 68px; height: 68px; border-radius: 17px; }
             .client-profile-stats { grid-column: 1 / -1; }
             .client-profile-stats > div { display: grid; justify-items: center; gap: 0; padding: 8px 5px; }
             .client-profile-summary__contacts { grid-template-columns: minmax(0, 1fr); }
@@ -1984,6 +2003,22 @@
         };
 
         document.addEventListener('click', (event) => {
+            const photoTrigger = event.target.closest('.js-animal-photo');
+            if (photoTrigger) {
+                const photoModal = document.getElementById('animalPhotoModal');
+                if (!photoModal) return;
+                if (photoModal.parentElement !== document.body) document.body.appendChild(photoModal);
+                const image = photoModal.querySelector('#animalPhotoModalImage');
+                const title = photoModal.querySelector('#animalPhotoModalTitle');
+                if (image) {
+                    image.src = photoTrigger.dataset.image || '';
+                    image.alt = photoTrigger.dataset.title || '';
+                }
+                if (title) title.textContent = photoTrigger.dataset.title || '';
+                bootstrap.Modal.getOrCreateInstance(photoModal).show();
+                return;
+            }
+
             const trigger = event.target.closest('[data-admin-popup-target]');
             if (!trigger) return;
 

@@ -4,6 +4,15 @@
         <input type="text" name="name" class="form-control" required value="{{ old('name', $client?->name) }}">
     </div>
     <div class="mb-3">
+        <label class="form-label">Пол для изображения профиля</label>
+        <select name="gender" class="form-select">
+            <option value="">Определить автоматически</option>
+            <option value="female" @selected(old('gender', $client?->gender) === 'female')>Женский</option>
+            <option value="male" @selected(old('gender', $client?->gender) === 'male')>Мужской</option>
+            <option value="unknown" @selected(old('gender', $client?->gender) === 'unknown')>Не определён</option>
+        </select>
+    </div>
+    <div class="mb-3">
         <label class="form-label">Телефон</label>
         <input type="text" name="phone" class="form-control" value="{{ old('phone', $client?->phone) }}">
     </div>

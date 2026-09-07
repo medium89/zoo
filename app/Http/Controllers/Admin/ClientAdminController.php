@@ -38,10 +38,11 @@ class ClientAdminController extends Controller
             ->whereNotNull('address')
             ->where('address', '!=', '')
             ->orderBy('name')
-            ->get(['id', 'name', 'address', 'phone']);
+            ->get(['id', 'name', 'gender', 'address', 'phone']);
         $mapClientsPayload = $mapClients->map(fn (Client $client) => [
             'id' => $client->id,
             'name' => $client->name,
+            'gender' => $client->gender,
             'address' => $client->address,
             'phone' => $client->phone,
         ])->values()->all();
@@ -58,6 +59,7 @@ class ClientAdminController extends Controller
         $clientsPayload = $clients->getCollection()->mapWithKeys(fn (Client $client) => [$client->id => [
             'id' => $client->id,
             'name' => $client->name,
+            'gender' => $client->gender,
             'phone' => $client->phone,
             'address' => $client->address,
             'note' => $client->note,
@@ -207,6 +209,7 @@ class ClientAdminController extends Controller
     {
         return $request->validate([
             'name' => 'required|string|max:255',
+            'gender' => 'nullable|in:male,female,unknown',
             'phone' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:1000',
             'note' => 'nullable|string',

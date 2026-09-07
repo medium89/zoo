@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
         element.style.left = `${node.x}px`;
         element.style.top = `${node.y}px`;
         if (node.type === 'client') {
-            const photo = node.photo ? `<img class="client-node__photo" src="${escapeHtml(node.photo)}" alt="">` : `<img class="client-node__photo" src="{{ asset('images/client-placeholder.svg') }}" alt="">`;
+            const photo = `<img class="client-node__photo" src="${escapeHtml(node.photo || @json(asset('images/client-placeholder.svg')))}" alt="">`;
             element.innerHTML = `<div class="client-node__head"><i class="fa fa-user"></i> Клиент<div class="client-node__actions"><div class="client-node__menu"><button class="client-node__menu-toggle" type="button" aria-label="Действия с клиентом" aria-haspopup="menu" aria-expanded="false"><i class="fa fa-ellipsis-vertical"></i></button><div class="client-node__menu-popup" role="menu" aria-label="Действия с клиентом" hidden><button class="client-node__view" type="button" role="menuitem"><i class="fa fa-eye"></i><span>Просмотреть</span></button><button class="client-node__edit" type="button" role="menuitem"><i class="fa fa-pen"></i><span>Редактировать</span></button></div></div><button class="client-node__connect" type="button" aria-label="Связать с питомцем">+</button></div></div><div class="client-node__body">${photo}<div class="client-node__name">${escapeHtml(node.name)}</div><div class="client-node__meta">${escapeHtml(node.phone || 'Телефон не указан')}</div><div class="client-node__hint">Потяните + к питомцу</div></div>`;
         } else {
             const photo = node.photo

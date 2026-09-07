@@ -126,6 +126,7 @@
                     <div class="client-create-fields">
                         <label>Имя или ФИО <b>*</b><input class="form-control" name="name" required autocomplete="name" placeholder="Например, Анастасия Иванова"></label>
                         <label>Телефон<input class="form-control" name="phone" autocomplete="tel" placeholder="+7 999 123-45-67"></label>
+                        <label>Пол для изображения<select class="form-select" name="gender"><option value="">Определить автоматически</option><option value="female">Женский</option><option value="male">Мужской</option><option value="unknown">Не определён</option></select></label>
                         <label class="client-create-fields__wide">Адрес<input class="form-control" name="address" autocomplete="street-address" placeholder="Улица, дом, квартира" data-address-suggest></label>
                         <label class="client-create-fields__wide">Комментарий<textarea class="form-control" name="note" rows="2" placeholder="Важные детали о клиенте"></textarea></label>
                         <label class="client-create-fields__wide">Фото клиента<input class="form-control" type="file" name="photos[]" accept="image/*" multiple></label>
@@ -345,6 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('clientCreateTitle').textContent = 'Редактировать клиента';
         form.querySelector('[name="name"]').value = data.name || '';
         form.querySelector('[name="phone"]').value = data.phone || '';
+        form.querySelector('[name="gender"]').value = data.gender || '';
         form.querySelector('[name="address"]').value = data.address || '';
         form.querySelector('[name="note"]').value = data.note || '';
         root.replaceChildren();
