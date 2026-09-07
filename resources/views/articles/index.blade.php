@@ -241,12 +241,15 @@
     .filter-card__header{
         background: #8c4dc7;
         color: #fff;
-        padding: 14px 18px;
+        padding: 14px 24px;
         font-weight: 700;
         letter-spacing: 0.3px;
         text-transform: uppercase;
         border-top-left-radius: 0.5rem;
         border-top-right-radius: 0.5rem;
+    }
+    .filter-card .card-body{
+        padding: 18px 24px 20px;
     }
     .filter-card .btn-primary{
         background: #ff8091;
@@ -256,6 +259,16 @@
     .filter-card .btn-primary:hover{
         background: #ff6a7f;
         border-color: #ff6a7f;
+    }
+    @media (max-width: 575.98px){
+        .filter-card__header{
+            padding-right: 20px;
+            padding-left: 20px;
+        }
+        .filter-card .card-body{
+            padding-right: 20px;
+            padding-left: 20px;
+        }
     }
 </style>
 @endsection
