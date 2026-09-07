@@ -154,7 +154,7 @@
     }
     .article-card__cover-link{
         display: block;
-        aspect-ratio: 16 / 9;
+        aspect-ratio: 3 / 2;
         overflow: hidden;
         background: #f3eff7;
     }
@@ -162,12 +162,8 @@
         display: block;
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
         object-position: center;
-        transition: transform .3s ease;
-    }
-    .article-card:hover .article-card__cover{
-        transform: scale(1.025);
     }
     .article-card__body{
         display: flex;
