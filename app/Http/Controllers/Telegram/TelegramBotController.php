@@ -606,6 +606,39 @@ class TelegramBotController extends Controller
             return;
         }
 
+        if (Str::startsWith($data, 'delete_order_select:')) {
+            $orderId = (int) Str::after($data, 'delete_order_select:');
+            if (!in_array($orderId, array_map('intval', $payload['delete_order_candidate_ids'] ?? []), true)) {
+                $this->sendMessage($chatId, 'Этот заказ уже нельзя изменить из текущего запроса. Повторите команду.');
+                return;
+            }
+
+            $order = $this->serviceOrderForBot($orderId);
+            if (!$order) {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Заказ не найден или уже в архиве.');
+                return;
+            }
+
+            $this->askServiceOrderDeletionConfirmation($chatId, $fromId, $order);
+            return;
+        }
+
+        if ($data === 'delete_order_confirm') {
+            $order = $this->serviceOrderForBot((int) ($payload['delete_order_id'] ?? 0));
+            if (!$order) {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Заказ не найден или уже в архиве.');
+                return;
+            }
+
+            $order->update(['archived_at' => now(), 'status' => 'archived']);
+            $this->syncLegacyBoardingForServiceOrder($order);
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, "Заказ перенесён в архив:\n".$this->serviceOrderDeletionLabel($order));
+            return;
+        }
+
         if (Str::startsWith($data, 'delete_booking_select:')) {
             $boardingId = (int) Str::after($data, 'delete_booking_select:');
             if (!in_array($boardingId, array_map('intval', $payload['delete_candidate_ids'] ?? []), true)) {
@@ -618,7 +651,7 @@ class TelegramBotController extends Controller
                 ->find($boardingId);
             if (!$boarding) {
                 $this->clearSession($fromId);
-                $this->sendMessage($chatId, 'Запись не найдена или уже удалена.');
+                $this->sendMessage($chatId, 'Запись не найдена или уже в архиве.');
                 return;
             }
 
@@ -634,14 +667,14 @@ class TelegramBotController extends Controller
 
             if (!$boarding) {
                 $this->clearSession($fromId);
-                $this->sendMessage($chatId, 'Запись не найдена или уже удалена.');
+                $this->sendMessage($chatId, 'Запись не найдена или уже в архиве.');
                 return;
             }
 
             $line = $this->bookingLine($boarding);
-            $boarding->delete();
+            $boarding->update(['archived_at' => now()]);
             $this->clearSession($fromId);
-            $this->sendMessage($chatId, "Запись удалена:\n{$line}");
+            $this->sendMessage($chatId, "Запись перенесена в архив:\n{$line}");
             return;
         }
 
@@ -1631,7 +1664,7 @@ TEXT);
 
         $this->sendMessage($chatId, trim($text), ['inline_keyboard' => [
             [['text' => 'Редактировать', 'callback_data' => 'order:edit:'.$order->id], ['text' => 'Питомцы и услуги', 'callback_data' => 'order:pets:'.$order->id]],
-            [['text' => 'В архив', 'callback_data' => 'order:archive:'.$order->id], ['text' => 'Удалить', 'callback_data' => 'order:delete:'.$order->id]],
+            [['text' => 'В архив', 'callback_data' => 'order:archive:'.$order->id]],
             [['text' => 'К списку заказов', 'callback_data' => 'orders:list']],
         ]]);
     }
@@ -1659,10 +1692,11 @@ TEXT);
     {
         $order = $this->serviceOrderForBot($orderId);
         if (!$order) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
-        $verb = $action === 'archive' ? 'перенесён в архив' : 'удалён';
-        $this->saveSession($fromId, $chatId, 'waiting_order_'.$action.'_confirmation', ['order_id' => $order->id]);
-        $this->sendMessage($chatId, "Заказ #{$order->id} будет {$verb}. Подтвердить?", ['inline_keyboard' => [[
-            ['text' => $action === 'archive' ? 'В архив' : 'Удалить', 'callback_data' => 'order:'.$action.':'.$order->id.':confirm'],
+        // Old messages may still carry order:delete callbacks. Deletion is deliberately
+        // treated as archiving: an order must remain recoverable.
+        $this->saveSession($fromId, $chatId, 'waiting_order_archive_confirmation', ['order_id' => $order->id]);
+        $this->sendMessage($chatId, "Заказ #{$order->id} будет перенесён в архив. Подтвердить?", ['inline_keyboard' => [[
+            ['text' => 'В архив', 'callback_data' => 'order:archive:'.$order->id.':confirm'],
             ['text' => 'Отмена', 'callback_data' => 'cancel'],
         ]]]);
     }
@@ -1671,10 +1705,10 @@ TEXT);
     {
         $order = $this->serviceOrderForBot($orderId);
         if (!$order) { $this->clearSession($fromId); $this->sendMessage($chatId, 'Заказ не найден.'); return; }
-        if ($action === 'archive') { $order->update(['archived_at' => now(), 'status' => 'archived']); $this->syncLegacyBoardingForServiceOrder($order); }
-        else { $order->delete(); }
+        $order->update(['archived_at' => now(), 'status' => 'archived']);
+        $this->syncLegacyBoardingForServiceOrder($order);
         $this->clearSession($fromId);
-        $this->sendMessage($chatId, $action === 'archive' ? 'Заказ перенесён в архив.' : 'Заказ удалён.');
+        $this->sendMessage($chatId, 'Заказ перенесён в архив.');
         $this->sendServiceOrdersMenu($chatId);
     }
 
@@ -1962,8 +1996,51 @@ TEXT);
         $start = $isUpcoming ? now()->startOfDay() : Carbon::parse($startValue)->startOfDay();
         $end = $isUpcoming ? null : Carbon::parse($endValue)->endOfDay();
 
+        // Service orders are now the canonical booking entity. Check them first;
+        // the old boardings table is only a fallback for records not migrated yet.
+        $orders = ServiceOrder::with(['animals.category', 'animals.animal'])
+            ->whereNull('archived_at')
+            ->when($end, fn ($query) => $query->where('start_date', '<=', $end))
+            ->where('end_date', '>=', $start)
+            ->orderBy('start_date')
+            ->limit(50)
+            ->get()
+            ->when($animalName !== '', function ($orders) use ($animalName) {
+                $name = mb_strtolower($animalName);
+
+                return $orders->filter(function (ServiceOrder $order) use ($name) {
+                    return $order->animals->contains(function ($position) use ($name) {
+                        return mb_strtolower((string) $position->label) === $name
+                            || mb_strtolower((string) $position->animal?->name) === $name;
+                    });
+                });
+            })
+            ->take(8)
+            ->values();
+
+        if ($orders->isNotEmpty()) {
+            if ($orders->count() === 1) {
+                $this->askServiceOrderDeletionConfirmation($chatId, $fromId, $orders->first());
+                return;
+            }
+
+            $this->saveSession($fromId, $chatId, 'waiting_order_delete_selection', [
+                'delete_order_candidate_ids' => $orders->pluck('id')->all(),
+            ]);
+            $keyboard = $orders->map(fn (ServiceOrder $order) => [[
+                'text' => '#'.$order->id.' · '.$this->serviceOrderDeletionLabel($order),
+                'callback_data' => 'delete_order_select:'.$order->id,
+            ]])->all();
+            $keyboard[] = [['text' => 'Отмена', 'callback_data' => 'cancel']];
+            $this->sendMessage($chatId, $isUpcoming
+                ? 'Нашёл предстоящие заказы. Выберите заказ для переноса в архив:'
+                : 'Нашёл несколько заказов. Выберите, какой перенести в архив:', ['inline_keyboard' => $keyboard]);
+            return;
+        }
+
         $rows = Boarding::with(['animal.client', 'client'])
             ->whereNull('archived_at')
+            ->doesntHave('serviceOrder')
             ->when($animalName !== '', function ($query) use ($animalName) {
                 $name = mb_strtolower($animalName);
                 $query->where(function ($sub) use ($name) {
@@ -1980,7 +2057,7 @@ TEXT);
         if ($rows->isEmpty()) {
             $subject = $animalName !== '' ? ' для питомца «'.$animalName.'»' : '';
             $period = $isUpcoming ? 'начиная с '.$this->russianDatePeriod($start, $start) : 'за период '.$this->russianDatePeriod($start, $end);
-            $this->sendMessage($chatId, 'Активных записей'.$subject.' '.$period.' не найдено.');
+            $this->sendMessage($chatId, 'Активных заказов'.$subject.' '.$period.' не найдено.');
             return;
         }
 
@@ -1999,8 +2076,8 @@ TEXT);
         $keyboard[] = [['text' => 'Отмена', 'callback_data' => 'cancel']];
 
         $message = $isUpcoming
-            ? 'Нашёл предстоящие записи. Выберите одну запись для удаления:'
-            : 'Нашёл несколько записей. Выберите, какую удалить:';
+            ? 'Нашёл старые предстоящие записи. Выберите одну для переноса в архив:'
+            : 'Нашёл несколько старых записей. Выберите, какую перенести в архив:';
         $this->sendMessage($chatId, $message, [
             'inline_keyboard' => $keyboard,
         ]);
@@ -2012,10 +2089,10 @@ TEXT);
             'delete_boarding_id' => $boarding->id,
         ]);
 
-        $this->sendMessage($chatId, "Будет удалена запись:\n".$this->bookingLine($boarding)."\n\nПитомец и хозяин останутся в базе. Удалить?", [
+        $this->sendMessage($chatId, "Старая запись будет перенесена в архив:\n".$this->bookingLine($boarding)."\n\nПитомец и хозяин останутся в базе. Перенести в архив?", [
             'inline_keyboard' => [
                 [
-                    ['text' => 'Удалить', 'callback_data' => 'delete_booking_confirm'],
+                    ['text' => 'В архив', 'callback_data' => 'delete_booking_confirm'],
                     ['text' => 'Отмена', 'callback_data' => 'cancel'],
                 ],
             ],
@@ -2027,6 +2104,25 @@ TEXT);
         $name = $boarding->animal?->name ?: $boarding->name;
 
         return $name.' · '.$this->russianDatePeriod($boarding->start_date, $boarding->end_date);
+    }
+
+    private function askServiceOrderDeletionConfirmation(int|string $chatId, string $fromId, ServiceOrder $order): void
+    {
+        $this->saveSession($fromId, $chatId, 'waiting_order_delete_confirmation', [
+            'delete_order_id' => $order->id,
+        ]);
+
+        $this->sendMessage($chatId, "Заказ будет перенесён в архив:\n".$this->serviceOrderDeletionLabel($order)."\n\nПитомцы и клиент останутся в базе. Перенести в архив?", [
+            'inline_keyboard' => [[
+                ['text' => 'В архив', 'callback_data' => 'delete_order_confirm'],
+                ['text' => 'Отмена', 'callback_data' => 'cancel'],
+            ]],
+        ]);
+    }
+
+    private function serviceOrderDeletionLabel(ServiceOrder $order): string
+    {
+        return $this->serviceOrderAnimalsLabel($order).' · '.$this->russianDatePeriod($order->start_date, $order->end_date);
     }
 
     private function russianDatePeriod(Carbon $start, Carbon $end): string
