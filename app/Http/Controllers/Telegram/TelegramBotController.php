@@ -901,14 +901,14 @@ class TelegramBotController extends Controller
             'animal_match_checked' => false,
         ];
 
-        if (!$payload['animal_name'] || !$payload['start_date'] || !$payload['end_date']) {
-            $this->sendMessage($chatId, 'Не хватает данных для записи. Укажите кличку и период.');
+        if (!$payload['start_date'] || !$payload['end_date']) {
+            $this->sendMessage($chatId, 'Не хватает периода для записи. Например: «с 13 по 25 сентября».');
             return;
         }
 
         if (!$payload['category_id']) {
             $this->saveSession($fromId, $chatId, 'waiting_species', $payload);
-            $this->askSpecies($chatId, $payload['animal_name']);
+            $this->askSpecies($chatId, $payload['animal_name'] ?: 'питомец');
             return;
         }
 
@@ -917,6 +917,15 @@ class TelegramBotController extends Controller
 
     private function continueAfterRequiredFields(int|string $chatId, string $fromId, array $payload): void
     {
+        if (empty($payload['animal_name'])) {
+            $categoryName = !empty($payload['category_id'])
+                ? Category::find((int) $payload['category_id'])?->name
+                : ($payload['species'] ?? null);
+
+            $payload['animal_name'] = $this->generateTemporaryAnimalName($categoryName);
+            $payload['generated_animal_name'] = true;
+        }
+
         $matches = $this->matchingAnimals($payload);
 
         if ($matches->count() > 0 && empty($payload['animal_match_checked']) && empty($payload['animal_id'])) {
@@ -1396,6 +1405,24 @@ class TelegramBotController extends Controller
         };
     }
 
+
+    private function generateTemporaryAnimalName(?string $categoryName): string
+    {
+        $normalized = mb_strtolower((string) $categoryName);
+        $prefix = str_contains($normalized, 'собак')
+            ? 'Бобик'
+            : (str_contains($normalized, 'кош') ? 'Мурка' : 'Питомец');
+
+        for ($attempt = 0; $attempt < 20; $attempt++) {
+            $name = $prefix.random_int(1000, 9999);
+            if (!Animal::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->exists()) {
+                return $name;
+            }
+        }
+
+        return $prefix.now()->format('His');
+    }
+
     private function serviceOrderAnimalsLabel(ServiceOrder $order): string
     {
         return $order->animals
@@ -1503,6 +1530,9 @@ TEXT);
         $text .= 'Услуга: '.$payload['service_type']."\n";
         $text .= 'Даты: '.$payload['start_date'].' — '.$payload['end_date']."\n";
         $text .= 'Питомец: '.trim(($payload['species'] ? $payload['species'].' ' : '').$payload['animal_name'])."\n";
+        if (!empty($payload['generated_animal_name'])) {
+            $text .= "Кличка сгенерирована автоматически — её можно переименовать позже.\n";
+        }
         if ($this->isDog($payload['species'] ?? null)) {
             $text .= 'Размер: '.($payload['dog_size'] === 'small' ? 'мелкая собака' : 'средняя или крупная собака')."\n";
         }
