@@ -70,6 +70,81 @@ class AitunnelService
         return trim((string)$response->json('text'));
     }
 
+
+    /**
+     * Проверяет текст комментария до публикации.
+     *
+     * В AI передаётся только сам текст без имени автора и email.
+     * Неуверенный или некорректный ответ всегда отправляет комментарий на ручную проверку.
+     *
+     * @return array{publish: bool, reasons: array<int, string>}
+     */
+    public function moderateArticleComment(string $content): array
+    {
+        $apiKey = config('services.aitunnel.api_key');
+        if (!$apiKey) {
+            throw new RuntimeException('AITUNNEL_API_KEY is not configured.');
+        }
+
+        $response = Http::withToken($apiKey)
+            ->acceptJson()
+            ->timeout(20)
+            ->post($this->baseUrl().'/chat/completions', [
+                'model' => config('services.aitunnel.chat_model', 'gemini-2.5-flash-lite'),
+                'temperature' => 0,
+                'response_format' => ['type' => 'json_object'],
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => <<<'PROMPT'
+Ты модерируешь пользовательский комментарий к статье зоосервиса на русском языке.
+Верни только JSON без Markdown по схеме:
+{"decision":"approve|review","reasons":["реклама|оскорбления|нецензурная лексика|разжигание ненависти|оскорбление религиозных чувств"]}
+
+approve: комментарий можно сразу опубликовать.
+review: требуется ручная проверка.
+
+Выбирай review, если есть хотя бы один из признаков:
+- реклама, спам, ссылки с продвижением услуг или товаров;
+- оскорбления, унижение, травля;
+- мат или завуалированная нецензурная лексика;
+- ненависть или разжигание вражды по национальному, этническому, расовому или религиозному признаку;
+- унижение или оскорбление религиозных убеждений и чувств.
+
+Не относись к критике услуги, отрицательному отзыву или обычному разговорному стилю как к нарушению. При сомнении выбирай review. reasons: только подходящие элементы из схемы, без пояснений; для approve — пустой массив.
+PROMPT,
+                    ],
+                    ['role' => 'user', 'content' => trim($content)],
+                ],
+            ]);
+
+        if (!$response->ok()) {
+            throw new RuntimeException('AITunnel comment moderation failed: '.$response->status());
+        }
+
+        $content = $response->json('choices.0.message.content');
+        $decoded = is_string($content) ? json_decode($content, true) : null;
+        if (!is_array($decoded)) {
+            throw new RuntimeException('AITunnel returned invalid comment moderation JSON.');
+        }
+
+        $allowedReasons = [
+            'реклама',
+            'оскорбления',
+            'нецензурная лексика',
+            'разжигание ненависти',
+            'оскорбление религиозных чувств',
+        ];
+        $reasons = array_values(array_unique(array_filter(
+            (array) ($decoded['reasons'] ?? []),
+            static fn ($reason): bool => is_string($reason) && in_array($reason, $allowedReasons, true)
+        )));
+
+        return [
+            'publish' => ($decoded['decision'] ?? null) === 'approve' && $reasons === [],
+            'reasons' => $reasons,
+        ];
+    }
     /**
      * Определяет, является ли короткая характеристика питомца/клиента
      * положительной или требующей внимания.

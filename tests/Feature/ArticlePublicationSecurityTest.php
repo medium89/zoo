@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Article;
 use App\Models\ArticleComment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class ArticlePublicationSecurityTest extends TestCase
@@ -94,5 +95,67 @@ class ArticlePublicationSecurityTest extends TestCase
         ])->assertSessionHasErrors('parent_id');
 
         $this->assertDatabaseMissing('article_comments', ['content' => 'Ответ']);
+    }
+
+    public function test_safe_comment_is_published_automatically(): void
+    {
+        config(['services.aitunnel.api_key' => 'test-key']);
+        Http::fake([
+            'https://api.aitunnel.ru/v1/chat/completions' => Http::response([
+                'choices' => [[
+                    'message' => ['content' => json_encode(['decision' => 'approve', 'reasons' => []])],
+                ]],
+            ]),
+        ]);
+
+        $article = Article::create([
+            'title' => 'Полезная статья',
+            'slug' => 'safe-comment-article',
+            'content' => 'Текст',
+            'active' => true,
+        ]);
+
+        $this->post(route('articles.comment', $article), [
+            'author_name' => 'Мария',
+            'email' => 'private@example.test',
+            'content' => 'Спасибо за понятную и полезную статью.',
+        ])->assertSessionHas('success');
+
+        $this->assertDatabaseHas('article_comments', [
+            'article_id' => $article->id,
+            'author_name' => 'Мария',
+            'status' => 'approved',
+        ]);
+
+    }
+
+    public function test_comment_marked_as_harmful_stays_on_manual_review(): void
+    {
+        config(['services.aitunnel.api_key' => 'test-key']);
+        Http::fake([
+            'https://api.aitunnel.ru/v1/chat/completions' => Http::response([
+                'choices' => [[
+                    'message' => ['content' => json_encode(['decision' => 'review', 'reasons' => ['оскорбления']])],
+                ]],
+            ]),
+        ]);
+
+        $article = Article::create([
+            'title' => 'Статья для проверки',
+            'slug' => 'review-comment-article',
+            'content' => 'Текст',
+            'active' => true,
+        ]);
+
+        $this->post(route('articles.comment', $article), [
+            'author_name' => 'Иван',
+            'email' => 'private@example.test',
+            'content' => 'Оскорбительный комментарий',
+        ])->assertSessionHas('success');
+
+        $this->assertDatabaseHas('article_comments', [
+            'article_id' => $article->id,
+            'status' => 'pending',
+        ]);
     }
 }

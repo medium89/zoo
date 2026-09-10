@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Article;
 use App\Models\ArticleComment;
+use App\Services\AitunnelService;
+use Throwable;
 use App\Models\Category;
 use App\Services\TelegramNotificationService;
 use Illuminate\Http\Request;
@@ -78,8 +80,13 @@ class ArticlePublicController extends Controller
         ]);
     }
 
-    public function comment(Request $request, Article $article, TelegramNotificationService $telegram)
-    {
+
+    public function comment(
+        Request $request,
+        Article $article,
+        TelegramNotificationService $telegram,
+        AitunnelService $aitunnel,
+    ) {
         $data = $request->validate([
             'author_name' => 'required|string|max:100',
             'email' => 'required|email|max:255',
@@ -94,9 +101,16 @@ class ArticlePublicController extends Controller
             return back()->withErrors(['parent_id' => 'Ответ можно оставить только на комментарий к этой статье.']);
         }
 
+        $moderation = ['publish' => false, 'reasons' => []];
+        try {
+            $moderation = $aitunnel->moderateArticleComment($data['content']);
+        } catch (Throwable) {
+            // Ошибка или недоступность AI не должна автоматически публиковать комментарий.
+        }
+
         $data['article_id'] = $article->id;
-        $data['status'] = 'pending';
-        $data['order'] = (int)ArticleComment::max('order') + 1;
+        $data['status'] = $moderation['publish'] ? 'approved' : 'pending';
+        $data['order'] = (int) ArticleComment::max('order') + 1;
         unset($data['website']);
 
         $comment = ArticleComment::create($data);
@@ -105,9 +119,18 @@ class ArticlePublicController extends Controller
         $text .= "Статья: {$article->title}\n";
         $text .= "Автор: {$comment->author_name}\n";
         $text .= "Email: {$comment->email}\n";
+        $text .= 'Статус: '.($comment->status === 'approved' ? 'опубликован автоматически' : 'на ручной проверке')."\n";
+        if ($moderation['reasons'] !== []) {
+            $text .= 'Причины проверки: '.implode(', ', $moderation['reasons'])."\n";
+        }
         $text .= "Текст: ".trim($comment->content);
         $telegram->notifyConfiguredChats($text);
 
-        return back()->with('success', 'Комментарий отправлен на модерацию');
+        return back()->with(
+            'success',
+            $comment->status === 'approved'
+                ? 'Комментарий опубликован.'
+                : 'Комментарий отправлен на модерацию.'
+        );
     }
 }
