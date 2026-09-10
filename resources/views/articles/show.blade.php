@@ -77,7 +77,7 @@
                                     echo '<li class="mb-3">';
                                     echo '<div class="comment-item" style="--level:'.$depth.'">';
                                     echo '<div class="comment-meta d-flex justify-content-between align-items-start gap-3">';
-                                    echo '<div class="comment-author">'.$c->email.'</div>';
+                                    echo '<div class="comment-author">'.e($c->author_name ?: 'Гость').'</div>';
                                     echo '<div class="comment-date text-muted">'.$c->created_at->format('d.m.Y H:i').'</div>';
                                     echo '</div>';
                                     echo '<div class="comment-text mt-2">'.nl2br(e($c->content)).'</div>';
@@ -99,8 +99,14 @@
                                 <input type="hidden" name="parent_id" value="">
                                 <div class="card-body">
                                     <div class="mb-3">
+                                        <label class="form-label">Имя или псевдоним</label>
+                                        <input type="text" name="author_name" class="form-control" value="{{ old('author_name') }}" maxlength="100" autocomplete="nickname" placeholder="Например, Анна" required>
+                                        <div class="form-text">Это имя будет показано рядом с комментарием.</div>
+                                    </div>
+                                    <div class="mb-3">
                                         <label class="form-label">Email</label>
-                                        <input type="email" name="email" class="form-control" required>
+                                        <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                                        <div class="form-text">Email нужен только для модерации и публично не отображается.</div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Текст</label>

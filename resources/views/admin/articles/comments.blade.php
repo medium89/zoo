@@ -6,14 +6,15 @@
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
-    <x-admin.filters :action="route('admin.article-comments.index')" :filters="$filters" placeholder="Статья, email или текст" :auto="true" :attached="true">
+    <x-admin.filters :action="route('admin.article-comments.index')" :filters="$filters" placeholder="Статья, автор, email или текст" :auto="true" :attached="true">
         <label class="admin-filter-bar__field">Статус<select name="status" class="form-select"><option value="">Все</option><option value="pending" @selected(($filters['status'] ?? '') === 'pending')>На модерации</option><option value="approved" @selected(($filters['status'] ?? '') === 'approved')>Одобрены</option><option value="rejected" @selected(($filters['status'] ?? '') === 'rejected')>Отклонены</option></select></label>
     </x-admin.filters>
     <form id="comments-form" action="{{ route('admin.article-comments.status') }}" method="POST">@csrf</form>
-    <div class="admin-grid" style="--grid-cols: 100px 1.6fr 1.2fr 2fr 1.2fr 1fr 140px;">
+    <div class="admin-grid" style="--grid-cols: 90px 1.35fr 1fr 1.2fr 2fr 1fr 1fr 120px;">
         <div class="admin-grid-header">
             <div>Порядок</div>
             <div>Статья</div>
+            <div>Автор</div>
             <div>Email</div>
             <div>Текст</div>
             <div>Статус</div>
@@ -25,6 +26,7 @@
             <div class="admin-grid-row" data-id="{{ $c->id }}">
                 <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
                 <div class="text-clip">{{ optional($c->article)->title }}</div>
+                <div>{{ $c->author_name ?: 'Гость' }}</div>
                 <div>{{ $c->email }}</div>
                 <div class="text-clip">{{ $c->content }}</div>
                 <div class="d-flex align-items-center">

@@ -81,6 +81,7 @@ class ArticlePublicController extends Controller
     public function comment(Request $request, Article $article, TelegramNotificationService $telegram)
     {
         $data = $request->validate([
+            'author_name' => 'required|string|max:100',
             'email' => 'required|email|max:255',
             'content' => 'required|string|max:5000',
             'parent_id' => 'nullable|exists:article_comments,id',
@@ -102,6 +103,7 @@ class ArticlePublicController extends Controller
 
         $text = "Новый комментарий к статье:\n";
         $text .= "Статья: {$article->title}\n";
+        $text .= "Автор: {$comment->author_name}\n";
         $text .= "Email: {$comment->email}\n";
         $text .= "Текст: ".trim($comment->content);
         $telegram->notifyConfiguredChats($text);

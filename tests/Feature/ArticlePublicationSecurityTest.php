@@ -61,6 +61,7 @@ class ArticlePublicationSecurityTest extends TestCase
         ]);
 
         $this->post(route('articles.comment', $article), [
+            'author_name' => 'Анна',
             'email' => 'reader@example.test',
             'content' => 'Новый комментарий',
         ])->assertSessionHas('success');
@@ -78,6 +79,7 @@ class ArticlePublicationSecurityTest extends TestCase
         $other = Article::create(['title' => 'Вторая', 'slug' => 'second-article', 'content' => 'Текст', 'active' => true]);
         $foreignComment = ArticleComment::create([
             'article_id' => $other->id,
+            'author_name' => 'Анна',
             'email' => 'reader@example.test',
             'content' => 'Чужой комментарий',
             'status' => 'approved',
@@ -85,6 +87,7 @@ class ArticlePublicationSecurityTest extends TestCase
         ]);
 
         $this->post(route('articles.comment', $article), [
+            'author_name' => 'Анна',
             'email' => 'reader@example.test',
             'content' => 'Ответ',
             'parent_id' => $foreignComment->id,

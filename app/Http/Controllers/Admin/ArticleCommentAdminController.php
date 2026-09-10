@@ -17,7 +17,8 @@ class ArticleCommentAdminController extends Controller
         ]);
         $comments = ArticleComment::with('article')
             ->when($filters['search'] ?? null, function ($query, string $search) {
-                $query->where(fn ($items) => $items->where('email', 'like', "%{$search}%")
+                $query->where(fn ($items) => $items->where('author_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('content', 'like', "%{$search}%")
                     ->orWhereHas('article', fn ($articles) => $articles->where('title', 'like', "%{$search}%")));
             })
