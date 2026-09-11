@@ -182,6 +182,10 @@ class TelegramBotController extends Controller
         if ($anonymousOrderIntent = $this->anonymousOrderIntentFromText($text)) {
             $intent = $anonymousOrderIntent;
         }
+        if (($intent['intent'] ?? null) !== 'create_booking'
+            && ($compactBookingIntent = $this->compactBookingIntentFromText($text))) {
+            $intent = $compactBookingIntent;
+        }
         $this->processIntent($chatId, $fromId, $intent);
     }
 
@@ -1374,6 +1378,64 @@ class TelegramBotController extends Controller
             'start_date' => $start->toDateString(),
             'end_date' => $end->toDateString(),
             'animals' => $animals,
+        ];
+    }
+
+    /**
+     * Разбирает короткую телеграфную заявку, если ИИ не распознал её.
+     * Пример: «С 11 по 12 уход Мия».
+     */
+    private function compactBookingIntentFromText(string $text): ?array
+    {
+        $normalized = mb_strtolower(trim($text));
+        if (!preg_match('/(?:с\s*)?(\d{1,2})\s*(?:по|до|[-–])\s*(\d{1,2})\b/u', $normalized, $dates)) {
+            return null;
+        }
+
+        $serviceType = match (true) {
+            str_contains($normalized, 'передерж') => 'передержка',
+            str_contains($normalized, 'выгул') => 'выгул',
+            str_contains($normalized, 'уход') => 'уход',
+            default => null,
+        };
+        if ($serviceType === null) {
+            return null;
+        }
+
+        $today = now()->startOfDay();
+        $start = $today->copy()->startOfMonth()->addDays((int) $dates[1] - 1);
+        if ($start->lessThan($today)) {
+            $start = $start->addMonthNoOverflow()->startOfMonth()->addDays((int) $dates[1] - 1);
+        }
+        $end = $start->copy()->startOfMonth()->addDays((int) $dates[2] - 1);
+        if ($end->lessThan($start)) {
+            $end = $end->addMonthNoOverflow()->startOfMonth()->addDays((int) $dates[2] - 1);
+        }
+
+        $species = match (true) {
+            preg_match('/\b(?:кошк|кот)/u', $normalized) === 1 => 'кошка',
+            preg_match('/\b(?:собак|п[её]с|щен)/u', $normalized) === 1 => 'собака',
+            default => null,
+        };
+
+        $nameSource = preg_replace('/(?:с\s*)?\d{1,2}\s*(?:по|до|[-–])\s*\d{1,2}\b/u', ' ', $normalized) ?? '';
+        $nameSource = preg_replace('/\b(?:передерж\w*|выгул\w*|уход\w*|кот\w*|кошк\w*|собак\w*|п[её]с\w*|щен\w*|на|с|по|до|для)\b/u', ' ', $nameSource) ?? '';
+        preg_match_all('/[\p{L}][\p{L}-]{1,}/u', $nameSource, $words);
+        $name = trim(implode(' ', array_slice($words[0] ?? [], 0, 2)));
+
+        return [
+            'intent' => 'create_booking',
+            'service_type' => $serviceType,
+            'units_per_day' => 1,
+            'start_date' => $start->toDateString(),
+            'end_date' => $end->toDateString(),
+            'animal' => [
+                'name' => $name !== '' ? mb_convert_case($name, MB_CASE_TITLE, 'UTF-8') : null,
+                'species' => $species,
+                'size' => null,
+                'description' => null,
+            ],
+            'client' => ['name' => null, 'phone' => null, 'note' => null],
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Http\Controllers\Telegram\TelegramBotController;
+use Carbon\Carbon;
 use ReflectionClass;
 use Tests\TestCase;
 
@@ -67,5 +68,26 @@ class TelegramBotControllerOwnerIntentTest extends TestCase
         $this->assertSame('rename_client', $clientIntent['intent']);
         $this->assertSame('Анастасия', $clientIntent['client']['name']);
         $this->assertSame('Настя', $clientIntent['new_name']);
+    }
+
+    public function test_it_recognizes_a_compact_booking_without_ai(): void
+    {
+        Carbon::setTestNow('2026-09-10 12:00:00');
+
+        try {
+            $controller = (new ReflectionClass(TelegramBotController::class))->newInstanceWithoutConstructor();
+            $method = new \ReflectionMethod($controller, 'compactBookingIntentFromText');
+            $method->setAccessible(true);
+
+            $intent = $method->invoke($controller, 'С 11 по 12 уход Мия');
+
+            $this->assertSame('create_booking', $intent['intent']);
+            $this->assertSame('уход', $intent['service_type']);
+            $this->assertSame('Мия', $intent['animal']['name']);
+            $this->assertSame('2026-09-11', $intent['start_date']);
+            $this->assertSame('2026-09-12', $intent['end_date']);
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 }
