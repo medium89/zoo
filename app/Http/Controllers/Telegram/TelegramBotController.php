@@ -4,27 +4,26 @@ namespace App\Http\Controllers\Telegram;
 
 use App\Exceptions\TelegramApiException;
 use App\Http\Controllers\Controller;
-
+use App\Jobs\ProcessTelegramUpdate;
 use App\Models\Animal;
 use App\Models\Boarding;
 use App\Models\BoardingTask;
 use App\Models\BoardingTaskRun;
-use App\Models\Client;
 use App\Models\Category;
+use App\Models\Client;
 use App\Models\ServiceOrder;
 use App\Models\TelegramBotSession;
 use App\Models\TelegramWebhookUpdate;
-use App\Jobs\ProcessTelegramUpdate;
 use App\Services\AitunnelService;
 use App\Services\AnonymousOrderAnimalLinker;
 use App\Services\BoardingPricingService;
 use App\Services\BoardingTaskInstructionParser;
 use App\Services\BookingListPeriodParser;
-use App\Services\TelegramCalendarImageService;
 use App\Services\TelegramApiClient;
+use App\Services\TelegramCalendarImageService;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -41,12 +40,11 @@ class TelegramBotController extends Controller
         private readonly BoardingPricingService $pricing,
         private readonly TelegramCalendarImageService $calendarImage,
         private readonly TelegramApiClient $telegram,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request)
     {
-        if (!$this->validSecret($request)) {
+        if (! $this->validSecret($request)) {
             return response()->json(['ok' => false], 403);
         }
 
@@ -98,25 +96,28 @@ class TelegramBotController extends Controller
 
     private function handleMessage(array $message): void
     {
-        $fromId = (string)data_get($message, 'from.id');
+        $fromId = (string) data_get($message, 'from.id');
         $chatId = data_get($message, 'chat.id');
 
-        if (!$this->isAllowed($fromId)) {
+        if (! $this->isAllowed($fromId)) {
             $this->sendMessage($chatId, 'Нет доступа к этому боту.');
+
             return;
         }
 
         if (isset($message['photo'])) {
             $this->handlePhoto($message);
+
             return;
         }
 
-        $text = trim((string)($message['text'] ?? ''));
+        $text = trim((string) ($message['text'] ?? ''));
 
         if (isset($message['voice'])) {
             $text = $this->transcribeVoice($message['voice']);
             if ($text === '') {
                 $this->sendMessage($chatId, 'Не смог распознать голосовое сообщение.');
+
                 return;
             }
             $this->sendMessage($chatId, 'Распознал: '.$text);
@@ -124,38 +125,63 @@ class TelegramBotController extends Controller
 
         if ($text === '') {
             $this->sendMessage($chatId, 'Напишите команду текстом или отправьте голосовое сообщение.');
+
             return;
         }
 
         if (Str::startsWith($text, '/start')) {
             $this->clearSession($fromId);
             $this->sendMessage($chatId, "Готов работать с календарём.\n\nПримеры:\n• с 15 по 18 августа принесут шпица Рауля\n• покажи записи на этот месяц");
+
             return;
         }
 
         if (Str::startsWith($text, '/help')) {
             $this->sendHelp($chatId);
+
             return;
         }
 
         $calendarCommand = mb_strtolower($text);
+        if ($calendarCommand === 'записи сегодня') {
+            $date = now()->toDateString();
+            $this->sendBookingsList($chatId, ['start_date' => $date, 'end_date' => $date]);
+
+            return;
+        }
+        if ($calendarCommand === 'записи завтра') {
+            $date = now()->addDay()->toDateString();
+            $this->sendBookingsList($chatId, ['start_date' => $date, 'end_date' => $date]);
+
+            return;
+        }
+        if ($calendarCommand === '➕ добавить запись') {
+            $this->startQuickBooking($chatId, $fromId);
+
+            return;
+        }
+
         if (in_array($calendarCommand, ['календарь', '/calendar'], true)) {
             $this->sendMonthlyCalendar($chatId, now()->startOfMonth());
+
             return;
         }
 
         if (in_array($calendarCommand, ['следующий месяц', 'след. месяц'], true)) {
             $this->sendMonthlyCalendar($chatId, now()->addMonthNoOverflow()->startOfMonth());
+
             return;
         }
 
         if (in_array($calendarCommand, ['заказы', '/orders', 'мои заказы', 'заказы и работа'], true)) {
             $this->sendServiceOrdersMenu($chatId);
+
             return;
         }
 
         if ($tasks = $this->taskInstructionParser->parse($text)) {
             $this->startBoardingTaskCreation($chatId, $fromId, $tasks);
+
             return;
         }
 
@@ -168,6 +194,7 @@ class TelegramBotController extends Controller
 
         if ($period = $this->bookingListPeriodParser->parse($text)) {
             $this->sendBookingsList($chatId, $period);
+
             return;
         }
 
@@ -191,24 +218,27 @@ class TelegramBotController extends Controller
 
     private function handleCallback(array $callback): void
     {
-        $fromId = (string)data_get($callback, 'from.id');
+        $fromId = (string) data_get($callback, 'from.id');
         $chatId = data_get($callback, 'message.chat.id');
-        $data = (string)($callback['data'] ?? '');
+        $data = (string) ($callback['data'] ?? '');
 
         $this->answerCallback($callback['id'] ?? null);
 
-        if (!$this->isAllowed($fromId)) {
+        if (! $this->isAllowed($fromId)) {
             $this->sendMessage($chatId, 'Нет доступа к этому боту.');
+
             return;
         }
 
         if (preg_match('/^task:(\d+):(done|cancel)$/', $data, $matches)) {
             $this->handleBoardingTaskCallback((int) $matches[1], $matches[2], $fromId, $chatId);
+
             return;
         }
 
         if (Str::startsWith($data, 'task_boarding:')) {
             $this->selectBoardingForTasks($chatId, $fromId, Str::after($data, 'task_boarding:'));
+
             return;
         }
 
@@ -218,91 +248,109 @@ class TelegramBotController extends Controller
             } catch (Throwable) {
                 $this->sendMessage($chatId, 'Не удалось открыть календарь. Отправьте «календарь» ещё раз.');
             }
+
             return;
         }
 
         if (preg_match('/^orders:open:(\d+)$/', $data, $matches)) {
             $this->showServiceOrderMenu($chatId, (int) $matches[1]);
+
             return;
         }
 
         if ($data === 'orders:list') {
             $this->sendServiceOrdersMenu($chatId);
+
             return;
         }
 
         if (preg_match('/^order:(archive|delete):(\d+)$/', $data, $matches)) {
             $this->askServiceOrderDestructiveConfirmation($chatId, $fromId, (int) $matches[2], $matches[1]);
+
             return;
         }
 
         if (preg_match('/^order:(archive|delete):(\d+):confirm$/', $data, $matches)) {
             $this->confirmServiceOrderDestructiveAction($chatId, $fromId, (int) $matches[2], $matches[1]);
+
             return;
         }
 
         if (preg_match('/^order:edit:(\d+)$/', $data, $matches)) {
             $this->showServiceOrderEditMenu($chatId, (int) $matches[1]);
+
             return;
         }
 
         if (preg_match('/^order:field:(\d+):(dates|address|note|client)$/', $data, $matches)) {
             $this->startServiceOrderFieldEdit($chatId, $fromId, (int) $matches[1], $matches[2]);
+
             return;
         }
 
         if (preg_match('/^order:pets:(\d+)$/', $data, $matches)) {
             $this->showServiceOrderPetsMenu($chatId, (int) $matches[1]);
+
             return;
         }
 
         if (preg_match('/^order:addpet:(\d+)$/', $data, $matches)) {
             $this->startServiceOrderPetAdd($chatId, $fromId, (int) $matches[1]);
+
             return;
         }
 
         if (preg_match('/^order:pet:(\d+):(\d+)$/', $data, $matches)) {
             $this->showServiceOrderPetMenu($chatId, (int) $matches[1], (int) $matches[2]);
+
             return;
         }
 
         if (preg_match('/^order:petqty:(\d+):(\d+):(plus|minus)$/', $data, $matches)) {
             $this->changeServiceOrderPetQuantity($chatId, (int) $matches[1], (int) $matches[2], $matches[3]);
+
             return;
         }
 
         if (preg_match('/^order:petdelete:(\d+):(\d+)$/', $data, $matches)) {
             $this->askServiceOrderPetDeletion($chatId, $fromId, (int) $matches[1], (int) $matches[2]);
+
             return;
         }
 
         if (preg_match('/^order:petdelete:(\d+):(\d+):confirm$/', $data, $matches)) {
             $this->confirmServiceOrderPetDeletion($chatId, $fromId, (int) $matches[1], (int) $matches[2]);
+
             return;
         }
 
         if (preg_match('/^order:serviceadd:(\d+):(\d+):(\p{L}+)$/u', $data, $matches)) {
             $this->addServiceToOrderPet($chatId, (int) $matches[1], (int) $matches[2], $matches[3]);
+
             return;
         }
 
         if (preg_match('/^order:service:(\d+):(\d+):(\d+)$/', $data, $matches)) {
             $this->showServiceOrderPetServiceMenu($chatId, (int) $matches[1], (int) $matches[2], (int) $matches[3]);
+
             return;
         }
 
         if (preg_match('/^order:serviceunits:(\d+):(\d+):(\d+):(\d+)$/', $data, $matches)) {
             $this->changeServiceOrderPetServiceUnits($chatId, (int) $matches[1], (int) $matches[2], (int) $matches[3], (int) $matches[4]);
+
             return;
         }
 
         if (preg_match('/^order:servicedelete:(\d+):(\d+):(\d+)$/', $data, $matches)) {
             $this->askServiceOrderPetServiceDeletion($chatId, $fromId, (int) $matches[1], (int) $matches[2], (int) $matches[3]);
+
             return;
         }
 
         if (preg_match('/^order:servicedelete:(\d+):(\d+):(\d+):confirm$/', $data, $matches)) {
             $this->confirmServiceOrderPetServiceDeletion($chatId, $fromId, (int) $matches[1], (int) $matches[2], (int) $matches[3]);
+
             return;
         }
 
@@ -311,61 +359,74 @@ class TelegramBotController extends Controller
         if ($data === 'cancel' || $data === 'booking_cancel') {
             $this->clearSession($fromId);
             $this->sendMessage($chatId, 'Отменено.');
+
             return;
         }
 
-        if (!$session) {
+        if (! $session) {
             $this->sendMessage($chatId, 'Контекст устарел. Повторите команду.');
+
             return;
         }
 
         $payload = $session->payload ?: [];
+        if ($this->handleQuickBookingCallback($session, $chatId, $fromId, $data, $payload)) {
+            return;
+        }
 
         if (preg_match('/^photo_target:(animal|client):(\d+)$/', $data, $matches)) {
             if ($session->state !== 'waiting_photo_target_selection') {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Выбор устарел. Отправьте фото ещё раз.');
+
                 return;
             }
 
             $type = $matches[1];
             $id = (int) $matches[2];
             $allowed = $type === 'animal' ? ($payload['animal_ids'] ?? []) : ($payload['client_ids'] ?? []);
-            if (!in_array($id, $allowed, true)) {
+            if (! in_array($id, $allowed, true)) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Карточка не найдена. Отправьте фото ещё раз.');
+
                 return;
             }
 
             if ($type === 'animal' && ($animal = Animal::with('client')->find($id))) {
                 $this->askPetPhotoConfirmation($chatId, $fromId, $animal, (string) ($payload['file_id'] ?? ''));
+
                 return;
             }
             if ($type === 'client' && ($client = Client::find($id))) {
                 $this->askClientPhotoConfirmation($chatId, $fromId, $client, (string) ($payload['file_id'] ?? ''));
+
                 return;
             }
 
             $this->clearSession($fromId);
             $this->sendMessage($chatId, 'Карточка не найдена. Отправьте фото ещё раз.');
+
             return;
         }
 
         if (preg_match('/^pet_photo:choose:(\d+)$/', $data, $matches)) {
-            if ($session->state !== 'waiting_pet_photo_selection' || !in_array((int) $matches[1], $payload['animal_ids'] ?? [], true)) {
+            if ($session->state !== 'waiting_pet_photo_selection' || ! in_array((int) $matches[1], $payload['animal_ids'] ?? [], true)) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Список питомцев устарел. Отправьте фото ещё раз.');
+
                 return;
             }
 
             $animal = Animal::with('client')->find((int) $matches[1]);
-            if (!$animal) {
+            if (! $animal) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Питомец не найден. Отправьте фото ещё раз.');
+
                 return;
             }
 
             $this->askPetPhotoConfirmation($chatId, $fromId, $animal, (string) ($payload['file_id'] ?? ''));
+
             return;
         }
 
@@ -373,20 +434,23 @@ class TelegramBotController extends Controller
             if ($session->state !== 'waiting_pet_photo_confirmation') {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Подтверждение устарело. Отправьте фото ещё раз.');
+
                 return;
             }
 
             $animal = Animal::find((int) ($payload['animal_id'] ?? 0));
             $fileId = (string) ($payload['file_id'] ?? '');
-            if (!$animal || $fileId === '') {
+            if (! $animal || $fileId === '') {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Не удалось сохранить фото. Отправьте его ещё раз.');
+
                 return;
             }
 
             $this->storeTelegramPhoto($animal, $fileId);
             $this->clearSession($fromId);
             $this->sendMessage($chatId, 'Фото добавлено в профиль питомца '.$animal->name.'.');
+
             return;
         }
 
@@ -394,38 +458,44 @@ class TelegramBotController extends Controller
             if ($session->state !== 'waiting_client_photo_confirmation') {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Подтверждение устарело. Отправьте фото ещё раз.');
+
                 return;
             }
 
             $client = Client::find((int) ($payload['client_id'] ?? 0));
             $fileId = (string) ($payload['file_id'] ?? '');
-            if (!$client || $fileId === '') {
+            if (! $client || $fileId === '') {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Не удалось сохранить фото. Отправьте его ещё раз.');
+
                 return;
             }
 
             $this->storeTelegramClientPhoto($client, $fileId);
             $this->clearSession($fromId);
             $this->sendMessage($chatId, 'Фото добавлено в профиль клиента '.$client->name.'.');
+
             return;
         }
 
         if (preg_match('/^pet_owner:choose:(\d+)$/', $data, $matches)) {
-            if ($session->state !== 'waiting_pet_owner_selection' || !in_array((int) $matches[1], $payload['animal_ids'] ?? [], true)) {
+            if ($session->state !== 'waiting_pet_owner_selection' || ! in_array((int) $matches[1], $payload['animal_ids'] ?? [], true)) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Список питомцев устарел. Повторите сообщение.');
+
                 return;
             }
 
             $animal = Animal::with('client')->find((int) $matches[1]);
-            if (!$animal) {
+            if (! $animal) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Питомец не найден. Повторите сообщение.');
+
                 return;
             }
 
             $this->askPetOwnerUpdateConfirmation($chatId, $fromId, $animal, $payload);
+
             return;
         }
 
@@ -433,14 +503,16 @@ class TelegramBotController extends Controller
             if ($session->state !== 'waiting_pet_owner_confirmation') {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Подтверждение устарело. Повторите сообщение.');
+
                 return;
             }
 
             $animal = Animal::with('client')->find((int) ($payload['animal_id'] ?? 0));
             $clientName = trim((string) ($payload['client_name'] ?? ''));
-            if (!$animal || $clientName === '') {
+            if (! $animal || $clientName === '') {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Не удалось сохранить владельца. Повторите сообщение.');
+
                 return;
             }
 
@@ -451,6 +523,7 @@ class TelegramBotController extends Controller
             $animal->update(['client_id' => $client->id]);
             $this->clearSession($fromId);
             $this->sendMessage($chatId, 'Готово: у '.$animal->name.' теперь хозяин '.$client->name.'.');
+
             return;
         }
 
@@ -458,25 +531,29 @@ class TelegramBotController extends Controller
             $value = Str::after($data, 'species:');
             $payload['species'] = $value === 'none' ? null : $value;
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
             return;
         }
 
         if (Str::startsWith($data, 'category:')) {
             $category = Category::find((int) Str::after($data, 'category:'));
-            if (!$category) {
+            if (! $category) {
                 $this->sendMessage($chatId, 'Категория не найдена. Выберите её ещё раз.');
+
                 return;
             }
 
             $payload['category_id'] = $category->id;
             $payload['species'] = $category->name;
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
             return;
         }
 
         if (Str::startsWith($data, 'dog_size:')) {
             $payload['dog_size'] = Str::after($data, 'dog_size:');
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
             return;
         }
 
@@ -486,13 +563,15 @@ class TelegramBotController extends Controller
             $payload['client_id'] = null;
             $payload['owner_asked'] = true;
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
             return;
         }
 
         if (Str::startsWith($data, 'animal_yes:')) {
-            $animal = Animal::with(['client', 'photos'])->find((int)Str::after($data, 'animal_yes:'));
-            if (!$animal) {
+            $animal = Animal::with(['client', 'photos'])->find((int) Str::after($data, 'animal_yes:'));
+            if (! $animal) {
                 $this->sendMessage($chatId, 'Питомец не найден. Повторите команду.');
+
                 return;
             }
 
@@ -504,6 +583,7 @@ class TelegramBotController extends Controller
             $payload['client_id'] = $animal->client_id ?: ($payload['client_id'] ?? null);
             $payload['client_name'] = $animal->client?->name ?: ($payload['client_name'] ?? null);
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
             return;
         }
 
@@ -511,22 +591,31 @@ class TelegramBotController extends Controller
             unset($payload['animal_id'], $payload['client_id']);
             $payload['animal_match_checked'] = true;
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
             return;
         }
 
         if ($data === 'booking_confirm') {
+            if ($session->state !== 'waiting_booking_confirmation') {
+                $this->clearSession($fromId);
+                $this->sendMessage($chatId, 'Подтверждение устарело. Запустите добавление записи ещё раз.');
+
+                return;
+            }
             $boarding = $this->createBookingFromPayload($payload);
             $this->clearSession($fromId);
             $this->sendMessage($chatId, "Запись создана #{$boarding->id}:\n".$this->bookingLine($boarding));
+
             return;
         }
 
         if ($data === 'service_order_confirm') {
             $serviceType = (string) ($payload['service_type'] ?? '');
             $groups = is_array($payload['animal_groups'] ?? null) ? $payload['animal_groups'] : [];
-            if (!in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true) || empty($groups)) {
+            if (! in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true) || empty($groups)) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Данные заказа устарели. Отправьте заявку ещё раз.');
+
                 return;
             }
 
@@ -556,12 +645,14 @@ class TelegramBotController extends Controller
             }
             $this->clearSession($fromId);
             $this->sendMessage($chatId, "Заказ создан #{$order->id}: ".$this->russianDatePeriod($order->start_date, $order->end_date).'. '.implode(', ', array_column($groups, 'label')).'.');
+
             return;
         }
 
         if ($data === 'booking_change_price') {
             $this->saveSession($fromId, $chatId, 'waiting_booking_price', $payload);
             $this->sendMessage($chatId, 'Введите новую цену за одну услугу в рублях. Например: 650');
+
             return;
         }
 
@@ -569,33 +660,38 @@ class TelegramBotController extends Controller
             $payload['units_per_day'] = (int) $matches[1];
             unset($payload['unit_price']);
             $this->askBookingConfirmation($chatId, $fromId, $payload);
+
             return;
         }
 
         if (Str::startsWith($data, 'booking_service_select:')) {
             $boardingId = (int) Str::after($data, 'booking_service_select:');
-            if (!in_array($boardingId, array_map('intval', $payload['booking_service_candidate_ids'] ?? []), true)) {
+            if (! in_array($boardingId, array_map('intval', $payload['booking_service_candidate_ids'] ?? []), true)) {
                 $this->sendMessage($chatId, 'Выбор записи устарел. Повторите команду.');
+
                 return;
             }
 
             $boarding = Boarding::with('animal.category')->whereNull('archived_at')->find($boardingId);
-            if (!$boarding) {
+            if (! $boarding) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Запись не найдена или уже в архиве.');
+
                 return;
             }
 
             $this->askBookingServiceUpdateConfirmation($chatId, $fromId, $boarding, (string) ($payload['new_service_type'] ?? ''));
+
             return;
         }
 
         if ($data === 'booking_service_update_confirm') {
             $boarding = Boarding::with('animal.category')->whereNull('archived_at')->find((int) ($payload['booking_id'] ?? 0));
             $serviceType = (string) ($payload['new_service_type'] ?? '');
-            if (!$boarding || !in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) {
+            if (! $boarding || ! in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Не удалось найти запись для изменения. Повторите команду.');
+
                 return;
             }
 
@@ -607,32 +703,37 @@ class TelegramBotController extends Controller
             ]);
             $this->clearSession($fromId);
             $this->sendMessage($chatId, 'Готово: у '.$this->bookingAnimalName($boarding).' услуга изменена на «'.$serviceType.'».');
+
             return;
         }
 
         if (Str::startsWith($data, 'delete_order_select:')) {
             $orderId = (int) Str::after($data, 'delete_order_select:');
-            if (!in_array($orderId, array_map('intval', $payload['delete_order_candidate_ids'] ?? []), true)) {
+            if (! in_array($orderId, array_map('intval', $payload['delete_order_candidate_ids'] ?? []), true)) {
                 $this->sendMessage($chatId, 'Этот заказ уже нельзя изменить из текущего запроса. Повторите команду.');
+
                 return;
             }
 
             $order = $this->serviceOrderForBot($orderId);
-            if (!$order) {
+            if (! $order) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Заказ не найден или уже в архиве.');
+
                 return;
             }
 
             $this->askServiceOrderDeletionConfirmation($chatId, $fromId, $order);
+
             return;
         }
 
         if ($data === 'delete_order_confirm') {
             $order = $this->serviceOrderForBot((int) ($payload['delete_order_id'] ?? 0));
-            if (!$order) {
+            if (! $order) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Заказ не найден или уже в архиве.');
+
                 return;
             }
 
@@ -640,26 +741,30 @@ class TelegramBotController extends Controller
             $this->syncLegacyBoardingForServiceOrder($order);
             $this->clearSession($fromId);
             $this->sendMessage($chatId, "Заказ перенесён в архив:\n".$this->serviceOrderDeletionLabel($order));
+
             return;
         }
 
         if (Str::startsWith($data, 'delete_booking_select:')) {
             $boardingId = (int) Str::after($data, 'delete_booking_select:');
-            if (!in_array($boardingId, array_map('intval', $payload['delete_candidate_ids'] ?? []), true)) {
+            if (! in_array($boardingId, array_map('intval', $payload['delete_candidate_ids'] ?? []), true)) {
                 $this->sendMessage($chatId, 'Эту запись уже нельзя удалить из текущего запроса. Повторите команду.');
+
                 return;
             }
 
             $boarding = Boarding::with(['animal.client', 'client'])
                 ->whereNull('archived_at')
                 ->find($boardingId);
-            if (!$boarding) {
+            if (! $boarding) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Запись не найдена или уже в архиве.');
+
                 return;
             }
 
             $this->askDeleteConfirmation($chatId, $fromId, $boarding);
+
             return;
         }
 
@@ -669,9 +774,10 @@ class TelegramBotController extends Controller
                 ->whereNull('archived_at')
                 ->find($boardingId);
 
-            if (!$boarding) {
+            if (! $boarding) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Запись не найдена или уже в архиве.');
+
                 return;
             }
 
@@ -679,16 +785,125 @@ class TelegramBotController extends Controller
             $boarding->update(['archived_at' => now()]);
             $this->clearSession($fromId);
             $this->sendMessage($chatId, "Запись перенесена в архив:\n{$line}");
+
             return;
         }
 
         $this->sendMessage($chatId, 'Неизвестное действие.');
     }
 
+    private function handleQuickBookingCallback(
+        TelegramBotSession $session,
+        int|string $chatId,
+        string $fromId,
+        string $data,
+        array $payload,
+    ): bool {
+        if (preg_match('/^quick_service:(boarding|care|walk)$/', $data, $matches)) {
+            if ($session->state !== 'quick_service') {
+                return $this->expireQuickBooking($chatId, $fromId, 'Выбор услуги устарел.');
+            }
+
+            $payload['service_type'] = match ($matches[1]) {
+                'care' => 'уход',
+                'walk' => 'выгул',
+                default => 'передержка',
+            };
+            $this->saveSession($fromId, $chatId, 'quick_animal_choice', $payload);
+            $this->sendMessage($chatId, 'Как добавить питомца?', [
+                'inline_keyboard' => [
+                    [['text' => 'Новое животное', 'callback_data' => 'quick_animal:new']],
+                    [['text' => 'Уже было у нас', 'callback_data' => 'quick_animal:existing']],
+                    [['text' => 'Отмена', 'callback_data' => 'cancel']],
+                ],
+            ]);
+
+            return true;
+        }
+
+        if (preg_match('/^quick_animal:(new|existing)$/', $data, $matches)) {
+            if ($session->state !== 'quick_animal_choice') {
+                return $this->expireQuickBooking($chatId, $fromId, 'Выбор питомца устарел.');
+            }
+
+            if ($matches[1] === 'existing') {
+                $this->saveSession($fromId, $chatId, 'quick_existing_animal', $payload);
+                $this->sendMessage($chatId, 'Введите кличку питомца или её часть.');
+            } else {
+                $this->saveSession($fromId, $chatId, 'quick_new_animal', $payload);
+                $this->sendMessage($chatId, 'Напишите кличку и вид через запятую. Например: “Мия, собака”. Если клички нет — напишите только вид.');
+            }
+
+            return true;
+        }
+
+        if (preg_match('/^quick_existing:(\d+)$/', $data, $matches)) {
+            $animalId = (int) $matches[1];
+            if ($session->state !== 'quick_existing_animal_selection'
+                || ! in_array($animalId, array_map('intval', $payload['animal_ids'] ?? []), true)) {
+                return $this->expireQuickBooking($chatId, $fromId, 'Выбор питомца устарел.');
+            }
+
+            $animal = Animal::with(['client', 'category'])->find($animalId);
+            if (! $animal) {
+                return $this->expireQuickBooking($chatId, $fromId, 'Питомец больше не найден.');
+            }
+
+            $payload['animal_id'] = $animal->id;
+            $payload['animal_name'] = $animal->name;
+            $payload['category_id'] = $animal->category_id;
+            $payload['species'] = $animal->category?->name ?: $animal->species;
+            $payload['dog_size'] = $animal->dog_size;
+            $payload['client_id'] = $animal->client_id;
+            $payload['client_name'] = $animal->client?->name;
+            $payload['client_phone'] = $animal->client?->phone;
+            $payload['client_note'] = $animal->client?->note;
+            $payload['owner_asked'] = (bool) $animal->client_id;
+            $payload['animal_match_checked'] = true;
+            $this->askQuickDates($chatId, $fromId, $payload);
+
+            return true;
+        }
+
+        if (preg_match('/^quick_date:(today|tomorrow|custom)$/', $data, $matches)) {
+            if ($session->state !== 'quick_dates') {
+                return $this->expireQuickBooking($chatId, $fromId, 'Выбор даты устарел.');
+            }
+
+            if ($matches[1] === 'custom') {
+                $this->saveSession($fromId, $chatId, 'quick_custom_dates', $payload);
+                $this->sendMessage($chatId, 'Напишите период так: 12.09.2026 — 14.09.2026. Для одного дня: 12.09.2026.');
+
+                return true;
+            }
+
+            $date = $matches[1] === 'today' ? now() : now()->addDay();
+            $payload['start_date'] = $date->toDateString();
+            $payload['end_date'] = $date->toDateString();
+            $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function expireQuickBooking(int|string $chatId, string $fromId, string $message): bool
+    {
+        $this->clearSession($fromId);
+        $this->sendMessage($chatId, $message.' Запустите добавление записи ещё раз.');
+
+        return true;
+    }
+
     private function handleSessionText(TelegramBotSession $session, int|string $chatId, string $fromId, string $text): bool
     {
         $payload = $session->payload ?: [];
         $intent = null;
+
+        if ($this->handleQuickBookingText($session, $chatId, $fromId, $text)) {
+            return true;
+        }
 
         try {
             $this->telegram->sendTyping($chatId);
@@ -702,6 +917,7 @@ class TelegramBotController extends Controller
         if ($isCancel) {
             $this->clearSession($fromId);
             $this->sendMessage($chatId, 'Отменено.');
+
             return true;
         }
 
@@ -710,29 +926,34 @@ class TelegramBotController extends Controller
                 $payload['category_id'] = null;
                 $payload['species'] = null;
                 $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
                 return true;
             }
 
             $category = $this->categoryFromText($normalized);
-            if (!$category) {
+            if (! $category) {
                 $this->askSpecies($chatId, $payload['animal_name']);
+
                 return true;
             }
 
             $payload['category_id'] = $category?->id;
             $payload['species'] = $category->name;
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
             return true;
         }
 
         if ($session->state === 'waiting_dog_size') {
             $size = $this->normalizeDogSize($normalized);
-            if (!$size) {
+            if (! $size) {
                 $this->askDogSize($chatId, $payload['animal_name']);
+
                 return true;
             }
             $payload['dog_size'] = $size;
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
             return true;
         }
 
@@ -740,10 +961,12 @@ class TelegramBotController extends Controller
             $price = (int) preg_replace('/\D+/', '', $text);
             if ($price < 1 || $price > 100000) {
                 $this->sendMessage($chatId, 'Укажите цену целым числом от 1 до 100 000 ₽.');
+
                 return true;
             }
             $payload['unit_price'] = $price;
             $this->askBookingConfirmation($chatId, $fromId, $payload);
+
             return true;
         }
 
@@ -761,29 +984,35 @@ class TelegramBotController extends Controller
             $payload['owner_asked'] = true;
 
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
             return true;
         }
 
         if (in_array($session->state, ['waiting_order_dates', 'waiting_order_address', 'waiting_order_note', 'waiting_order_client'], true)) {
             $order = ServiceOrder::whereNull('archived_at')->find((int) ($payload['order_id'] ?? 0));
-            if (!$order) {
+            if (! $order) {
                 $this->clearSession($fromId);
                 $this->sendMessage($chatId, 'Заказ не найден или уже в архиве.');
+
                 return true;
             }
 
             if ($session->state === 'waiting_order_dates') {
-                if (!preg_match('/(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4})\s*(?:—|-|до|по)\s*(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4})/u', $text, $dates)) {
+                if (! preg_match('/(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4})\s*(?:—|-|до|по)\s*(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4})/u', $text, $dates)) {
                     $this->sendMessage($chatId, 'Напишите период так: 22.08.2026 — 25.08.2026');
+
                     return true;
                 }
                 try {
                     $start = Carbon::createFromFormat('d.m.Y', str_replace(['/', '-'], '.', $dates[1]))->startOfDay();
                     $end = Carbon::createFromFormat('d.m.Y', str_replace(['/', '-'], '.', $dates[2]))->startOfDay();
-                    if ($end->lt($start)) { throw new \InvalidArgumentException(); }
+                    if ($end->lt($start)) {
+                        throw new \InvalidArgumentException;
+                    }
                     $order->update(['start_date' => $start, 'end_date' => $end]);
                 } catch (Throwable) {
                     $this->sendMessage($chatId, 'Не удалось распознать даты. Пример: 22.08.2026 — 25.08.2026');
+
                     return true;
                 }
             } elseif ($session->state === 'waiting_order_address') {
@@ -792,7 +1021,7 @@ class TelegramBotController extends Controller
                 $order->update(['note' => trim($text)]);
             } else {
                 $client = Client::whereRaw('LOWER(name) = ?', [mb_strtolower(trim($text))])->first();
-                if (!$client) {
+                if (! $client) {
                     $client = Client::create(['name' => trim($text)]);
                 }
                 $order->update(['client_id' => $client->id]);
@@ -802,33 +1031,171 @@ class TelegramBotController extends Controller
             $this->clearSession($fromId);
             $this->sendMessage($chatId, 'Готово: заказ обновлён.');
             $this->showServiceOrderMenu($chatId, $order->id);
+
             return true;
         }
 
         if ($session->state === 'waiting_order_add_pet') {
             $order = ServiceOrder::whereNull('archived_at')->find((int) ($payload['order_id'] ?? 0));
             $parts = array_map('trim', explode(',', $text));
-            if (!$order || count($parts) < 3) {
+            if (! $order || count($parts) < 3) {
                 $this->sendMessage($chatId, 'Напишите: Кличка, вид, количество, услуга. Например: Мурка, кошки, 1, уход');
+
                 return true;
             }
             [$name, $species, $quantity, $serviceType] = array_pad($parts, 4, 'уход');
             $category = $this->categoryFromText($this->normalizeSpecies($species));
             $serviceType = $this->normalizeServiceType($serviceType) ?: 'уход';
-            if (!$category || !in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) {
+            if (! $category || ! in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) {
                 $this->sendMessage($chatId, 'Не распознал вид или услугу. Пример: Мурка, кошки, 1, уход');
+
                 return true;
             }
             $quantity = max(1, min(99, (int) $quantity));
             $animal = Animal::firstOrCreate(['name' => $name, 'client_id' => $order->client_id], ['category_id' => $category->id, 'species' => $category->name, 'order' => (int) Animal::max('order') + 1]);
             $position = $order->animals()->create(['animal_id' => $animal->id, 'category_id' => $category->id, 'label' => $animal->name, 'quantity' => $quantity]);
             $position->services()->create(['service_order_id' => $order->id, 'service_type' => $serviceType, 'units_per_day' => 1, 'unit_price' => $this->pricing->defaultRate($serviceType, $category->name, $animal->dog_size)]);
-            $this->refreshServiceOrderPrice($order); $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
-            $this->clearSession($fromId); $this->sendMessage($chatId, 'Питомец добавлен в заказ.'); $this->showServiceOrderPetsMenu($chatId, $order->id);
+            $this->refreshServiceOrderPrice($order);
+            $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Питомец добавлен в заказ.');
+            $this->showServiceOrderPetsMenu($chatId, $order->id);
+
             return true;
         }
 
         return false;
+    }
+
+    private function handleQuickBookingText(
+        TelegramBotSession $session,
+        int|string $chatId,
+        string $fromId,
+        string $text,
+    ): bool {
+        $payload = $session->payload ?: [];
+        $normalized = mb_strtolower(trim($text));
+        if (in_array($normalized, ['отмена', 'отмени', 'cancel'], true)) {
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Отменено.');
+
+            return true;
+        }
+
+        if ($session->state === 'quick_existing_animal') {
+            $animals = $this->animalsByName($text);
+            if ($animals->isEmpty()) {
+                $this->sendMessage($chatId, 'Питомцы по этой кличке не найдены. Введите другую кличку или её часть.');
+
+                return true;
+            }
+
+            $payload['animal_ids'] = $animals->pluck('id')->all();
+            $this->saveSession($fromId, $chatId, 'quick_existing_animal_selection', $payload);
+            $buttons = $animals->map(fn (Animal $animal): array => [[
+                'text' => mb_strimwidth($animal->name.' · '.($animal->client ? 'хозяин '.$animal->client->name : 'без хозяина'), 0, 60, '…'),
+                'callback_data' => 'quick_existing:'.$animal->id,
+            ]])->all();
+            $buttons[] = [['text' => 'Отмена', 'callback_data' => 'cancel']];
+            $this->sendMessage($chatId, 'Выберите конкретного питомца:', ['inline_keyboard' => $buttons]);
+
+            return true;
+        }
+
+        if ($session->state === 'quick_new_animal') {
+            $parts = array_map('trim', explode(',', $text, 2));
+            $animalName = count($parts) === 2 ? $parts[0] : '';
+            $speciesText = count($parts) === 2 ? $parts[1] : $parts[0];
+            $category = $this->categoryFromText(mb_strtolower($speciesText));
+            if (! $category) {
+                $this->sendMessage($chatId, 'Вид не найден в категориях системы. Напишите, например: “Мия, собака” или только “кошка”.');
+
+                return true;
+            }
+
+            $payload += [
+                'units_per_day' => 1,
+                'pending_photo_file_ids' => [],
+                'client_id' => null,
+                'client_name' => null,
+                'client_phone' => null,
+                'client_note' => null,
+                'owner_asked' => false,
+            ];
+            $payload['animal_name'] = $animalName !== '' ? $animalName : $this->generateTemporaryAnimalName($category->name);
+            $payload['generated_animal_name'] = $animalName === '';
+            $payload['category_id'] = $category->id;
+            $payload['species'] = $category->name;
+            $payload['animal_match_checked'] = true;
+            $this->askQuickDates($chatId, $fromId, $payload);
+
+            return true;
+        }
+
+        if ($session->state === 'quick_custom_dates') {
+            $datePattern = '(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{4})';
+            if (! preg_match('/^\s*'.$datePattern.'(?:\s*(?:—|–|\s-\s|до|по)\s*'.$datePattern.')?\s*$/u', $text, $dates)) {
+                $this->sendMessage($chatId, 'Не удалось распознать даты. Пример: 12.09.2026 — 14.09.2026 или 12.09.2026.');
+
+                return true;
+            }
+
+            try {
+                $startValue = str_replace(['/', '-'], '.', $dates[1]);
+                $endValue = str_replace(['/', '-'], '.', $dates[2] ?? $dates[1]);
+                $start = Carbon::createFromFormat('!d.m.Y', $startValue);
+                $end = Carbon::createFromFormat('!d.m.Y', $endValue);
+                if ($start->format('d.m.Y') !== $startValue || $end->format('d.m.Y') !== $endValue || $end->lt($start)) {
+                    throw new \InvalidArgumentException;
+                }
+            } catch (Throwable) {
+                $this->sendMessage($chatId, 'Проверьте даты: конец периода не может быть раньше начала. Формат: 12.09.2026 — 14.09.2026.');
+
+                return true;
+            }
+
+            $payload['start_date'] = $start->toDateString();
+            $payload['end_date'] = $end->toDateString();
+            $this->continueAfterRequiredFields($chatId, $fromId, $payload);
+
+            return true;
+        }
+
+        if (Str::startsWith($session->state, 'quick_')) {
+            $this->sendMessage($chatId, 'Пожалуйста, используйте кнопки текущего шага или выберите «Отмена».');
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function startQuickBooking(int|string $chatId, string $fromId): void
+    {
+        $this->saveSession($fromId, $chatId, 'quick_service', []);
+        $this->sendMessage($chatId, 'Выберите услугу:', [
+            'inline_keyboard' => [
+                [['text' => 'Передержка', 'callback_data' => 'quick_service:boarding']],
+                [['text' => 'Уход', 'callback_data' => 'quick_service:care']],
+                [['text' => 'Выгул', 'callback_data' => 'quick_service:walk']],
+                [['text' => 'Отмена', 'callback_data' => 'cancel']],
+            ],
+        ]);
+    }
+
+    private function askQuickDates(int|string $chatId, string $fromId, array $payload): void
+    {
+        $this->saveSession($fromId, $chatId, 'quick_dates', $payload);
+        $this->sendMessage($chatId, 'Выберите дату записи:', [
+            'inline_keyboard' => [
+                [
+                    ['text' => 'Сегодня', 'callback_data' => 'quick_date:today'],
+                    ['text' => 'Завтра', 'callback_data' => 'quick_date:tomorrow'],
+                ],
+                [['text' => 'Выбрать период', 'callback_data' => 'quick_date:custom']],
+                [['text' => 'Отмена', 'callback_data' => 'cancel']],
+            ],
+        ]);
     }
 
     private function processIntent(int|string $chatId, string $fromId, array $intent): void
@@ -837,51 +1204,61 @@ class TelegramBotController extends Controller
 
         if ($type === 'list_bookings') {
             $this->sendBookingsList($chatId, $intent);
+
             return;
         }
 
         if ($type === 'show_pet') {
             $this->showAnimal($chatId, (string) data_get($intent, 'animal.name'));
+
             return;
         }
 
         if ($type === 'show_client') {
             $this->showClient($chatId, (string) data_get($intent, 'client.name'), (string) data_get($intent, 'animal.name'));
+
             return;
         }
 
         if ($type === 'delete_booking') {
             $this->startBookingDeletion($chatId, $fromId, $intent);
+
             return;
         }
 
         if ($type === 'update_booking') {
             $this->startBookingServiceUpdate($chatId, $fromId, $intent);
+
             return;
         }
 
         if ($type === 'update_pet_owner') {
             $this->startPetOwnerUpdate($chatId, $fromId, $intent);
+
             return;
         }
 
         if ($type === 'rename_pet') {
             $this->renameAnimal($chatId, (string) data_get($intent, 'animal.name'), (string) data_get($intent, 'new_name'));
+
             return;
         }
 
         if ($type === 'rename_client') {
             $this->renameClient($chatId, (string) data_get($intent, 'client.name'), (string) data_get($intent, 'new_name'));
+
             return;
         }
 
         if ($type === 'create_service_order') {
             $this->startAnonymousServiceOrder($chatId, $fromId, $intent);
+
             return;
         }
 
         if ($type !== 'create_booking') {
             $this->sendMessage($chatId, 'Не понял, что сделать с сообщением. Для новой записи напишите, например: «Запиши кошку Пухлю с 22 по 25 августа, уход». Для просмотра: «Покажи записи на этот месяц».');
+
             return;
         }
 
@@ -905,14 +1282,16 @@ class TelegramBotController extends Controller
             'animal_match_checked' => false,
         ];
 
-        if (!$payload['start_date'] || !$payload['end_date']) {
+        if (! $payload['start_date'] || ! $payload['end_date']) {
             $this->sendMessage($chatId, 'Не хватает периода для записи. Например: «с 13 по 25 сентября».');
+
             return;
         }
 
-        if (!$payload['category_id']) {
+        if (! $payload['category_id']) {
             $this->saveSession($fromId, $chatId, 'waiting_species', $payload);
             $this->askSpecies($chatId, $payload['animal_name'] ?: 'питомец');
+
             return;
         }
 
@@ -922,7 +1301,7 @@ class TelegramBotController extends Controller
     private function continueAfterRequiredFields(int|string $chatId, string $fromId, array $payload): void
     {
         if (empty($payload['animal_name'])) {
-            $categoryName = !empty($payload['category_id'])
+            $categoryName = ! empty($payload['category_id'])
                 ? Category::find((int) $payload['category_id'])?->name
                 : ($payload['species'] ?? null);
 
@@ -936,18 +1315,21 @@ class TelegramBotController extends Controller
             $animal = $matches->first();
             $this->saveSession($fromId, $chatId, 'waiting_animal_match', $payload);
             $this->askAnimalMatch($chatId, $animal);
+
             return;
         }
 
         if ($this->isDog($payload['species'] ?? null) && empty($payload['dog_size'])) {
             $this->saveSession($fromId, $chatId, 'waiting_dog_size', $payload);
             $this->askDogSize($chatId, $payload['animal_name']);
+
             return;
         }
 
         if (empty($payload['client_id']) && empty($payload['client_name']) && empty($payload['owner_asked'])) {
             $this->saveSession($fromId, $chatId, 'waiting_owner', $payload);
             $this->askOwner($chatId);
+
             return;
         }
 
@@ -981,8 +1363,9 @@ class TelegramBotController extends Controller
         $animalName = trim((string) data_get($intent, 'animal.name'));
         $serviceType = (string) ($intent['service_type'] ?? '');
 
-        if ($animalName === '' || !in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) {
+        if ($animalName === '' || ! in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) {
             $this->sendMessage($chatId, 'Не понял, какую запись и на какую услугу изменить. Пример: «Бобик не передержка, а выгул».');
+
             return;
         }
 
@@ -998,11 +1381,13 @@ class TelegramBotController extends Controller
 
         if ($bookings->isEmpty()) {
             $this->sendMessage($chatId, 'Не нашёл текущую или будущую запись питомца '.$animalName.'. Уточните кличку или даты.');
+
             return;
         }
 
         if ($bookings->count() === 1) {
             $this->askBookingServiceUpdateConfirmation($chatId, $fromId, $bookings->first(), $serviceType);
+
             return;
         }
 
@@ -1022,8 +1407,9 @@ class TelegramBotController extends Controller
 
     private function askBookingServiceUpdateConfirmation(int|string $chatId, string $fromId, Boarding $boarding, string $serviceType): void
     {
-        if (!in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) {
+        if (! in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) {
             $this->sendMessage($chatId, 'Неизвестный тип услуги. Повторите команду.');
+
             return;
         }
 
@@ -1059,8 +1445,9 @@ class TelegramBotController extends Controller
         $endDate = $intent['end_date'] ?? $startDate;
         $groups = $this->anonymousAnimalGroups($intent['animals'] ?? [], $serviceType);
 
-        if (!in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true) || !$startDate || !$endDate || empty($groups)) {
+        if (! in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true) || ! $startDate || ! $endDate || empty($groups)) {
             $this->sendMessage($chatId, 'Не хватает данных для заказа. Напишите, например: «С 22 по 25 августа уход: три кошки и собака, кличек пока не знаю».');
+
             return;
         }
 
@@ -1098,17 +1485,17 @@ class TelegramBotController extends Controller
 
     private function anonymousAnimalGroups(mixed $animals, string $serviceType): array
     {
-        if (!is_array($animals)) {
+        if (! is_array($animals)) {
             return [];
         }
 
         $groups = [];
         foreach ($animals as $animal) {
-            if (!is_array($animal) || !empty($animal['name'])) {
+            if (! is_array($animal) || ! empty($animal['name'])) {
                 continue;
             }
             $category = $this->categoryFromText($this->normalizeSpecies($animal['species'] ?? null));
-            if (!$category) {
+            if (! $category) {
                 continue;
             }
             $quantity = max(1, min(20, (int) ($animal['quantity'] ?? 1)));
@@ -1135,6 +1522,7 @@ class TelegramBotController extends Controller
         $clientName = trim((string) data_get($intent, 'client.name'));
         if ($animalName === '' || $clientName === '') {
             $this->sendMessage($chatId, 'Укажите кличку питомца и имя хозяина. Например: «Хозяйку Дейзи зовут Анастасия».');
+
             return;
         }
 
@@ -1146,6 +1534,7 @@ class TelegramBotController extends Controller
 
         if ($animals->isEmpty()) {
             $this->sendMessage($chatId, 'Питомец «'.$animalName.'» не найден. Проверьте кличку.');
+
             return;
         }
 
@@ -1157,6 +1546,7 @@ class TelegramBotController extends Controller
 
         if ($animals->count() === 1) {
             $this->askPetOwnerUpdateConfirmation($chatId, $fromId, $animals->first(), $payload);
+
             return;
         }
 
@@ -1234,7 +1624,7 @@ class TelegramBotController extends Controller
 
         foreach ($patterns as $intent => $intentPatterns) {
             foreach ($intentPatterns as $pattern) {
-                if (!preg_match($pattern, $text, $matches)) {
+                if (! preg_match($pattern, $text, $matches)) {
                     continue;
                 }
 
@@ -1264,20 +1654,24 @@ class TelegramBotController extends Controller
         $newName = $this->renameValue($newName);
         if ($oldName === '' || $newName === '') {
             $this->sendMessage($chatId, 'Не удалось переименовать питомца: не указана старая или новая кличка.');
+
             return;
         }
 
         $animals = Animal::query()->whereRaw('LOWER(name) = ?', [mb_strtolower($oldName)])->get();
         if ($animals->isEmpty()) {
             $this->sendMessage($chatId, "Питомец «{$oldName}» не найден.");
+
             return;
         }
         if ($animals->count() > 1) {
             $this->sendMessage($chatId, "Нашёл несколько питомцев с кличкой «{$oldName}». Переименуйте нужного в карточке админки, чтобы не ошибиться.");
+
             return;
         }
         if (mb_strtolower($oldName) === mb_strtolower($newName)) {
             $this->sendMessage($chatId, "У питомца уже кличка «{$newName}».");
+
             return;
         }
 
@@ -1301,20 +1695,24 @@ class TelegramBotController extends Controller
         $newName = $this->renameValue($newName);
         if ($oldName === '' || $newName === '') {
             $this->sendMessage($chatId, 'Не удалось переименовать клиента: не указано старое или новое имя.');
+
             return;
         }
 
         $clients = Client::query()->whereRaw('LOWER(name) = ?', [mb_strtolower($oldName)])->get();
         if ($clients->isEmpty()) {
             $this->sendMessage($chatId, "Клиент «{$oldName}» не найден.");
+
             return;
         }
         if ($clients->count() > 1) {
             $this->sendMessage($chatId, "Нашёл несколько клиентов с именем «{$oldName}». Переименуйте нужного в карточке админки, чтобы не ошибиться.");
+
             return;
         }
         if (mb_strtolower($oldName) === mb_strtolower($newName)) {
             $this->sendMessage($chatId, "У клиента уже имя «{$newName}».");
+
             return;
         }
 
@@ -1326,8 +1724,8 @@ class TelegramBotController extends Controller
     private function anonymousOrderIntentFromText(string $text): ?array
     {
         $normalized = mb_strtolower(trim($text));
-        if (!str_contains($normalized, 'уход')
-            || !preg_match('/\b(\d{1,2})\s*(?:и|до|по|[-–])\s*(\d{1,2})\b/u', $normalized, $dates)) {
+        if (! str_contains($normalized, 'уход')
+            || ! preg_match('/\b(\d{1,2})\s*(?:и|до|по|[-–])\s*(\d{1,2})\b/u', $normalized, $dates)) {
             return null;
         }
 
@@ -1346,7 +1744,10 @@ class TelegramBotController extends Controller
             'пять' => 5, 'пяти' => 5, 'пятью' => 5,
         ];
         $quantity = function (?string $value) use ($numbers): int {
-            if (!$value) return 1;
+            if (! $value) {
+                return 1;
+            }
+
             return is_numeric($value) ? (int) $value : ($numbers[$value] ?? 1);
         };
 
@@ -1388,7 +1789,7 @@ class TelegramBotController extends Controller
     private function compactBookingIntentFromText(string $text): ?array
     {
         $normalized = mb_strtolower(trim($text));
-        if (!preg_match('/(?:с\s*)?(\d{1,2})\s*(?:по|до|[-–])\s*(\d{1,2})\b/u', $normalized, $dates)) {
+        if (! preg_match('/(?:с\s*)?(\d{1,2})\s*(?:по|до|[-–])\s*(\d{1,2})\b/u', $normalized, $dates)) {
             return null;
         }
 
@@ -1450,7 +1851,7 @@ class TelegramBotController extends Controller
         $notNames = ['без', 'клички', 'кличек', 'не', 'знаю', 'известно', 'известны', 'пока', 'на', 'по', 'для', 'после', 'перед', 'уход', 'ухода'];
 
         foreach ($matches[1] ?? [] as $candidate) {
-            if (!in_array(mb_strtolower($candidate), $notNames, true)) {
+            if (! in_array(mb_strtolower($candidate), $notNames, true)) {
                 return true;
             }
         }
@@ -1467,7 +1868,6 @@ class TelegramBotController extends Controller
         };
     }
 
-
     private function generateTemporaryAnimalName(?string $categoryName): string
     {
         $normalized = mb_strtolower((string) $categoryName);
@@ -1477,7 +1877,7 @@ class TelegramBotController extends Controller
 
         for ($attempt = 0; $attempt < 20; $attempt++) {
             $name = $prefix.random_int(1000, 9999);
-            if (!Animal::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->exists()) {
+            if (! Animal::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->exists()) {
                 return $name;
             }
         }
@@ -1592,7 +1992,7 @@ TEXT);
         $text .= 'Услуга: '.$payload['service_type']."\n";
         $text .= 'Даты: '.$payload['start_date'].' — '.$payload['end_date']."\n";
         $text .= 'Питомец: '.trim(($payload['species'] ? $payload['species'].' ' : '').$payload['animal_name'])."\n";
-        if (!empty($payload['generated_animal_name'])) {
+        if (! empty($payload['generated_animal_name'])) {
             $text .= "Кличка сгенерирована автоматически — её можно переименовать позже.\n";
         }
         if ($this->isDog($payload['species'] ?? null)) {
@@ -1636,9 +2036,9 @@ TEXT);
     private function createBookingFromPayload(array $payload): Boarding
     {
         $client = null;
-        if (!empty($payload['client_id'])) {
+        if (! empty($payload['client_id'])) {
             $client = Client::find($payload['client_id']);
-        } elseif (!empty($payload['client_name'])) {
+        } elseif (! empty($payload['client_name'])) {
             $client = Client::firstOrCreate(
                 ['name' => $payload['client_name'], 'phone' => $payload['client_phone']],
                 ['note' => $payload['client_note'] ?? null]
@@ -1646,11 +2046,11 @@ TEXT);
         }
 
         $animal = null;
-        if (!empty($payload['animal_id'])) {
+        if (! empty($payload['animal_id'])) {
             $animal = Animal::find($payload['animal_id']);
         }
 
-        if (!$animal) {
+        if (! $animal) {
             $animal = Animal::create([
                 'client_id' => $client?->id,
                 'category_id' => $payload['category_id'] ?? null,
@@ -1658,13 +2058,13 @@ TEXT);
                 'species' => $payload['species'] ?? null,
                 'dog_size' => $payload['dog_size'] ?? null,
                 'description' => $payload['description'] ?? null,
-                'order' => (int)Animal::max('order') + 1,
+                'order' => (int) Animal::max('order') + 1,
             ]);
         } else {
-            if ($client && !$animal->client_id) {
+            if ($client && ! $animal->client_id) {
                 $animal->client_id = $client->id;
             }
-            if (empty($animal->dog_size) && !empty($payload['dog_size'])) {
+            if (empty($animal->dog_size) && ! empty($payload['dog_size'])) {
                 $animal->dog_size = $payload['dog_size'];
             }
             if ($animal->isDirty()) {
@@ -1718,6 +2118,7 @@ TEXT);
 
         if ($orders->isEmpty()) {
             $this->sendMessage($chatId, 'Активных и предстоящих заказов нет.');
+
             return;
         }
 
@@ -1737,22 +2138,27 @@ TEXT);
     private function showServiceOrderMenu(int|string $chatId, int $orderId): void
     {
         $order = $this->serviceOrderForBot($orderId);
-        if (!$order) {
+        if (! $order) {
             $this->sendMessage($chatId, 'Заказ не найден или уже в архиве.');
+
             return;
         }
 
         $text = "Заказ #{$order->id}\n";
         $text .= 'Период: '.$this->russianDatePeriod($order->start_date, $order->end_date)."\n";
         $text .= 'Клиент: '.($order->client?->name ?: 'не указан')."\n";
-        if ($order->address) { $text .= 'Адрес: '.$order->address."\n"; }
+        if ($order->address) {
+            $text .= 'Адрес: '.$order->address."\n";
+        }
         $text .= "\nПитомцы и услуги:\n";
         foreach ($order->animals as $position) {
             $name = $position->animal?->name ?: $position->label ?: $this->anonymousAnimalLabel($position->category?->name, $position->quantity);
             $services = $position->services->map(fn ($service) => $service->service_type.($service->service_type === 'передержка' ? '' : ' · '.$service->units_per_day.' р/д'))->implode(', ');
             $text .= '• '.($position->quantity > 1 ? $position->quantity.' × ' : '').$name.' — '.$services."\n";
         }
-        if ($order->note) { $text .= "\nКомментарий: {$order->note}"; }
+        if ($order->note) {
+            $text .= "\nКомментарий: {$order->note}";
+        }
 
         $this->sendMessage($chatId, trim($text), ['inline_keyboard' => [
             [['text' => 'Редактировать', 'callback_data' => 'order:edit:'.$order->id], ['text' => 'Питомцы и услуги', 'callback_data' => 'order:pets:'.$order->id]],
@@ -1763,7 +2169,11 @@ TEXT);
 
     private function showServiceOrderEditMenu(int|string $chatId, int $orderId): void
     {
-        if (!$this->serviceOrderForBot($orderId)) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        if (! $this->serviceOrderForBot($orderId)) {
+            $this->sendMessage($chatId, 'Заказ не найден.');
+
+            return;
+        }
         $this->sendMessage($chatId, 'Что изменить в заказе?', ['inline_keyboard' => [
             [['text' => 'Период', 'callback_data' => 'order:field:'.$orderId.':dates'], ['text' => 'Клиента', 'callback_data' => 'order:field:'.$orderId.':client']],
             [['text' => 'Адрес', 'callback_data' => 'order:field:'.$orderId.':address'], ['text' => 'Комментарий', 'callback_data' => 'order:field:'.$orderId.':note']],
@@ -1774,7 +2184,11 @@ TEXT);
 
     private function startServiceOrderFieldEdit(int|string $chatId, string $fromId, int $orderId, string $field): void
     {
-        if (!$this->serviceOrderForBot($orderId)) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        if (! $this->serviceOrderForBot($orderId)) {
+            $this->sendMessage($chatId, 'Заказ не найден.');
+
+            return;
+        }
         $prompts = ['dates' => 'Введите период: 22.08.2026 — 25.08.2026', 'address' => 'Введите новый адрес.', 'note' => 'Введите комментарий к заказу.', 'client' => 'Введите имя клиента. Если такого клиента нет, он будет создан.'];
         $this->saveSession($fromId, $chatId, 'waiting_order_'.$field, ['order_id' => $orderId]);
         $this->sendMessage($chatId, $prompts[$field]);
@@ -1783,7 +2197,11 @@ TEXT);
     private function askServiceOrderDestructiveConfirmation(int|string $chatId, string $fromId, int $orderId, string $action): void
     {
         $order = $this->serviceOrderForBot($orderId);
-        if (!$order) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        if (! $order) {
+            $this->sendMessage($chatId, 'Заказ не найден.');
+
+            return;
+        }
         // Old messages may still carry order:delete callbacks. Deletion is deliberately
         // treated as archiving: an order must remain recoverable.
         $this->saveSession($fromId, $chatId, 'waiting_order_archive_confirmation', ['order_id' => $order->id]);
@@ -1796,7 +2214,12 @@ TEXT);
     private function confirmServiceOrderDestructiveAction(int|string $chatId, string $fromId, int $orderId, string $action): void
     {
         $order = $this->serviceOrderForBot($orderId);
-        if (!$order) { $this->clearSession($fromId); $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        if (! $order) {
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Заказ не найден.');
+
+            return;
+        }
         $order->update(['archived_at' => now(), 'status' => 'archived']);
         $this->syncLegacyBoardingForServiceOrder($order);
         $this->clearSession($fromId);
@@ -1807,7 +2230,11 @@ TEXT);
     private function showServiceOrderPetsMenu(int|string $chatId, int $orderId): void
     {
         $order = $this->serviceOrderForBot($orderId);
-        if (!$order) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        if (! $order) {
+            $this->sendMessage($chatId, 'Заказ не найден.');
+
+            return;
+        }
         $buttons = $order->animals->map(fn ($position) => [[
             'text' => ($position->animal?->name ?: $position->label ?: 'Без клички').' · '.$position->quantity.' шт.',
             'callback_data' => 'order:pet:'.$order->id.':'.$position->id,
@@ -1819,15 +2246,24 @@ TEXT);
 
     private function startServiceOrderPetAdd(int|string $chatId, string $fromId, int $orderId): void
     {
-        if (!$this->serviceOrderForBot($orderId)) { $this->sendMessage($chatId, 'Заказ не найден.'); return; }
+        if (! $this->serviceOrderForBot($orderId)) {
+            $this->sendMessage($chatId, 'Заказ не найден.');
+
+            return;
+        }
         $this->saveSession($fromId, $chatId, 'waiting_order_add_pet', ['order_id' => $orderId]);
         $this->sendMessage($chatId, 'Введите питомца одной строкой: «Кличка, вид, количество, услуга». Например: «Мурка, кошки, 1, уход». Если такой питомец уже есть, бот использует его карточку.');
     }
 
     private function showServiceOrderPetMenu(int|string $chatId, int $orderId, int $positionId): void
     {
-        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
-        if (!$position) { $this->sendMessage($chatId, 'Питомец в заказе не найден.'); return; }
+        $order = $this->serviceOrderForBot($orderId);
+        $position = $order?->animals->firstWhere('id', $positionId);
+        if (! $position) {
+            $this->sendMessage($chatId, 'Питомец в заказе не найден.');
+
+            return;
+        }
         $name = $position->animal?->name ?: $position->label ?: 'Без клички';
         $services = $position->services->map(fn ($service) => $service->service_type.' · '.$service->units_per_day.' р/д · '.$service->unit_price.' ₽')->implode("\n• ");
         $keyboard = [
@@ -1846,29 +2282,50 @@ TEXT);
 
     private function changeServiceOrderPetQuantity(int|string $chatId, int $orderId, int $positionId, string $direction): void
     {
-        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
-        if (!$position) { $this->sendMessage($chatId, 'Питомец в заказе не найден.'); return; }
+        $order = $this->serviceOrderForBot($orderId);
+        $position = $order?->animals->firstWhere('id', $positionId);
+        if (! $position) {
+            $this->sendMessage($chatId, 'Питомец в заказе не найден.');
+
+            return;
+        }
         $position->update(['quantity' => max(1, min(99, $position->quantity + ($direction === 'plus' ? 1 : -1)))]);
-        $this->refreshServiceOrderPrice($order); $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
+        $this->refreshServiceOrderPrice($order);
+        $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
         $this->showServiceOrderPetMenu($chatId, $orderId, $positionId);
     }
 
     private function addServiceToOrderPet(int|string $chatId, int $orderId, int $positionId, string $serviceType): void
     {
-        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
-        if (!$position || !in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) { $this->sendMessage($chatId, 'Не удалось добавить услугу.'); return; }
-        if ($position->services->contains('service_type', $serviceType)) { $this->sendMessage($chatId, 'Эта услуга уже есть у питомца.'); return; }
+        $order = $this->serviceOrderForBot($orderId);
+        $position = $order?->animals->firstWhere('id', $positionId);
+        if (! $position || ! in_array($serviceType, BoardingPricingService::SERVICE_TYPES, true)) {
+            $this->sendMessage($chatId, 'Не удалось добавить услугу.');
+
+            return;
+        }
+        if ($position->services->contains('service_type', $serviceType)) {
+            $this->sendMessage($chatId, 'Эта услуга уже есть у питомца.');
+
+            return;
+        }
         $species = $position->animal?->category?->name ?: $position->category?->name;
         $position->services()->create(['service_order_id' => $order->id, 'service_type' => $serviceType, 'units_per_day' => 1, 'unit_price' => $this->pricing->defaultRate($serviceType, $species, $position->animal?->dog_size)]);
-        $this->refreshServiceOrderPrice($order); $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
+        $this->refreshServiceOrderPrice($order);
+        $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
         $this->showServiceOrderPetMenu($chatId, $orderId, $positionId);
     }
 
     private function showServiceOrderPetServiceMenu(int|string $chatId, int $orderId, int $positionId, int $serviceId): void
     {
-        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        $order = $this->serviceOrderForBot($orderId);
+        $position = $order?->animals->firstWhere('id', $positionId);
         $service = $position?->services->firstWhere('id', $serviceId);
-        if (!$service) { $this->sendMessage($chatId, 'Услуга не найдена.'); return; }
+        if (! $service) {
+            $this->sendMessage($chatId, 'Услуга не найдена.');
+
+            return;
+        }
         $this->sendMessage($chatId, $this->serviceLabel($service->service_type)."\nКратность: {$service->units_per_day} раз в день\nЦена: {$service->unit_price} ₽ за услугу", ['inline_keyboard' => [
             [[
                 ['text' => '1 раз', 'callback_data' => 'order:serviceunits:'.$orderId.':'.$positionId.':'.$serviceId.':1'],
@@ -1882,18 +2339,29 @@ TEXT);
 
     private function changeServiceOrderPetServiceUnits(int|string $chatId, int $orderId, int $positionId, int $serviceId, int $units): void
     {
-        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        $order = $this->serviceOrderForBot($orderId);
+        $position = $order?->animals->firstWhere('id', $positionId);
         $service = $position?->services->firstWhere('id', $serviceId);
-        if (!$service || $units < 1 || $units > 24) { $this->sendMessage($chatId, 'Не удалось изменить кратность услуги.'); return; }
-        $service->update(['units_per_day' => $units]); $this->refreshServiceOrderPrice($order);
+        if (! $service || $units < 1 || $units > 24) {
+            $this->sendMessage($chatId, 'Не удалось изменить кратность услуги.');
+
+            return;
+        }
+        $service->update(['units_per_day' => $units]);
+        $this->refreshServiceOrderPrice($order);
         $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
         $this->showServiceOrderPetServiceMenu($chatId, $orderId, $positionId, $serviceId);
     }
 
     private function askServiceOrderPetServiceDeletion(int|string $chatId, string $fromId, int $orderId, int $positionId, int $serviceId): void
     {
-        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
-        if (!$position?->services->firstWhere('id', $serviceId)) { $this->sendMessage($chatId, 'Услуга не найдена.'); return; }
+        $order = $this->serviceOrderForBot($orderId);
+        $position = $order?->animals->firstWhere('id', $positionId);
+        if (! $position?->services->firstWhere('id', $serviceId)) {
+            $this->sendMessage($chatId, 'Услуга не найдена.');
+
+            return;
+        }
         $this->saveSession($fromId, $chatId, 'waiting_order_service_delete_confirmation', ['order_id' => $orderId, 'position_id' => $positionId, 'service_id' => $serviceId]);
         $this->sendMessage($chatId, 'Удалить услугу у этого питомца?', ['inline_keyboard' => [[
             ['text' => 'Удалить', 'callback_data' => 'order:servicedelete:'.$orderId.':'.$positionId.':'.$serviceId.':confirm'], ['text' => 'Отмена', 'callback_data' => 'cancel'],
@@ -1902,19 +2370,36 @@ TEXT);
 
     private function confirmServiceOrderPetServiceDeletion(int|string $chatId, string $fromId, int $orderId, int $positionId, int $serviceId): void
     {
-        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
+        $order = $this->serviceOrderForBot($orderId);
+        $position = $order?->animals->firstWhere('id', $positionId);
         $service = $position?->services->firstWhere('id', $serviceId);
-        if (!$service) { $this->clearSession($fromId); $this->sendMessage($chatId, 'Услуга не найдена.'); return; }
-        if ($position->services->count() < 2) { $this->sendMessage($chatId, 'У питомца должна остаться хотя бы одна услуга. Удалите питомца или весь заказ, если он больше не нужен.'); return; }
-        $service->delete(); $this->refreshServiceOrderPrice($order);
+        if (! $service) {
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Услуга не найдена.');
+
+            return;
+        }
+        if ($position->services->count() < 2) {
+            $this->sendMessage($chatId, 'У питомца должна остаться хотя бы одна услуга. Удалите питомца или весь заказ, если он больше не нужен.');
+
+            return;
+        }
+        $service->delete();
+        $this->refreshServiceOrderPrice($order);
         $this->syncLegacyBoardingForServiceOrder($order->fresh(['animals.services', 'animals.animal']));
-        $this->clearSession($fromId); $this->sendMessage($chatId, 'Услуга удалена.'); $this->showServiceOrderPetMenu($chatId, $orderId, $positionId);
+        $this->clearSession($fromId);
+        $this->sendMessage($chatId, 'Услуга удалена.');
+        $this->showServiceOrderPetMenu($chatId, $orderId, $positionId);
     }
 
     private function askServiceOrderPetDeletion(int|string $chatId, string $fromId, int $orderId, int $positionId): void
     {
         $order = $this->serviceOrderForBot($orderId);
-        if (!$order || !$order->animals->contains('id', $positionId)) { $this->sendMessage($chatId, 'Питомец в заказе не найден.'); return; }
+        if (! $order || ! $order->animals->contains('id', $positionId)) {
+            $this->sendMessage($chatId, 'Питомец в заказе не найден.');
+
+            return;
+        }
         $this->saveSession($fromId, $chatId, 'waiting_order_pet_delete_confirmation', ['order_id' => $orderId, 'position_id' => $positionId]);
         $this->sendMessage($chatId, 'Удалить питомца и его услуги из заказа?', ['inline_keyboard' => [[
             ['text' => 'Удалить', 'callback_data' => 'order:petdelete:'.$orderId.':'.$positionId.':confirm'], ['text' => 'Отмена', 'callback_data' => 'cancel'],
@@ -1923,24 +2408,42 @@ TEXT);
 
     private function confirmServiceOrderPetDeletion(int|string $chatId, string $fromId, int $orderId, int $positionId): void
     {
-        $order = $this->serviceOrderForBot($orderId); $position = $order?->animals->firstWhere('id', $positionId);
-        if (!$position) { $this->clearSession($fromId); $this->sendMessage($chatId, 'Питомец в заказе не найден.'); return; }
-        if ($order->animals->count() < 2) { $this->sendMessage($chatId, 'В заказе должен остаться хотя бы один питомец. Удалите весь заказ, если он больше не нужен.'); return; }
-        $position->services()->delete(); $position->delete(); $this->refreshServiceOrderPrice($order);
-        $this->clearSession($fromId); $this->sendMessage($chatId, 'Питомец удалён из заказа.'); $this->showServiceOrderPetsMenu($chatId, $orderId);
+        $order = $this->serviceOrderForBot($orderId);
+        $position = $order?->animals->firstWhere('id', $positionId);
+        if (! $position) {
+            $this->clearSession($fromId);
+            $this->sendMessage($chatId, 'Питомец в заказе не найден.');
+
+            return;
+        }
+        if ($order->animals->count() < 2) {
+            $this->sendMessage($chatId, 'В заказе должен остаться хотя бы один питомец. Удалите весь заказ, если он больше не нужен.');
+
+            return;
+        }
+        $position->services()->delete();
+        $position->delete();
+        $this->refreshServiceOrderPrice($order);
+        $this->clearSession($fromId);
+        $this->sendMessage($chatId, 'Питомец удалён из заказа.');
+        $this->showServiceOrderPetsMenu($chatId, $orderId);
     }
 
     private function refreshServiceOrderPrice(ServiceOrder $order): void
     {
-        $order->load('animals.services'); $first = $order->animals->first()?->services->first();
+        $order->load('animals.services');
+        $first = $order->animals->first()?->services->first();
         $order->update(['daily_price' => $order->animals->sum(fn ($position) => $position->quantity * $position->services->sum(fn ($service) => $service->units_per_day * $service->unit_price)),
             'service_type' => $first?->service_type ?: $order->service_type, 'units_per_day' => $first?->units_per_day ?: $order->units_per_day]);
     }
 
     private function syncLegacyBoardingForServiceOrder(ServiceOrder $order): void
     {
-        if (!$order->legacy_boarding_id || !($boarding = Boarding::find($order->legacy_boarding_id))) { return; }
-        $position = $order->animals->first(); $service = $position?->services->first();
+        if (! $order->legacy_boarding_id || ! ($boarding = Boarding::find($order->legacy_boarding_id))) {
+            return;
+        }
+        $position = $order->animals->first();
+        $service = $position?->services->first();
         $boarding->update(['client_id' => $order->client_id, 'animal_id' => $position?->animal_id, 'name' => $position?->animal?->name ?: $position?->label ?: $boarding->name,
             'service_type' => $service?->service_type ?: $order->service_type, 'units_per_day' => $service?->units_per_day ?: $order->units_per_day,
             'unit_price' => $service?->unit_price ?: $order->daily_price, 'start_date' => $order->start_date, 'end_date' => $order->end_date,
@@ -1975,6 +2478,7 @@ TEXT);
 
         if ($rows->isEmpty() && $orders->isEmpty()) {
             $this->sendMessage($chatId, 'Записей за период '.$this->russianDatePeriod($start, $end).' нет.');
+
             return;
         }
 
@@ -2077,11 +2581,13 @@ TEXT);
 
         if ($isUpcoming && $animalName === '') {
             $this->sendMessage($chatId, 'Для предстоящих записей укажите кличку питомца. Например: «удали все предстоящие записи Пушка».');
+
             return;
         }
 
-        if ((!$startValue || !$endValue) && !$isUpcoming) {
+        if ((! $startValue || ! $endValue) && ! $isUpcoming) {
             $this->sendMessage($chatId, 'Для удаления укажите период записи. Например: «удали Луну с 28 по 30 июля».');
+
             return;
         }
 
@@ -2113,6 +2619,7 @@ TEXT);
         if ($orders->isNotEmpty()) {
             if ($orders->count() === 1) {
                 $this->askServiceOrderDeletionConfirmation($chatId, $fromId, $orders->first());
+
                 return;
             }
 
@@ -2127,6 +2634,7 @@ TEXT);
             $this->sendMessage($chatId, $isUpcoming
                 ? 'Нашёл предстоящие заказы. Выберите заказ для переноса в архив:'
                 : 'Нашёл несколько заказов. Выберите, какой перенести в архив:', ['inline_keyboard' => $keyboard]);
+
             return;
         }
 
@@ -2150,11 +2658,13 @@ TEXT);
             $subject = $animalName !== '' ? ' для питомца «'.$animalName.'»' : '';
             $period = $isUpcoming ? 'начиная с '.$this->russianDatePeriod($start, $start) : 'за период '.$this->russianDatePeriod($start, $end);
             $this->sendMessage($chatId, 'Активных заказов'.$subject.' '.$period.' не найдено.');
+
             return;
         }
 
         if ($rows->count() === 1) {
             $this->askDeleteConfirmation($chatId, $fromId, $rows->first());
+
             return;
         }
 
@@ -2257,12 +2767,14 @@ TEXT);
         $name = trim($name);
         if ($name === '') {
             $this->sendMessage($chatId, 'Укажите кличку питомца. Например: «покажи Луну».');
+
             return;
         }
 
         $animals = $this->animalsByName($name);
         if ($animals->isEmpty()) {
             $this->sendMessage($chatId, 'Питомец «'.$name.'» не найден.');
+
             return;
         }
 
@@ -2284,14 +2796,17 @@ TEXT);
             $animal = $this->animalsByName($animalName)->first();
             if ($animal?->client) {
                 $this->sendClientInfo($chatId, $animal->client);
+
                 return;
             }
             $this->sendMessage($chatId, 'У питомца «'.$animalName.'» хозяин не указан.');
+
             return;
         }
 
         if ($clientName === '') {
             $this->sendMessage($chatId, 'Укажите имя хозяина или кличку питомца. Например: «покажи хозяина Луны».');
+
             return;
         }
 
@@ -2304,6 +2819,7 @@ TEXT);
 
         if ($clients->isEmpty()) {
             $this->sendMessage($chatId, 'Хозяин «'.$clientName.'» не найден.');
+
             return;
         }
 
@@ -2333,12 +2849,14 @@ TEXT);
 
     private function animalsByName(string $name)
     {
-        $normalized = mb_strtolower(trim($name));
+        $trimmed = trim($name);
+        $normalized = mb_strtolower($trimmed);
 
         return Animal::with(['client', 'photos', 'boardings' => fn ($query) => $query->latest('start_date')])
-            ->where(function ($query) use ($normalized) {
+            ->where(function ($query) use ($normalized, $trimmed) {
                 $query->whereRaw('LOWER(name) = ?', [$normalized])
-                    ->orWhereRaw('LOWER(name) LIKE ?', ['%'.$normalized.'%']);
+                    ->orWhereRaw('LOWER(name) LIKE ?', ['%'.$normalized.'%'])
+                    ->orWhere('name', 'LIKE', '%'.$trimmed.'%');
             })
             ->orderByRaw('LOWER(name) = ? DESC', [$normalized])
             ->orderBy('name')
@@ -2385,6 +2903,7 @@ TEXT);
                     'photo' => $photo->telegram_file_id,
                     'caption' => $animal->name,
                 ]);
+
                 continue;
             }
 
@@ -2409,6 +2928,7 @@ TEXT);
                     'photo' => $photo->telegram_file_id,
                     'caption' => $client->name,
                 ]);
+
                 continue;
             }
 
@@ -2421,15 +2941,16 @@ TEXT);
 
     private function handlePhoto(array $message): void
     {
-        $fromId = (string)data_get($message, 'from.id');
+        $fromId = (string) data_get($message, 'from.id');
         $chatId = data_get($message, 'chat.id');
 
         $photos = $message['photo'] ?? [];
         $photo = end($photos);
         $fileId = $photo['file_id'] ?? null;
 
-        if (!$fileId) {
+        if (! $fileId) {
             $this->sendMessage($chatId, 'Не смог получить фото.');
+
             return;
         }
 
@@ -2440,20 +2961,23 @@ TEXT);
             $session->payload = $payload;
             $session->save();
             $this->sendMessage($chatId, 'Фото добавлено к будущей записи. Оно привяжется к питомцу после подтверждения.');
+
             return;
         }
 
-        $caption = trim((string)($message['caption'] ?? ''));
+        $caption = trim((string) ($message['caption'] ?? ''));
         if ($caption === '') {
             $this->sendMessage($chatId, 'Фото получил. Чтобы привязать его к питомцу, отправьте фото с подписью, например: “фото Рауля”.');
+
             return;
         }
 
         // A photo caption often contains just a name. Do not delegate that
         // choice to the intent model: a pet name may look like a person's name.
         $name = $this->photoSubjectFromCaption($caption);
-        if (!$name) {
+        if (! $name) {
             $this->sendMessage($chatId, 'Не понял, кому принадлежит фото. Укажите в подписи кличку питомца или имя клиента.');
+
             return;
         }
 
@@ -2469,16 +2993,19 @@ TEXT);
             ->get();
         if ($animals->isEmpty() && $clients->isEmpty()) {
             $this->sendMessage($chatId, 'Не нашёл питомца или клиента «'.$name.'». Проверьте имя или сначала создайте карточку.');
+
             return;
         }
 
         if ($animals->count() === 1 && $clients->isEmpty()) {
             $this->askPetPhotoConfirmation($chatId, $fromId, $animals->first(), $fileId);
+
             return;
         }
 
         if ($clients->count() === 1 && $animals->isEmpty()) {
             $this->askClientPhotoConfirmation($chatId, $fromId, $clients->first(), $fileId);
+
             return;
         }
 
@@ -2510,6 +3037,7 @@ TEXT);
     {
         if ($fileId === '') {
             $this->sendMessage($chatId, 'Не удалось получить фото. Отправьте его ещё раз.');
+
             return;
         }
 
@@ -2550,7 +3078,7 @@ TEXT);
     private function transcribeVoice(array $voice): string
     {
         $fileId = $voice['file_id'] ?? null;
-        if (!$fileId) {
+        if (! $fileId) {
             return '';
         }
 
@@ -2572,7 +3100,7 @@ TEXT);
             return;
         }
 
-        $ext = pathinfo((string)$path, PATHINFO_EXTENSION) ?: 'jpg';
+        $ext = pathinfo((string) $path, PATHINFO_EXTENSION) ?: 'jpg';
         $safeId = preg_replace('/[^a-zA-Z0-9_-]/', '', $fileId) ?: Str::random(12);
         $storagePath = 'animals/'.$animal->id.'/telegram-'.$safeId.'.'.$ext;
         Storage::disk('public')->put($storagePath, $bytes);
@@ -2587,6 +3115,7 @@ TEXT);
     {
         if ($fileId === '') {
             $this->sendMessage($chatId, 'Не удалось получить фото. Отправьте его ещё раз.');
+
             return;
         }
 
@@ -2621,17 +3150,17 @@ TEXT);
     private function downloadTelegramFile(string $fileId, ?string $knownPath = null): ?string
     {
         $token = config('services.telegram.bot_token');
-        if (!$token) {
+        if (! $token) {
             return null;
         }
 
         $path = $knownPath;
-        if (!$path) {
+        if (! $path) {
             $file = $this->telegramApi('getFile', ['file_id' => $fileId]);
             $path = $file['result']['file_path'] ?? null;
         }
 
-        if (!$path) {
+        if (! $path) {
             return null;
         }
 
@@ -2647,7 +3176,9 @@ TEXT);
             ->when($payload['category_id'] ?? null, function ($query, $categoryId) {
                 $query->where('category_id', $categoryId);
             }, function ($query) use ($payload) {
-                if (empty($payload['species'])) return;
+                if (empty($payload['species'])) {
+                    return;
+                }
                 $species = $payload['species'];
                 $query->where(function ($sub) use ($species) {
                     $sub->whereNull('species')->orWhereRaw('LOWER(species) = ?', [mb_strtolower($species)]);
@@ -2694,6 +3225,7 @@ TEXT);
     private function normalizeSpecies(?string $value): ?string
     {
         $value = $value ? mb_strtolower(trim($value)) : null;
+
         return match ($value) {
             'кошка' => 'кот',
             'пес', 'пёс', 'щенок' => 'собака',
@@ -2703,6 +3235,7 @@ TEXT);
 
     private function categoryFromText(string $value): ?Category
     {
+        $value = mb_strtolower(trim($value));
         $aliases = [
             'кот' => 'кошки',
             'кошка' => 'кошки',
@@ -2716,7 +3249,9 @@ TEXT);
             'рыбка' => 'рыбки',
         ];
 
-        return Category::whereRaw('LOWER(name) = ?', [$aliases[$value] ?? $value])->first();
+        $expected = $aliases[$value] ?? $value;
+
+        return Category::all()->first(fn (Category $category): bool => mb_strtolower($category->name) === $expected);
     }
 
     private function normalizeDogSize(?string $value): ?string
@@ -2740,8 +3275,12 @@ TEXT);
         $last = $days % 10;
         $lastTwo = $days % 100;
 
-        if ($last === 1 && $lastTwo !== 11) return 'день';
-        if (in_array($last, [2, 3, 4], true) && !in_array($lastTwo, [12, 13, 14], true)) return 'дня';
+        if ($last === 1 && $lastTwo !== 11) {
+            return 'день';
+        }
+        if (in_array($last, [2, 3, 4], true) && ! in_array($lastTwo, [12, 13, 14], true)) {
+            return 'дня';
+        }
 
         return 'дней';
     }
@@ -2749,12 +3288,14 @@ TEXT);
     private function isAllowed(string $telegramUserId): bool
     {
         $allowed = config('services.telegram.allowed_user_ids', []);
+
         return $telegramUserId !== '' && in_array($telegramUserId, array_map('strval', $allowed), true);
     }
 
     private function validSecret(Request $request): bool
     {
         $secret = config('services.telegram.webhook_secret');
+
         return is_string($secret) && $secret !== ''
             && hash_equals($secret, (string) $request->header('X-Telegram-Bot-Api-Secret-Token'));
     }
@@ -2790,8 +3331,9 @@ TEXT);
     private function handleBoardingTaskCallback(int $runId, string $action, string $fromId, int|string $chatId): void
     {
         $run = BoardingTaskRun::with(['task.boarding.animal', 'messages'])->find($runId);
-        if (!$run) {
+        if (! $run) {
             $this->sendMessage($chatId, 'Это действие уже недоступно.');
+
             return;
         }
 
@@ -2799,6 +3341,7 @@ TEXT);
         if ($run->status !== 'pending') {
             $label = $run->status === 'done' ? 'уже отмечено как выполненное' : 'уже отменено';
             $this->sendMessage($chatId, "«{$run->task->title}» для {$animal} {$label}.");
+
             return;
         }
 
@@ -2833,6 +3376,7 @@ TEXT);
 
         if ($boardings->isEmpty()) {
             $this->sendMessage($chatId, 'Сейчас нет активной передержки, к которой можно привязать действия.');
+
             return;
         }
 
@@ -2840,6 +3384,7 @@ TEXT);
             $boarding = $boardings->first();
             $this->createBoardingTasks($boarding, $tasks);
             $this->sendTaskScheduleSummary($chatId, $boarding, $tasks);
+
             return;
         }
 
@@ -2862,15 +3407,17 @@ TEXT);
     {
         $session = $this->session($fromId);
         $allowedIds = array_map('strval', $session?->payload['task_boarding_ids'] ?? []);
-        if (!$session || $session->state !== 'waiting_task_boarding' || !in_array($boardingId, $allowedIds, true)) {
+        if (! $session || $session->state !== 'waiting_task_boarding' || ! in_array($boardingId, $allowedIds, true)) {
             $this->sendMessage($chatId, 'Выбор передержки устарел. Отправьте инструкции ещё раз.');
+
             return;
         }
 
         $boarding = Boarding::with('animal')->whereNull('archived_at')->find((int) $boardingId);
-        if (!$boarding) {
+        if (! $boarding) {
             $this->clearSession($fromId);
             $this->sendMessage($chatId, 'Передержка больше недоступна.');
+
             return;
         }
 
@@ -2908,6 +3455,17 @@ TEXT);
             'text' => $this->withHelpfulHint($text),
         ];
 
+        if (! $replyMarkup) {
+            $replyMarkup = [
+                'keyboard' => [
+                    [['text' => 'Записи сегодня'], ['text' => 'Записи завтра']],
+                    [['text' => '➕ Добавить запись']],
+                ],
+                'resize_keyboard' => true,
+                'is_persistent' => true,
+            ];
+        }
+
         if ($replyMarkup) {
             $payload['reply_markup'] = $replyMarkup;
         }
@@ -2934,7 +3492,7 @@ TEXT);
             || str_contains($normalized, 'не распознал')
             || str_starts_with($normalized, 'укажите ');
 
-        if (!$isProblem) {
+        if (! $isProblem) {
             return $text;
         }
 
