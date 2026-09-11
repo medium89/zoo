@@ -156,6 +156,32 @@ class TelegramQuickBookingTest extends TestCase
         $this->assertTrue($session->payload['generated_animal_name']);
     }
 
+    public function test_confirming_a_dog_can_create_it_when_a_cat_has_the_same_name(): void
+    {
+        $catCategory = $this->category('Кошки');
+        $dogCategory = $this->category('Собаки');
+        Animal::create([
+            'category_id' => $catCategory->id,
+            'name' => 'Мия',
+            'species' => 'Кошки',
+            'order' => 1,
+        ]);
+
+        $this->startNewWizard('care');
+        $this->sendText('Мия, собака');
+        $this->pressCallback('quick_date:today');
+        $this->pressCallback('dog_size:small');
+        $this->pressCallback('owner_skip');
+
+        $this->assertDatabaseCount('animals', 1);
+        $this->pressCallback('booking_confirm');
+
+        $this->assertSame(2, Animal::where('name', 'Мия')->count());
+        $this->assertDatabaseHas('animals', ['name' => 'Мия', 'category_id' => $catCategory->id]);
+        $this->assertDatabaseHas('animals', ['name' => 'Мия', 'category_id' => $dogCategory->id]);
+        $this->assertDatabaseHas('boardings', ['animal_id' => Animal::where('name', 'Мия')->where('category_id', $dogCategory->id)->value('id')]);
+    }
+
     public function test_today_tomorrow_and_manual_period_are_saved_by_the_date_step(): void
     {
         $category = $this->category('Кошки');
