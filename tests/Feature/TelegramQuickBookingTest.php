@@ -183,6 +183,48 @@ class TelegramQuickBookingTest extends TestCase
         $this->assertDatabaseHas('boardings', ['animal_id' => Animal::where('name', 'Мия')->where('category_id', $dogCategory->id)->value('id')]);
     }
 
+    public function test_new_pet_with_same_name_and_category_requires_an_explicit_choice(): void
+    {
+        $category = $this->category('Кошки');
+        $client = Client::create(['name' => 'Иван']);
+        $animal = Animal::create([
+            'client_id' => $client->id,
+            'category_id' => $category->id,
+            'name' => 'Мия',
+            'species' => 'Кошки',
+            'order' => 1,
+        ]);
+
+        $this->startNewWizard('care');
+        $this->sendText('Мия, кошка');
+
+        $session = TelegramBotSession::where('telegram_user_id', '100')->firstOrFail();
+        $this->assertSame('quick_new_animal_match', $session->state);
+        $this->assertSame($animal->id, $session->payload['new_animal_match_id']);
+        $message = $this->lastMessage();
+        $this->assertStringContainsString('Мия · кошка · хозяин Иван', $message['text']);
+        $callbacks = collect($message['reply_markup']['inline_keyboard'])->flatten(1)->pluck('callback_data');
+        $this->assertTrue($callbacks->contains('quick_new_match:new'));
+        $this->assertTrue($callbacks->contains('quick_new_match:existing:'.$animal->id));
+
+        $this->pressCallback('quick_new_match:existing:'.$animal->id);
+        $session = TelegramBotSession::where('telegram_user_id', '100')->firstOrFail();
+        $this->assertSame('quick_dates', $session->state);
+        $this->assertSame($animal->id, $session->payload['animal_id']);
+
+        $this->startNewWizard('care');
+        $this->sendText('Мия, кошка');
+        $this->pressCallback('quick_new_match:new');
+        $session = TelegramBotSession::where('telegram_user_id', '100')->firstOrFail();
+        $this->assertSame('quick_dates', $session->state);
+        $this->assertArrayNotHasKey('animal_id', $session->payload);
+
+        $this->pressCallback('quick_date:today');
+        $this->pressCallback('owner_skip');
+        $this->pressCallback('booking_confirm');
+        $this->assertSame(2, Animal::where('name', 'Мия')->where('category_id', $category->id)->count());
+    }
+
     public function test_today_tomorrow_and_manual_period_are_saved_by_the_date_step(): void
     {
         $category = $this->category('Кошки');

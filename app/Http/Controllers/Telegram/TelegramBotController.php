@@ -864,6 +864,46 @@ class TelegramBotController extends Controller
 
             return true;
         }
+        if ($data === 'quick_new_match:new') {
+            if ($session->state !== 'quick_new_animal_match') {
+                return $this->expireQuickBooking($chatId, $fromId, 'Выбор питомца устарел.');
+            }
+
+            unset($payload['new_animal_match_id']);
+            $payload['animal_match_checked'] = true;
+            $this->askQuickDates($chatId, $fromId, $payload);
+
+            return true;
+        }
+
+        if (preg_match('/^quick_new_match:existing:(\d+)$/', $data, $matches)) {
+            $animalId = (int) $matches[1];
+            if ($session->state !== 'quick_new_animal_match'
+                || $animalId !== (int) ($payload['new_animal_match_id'] ?? 0)) {
+                return $this->expireQuickBooking($chatId, $fromId, 'Выбор питомца устарел.');
+            }
+
+            $animal = Animal::with(['client', 'category'])->find($animalId);
+            if (! $animal) {
+                return $this->expireQuickBooking($chatId, $fromId, 'Питомец больше не найден.');
+            }
+
+            $payload['animal_id'] = $animal->id;
+            $payload['animal_name'] = $animal->name;
+            $payload['category_id'] = $animal->category_id;
+            $payload['species'] = $animal->category?->name ?: $animal->species;
+            $payload['dog_size'] = $animal->dog_size;
+            $payload['client_id'] = $animal->client_id;
+            $payload['client_name'] = $animal->client?->name;
+            $payload['client_phone'] = $animal->client?->phone;
+            $payload['client_note'] = $animal->client?->note;
+            $payload['owner_asked'] = (bool) $animal->client_id;
+            $payload['animal_match_checked'] = true;
+            unset($payload['new_animal_match_id']);
+            $this->askQuickDates($chatId, $fromId, $payload);
+
+            return true;
+        }
 
         if (preg_match('/^quick_date:(today|tomorrow|custom)$/', $data, $matches)) {
             if ($session->state !== 'quick_dates') {
@@ -1126,6 +1166,35 @@ class TelegramBotController extends Controller
             $payload['generated_animal_name'] = $animalName === '';
             $payload['category_id'] = $category->id;
             $payload['species'] = $category->name;
+            $existing = null;
+            if ($animalName !== '') {
+                $normalizedName = mb_strtolower($animalName);
+                $existing = Animal::with(['client', 'category'])
+                    ->where('category_id', $category->id)
+                    ->where(function ($query) use ($animalName, $normalizedName) {
+                        $query->whereRaw('LOWER(name) = ?', [$normalizedName])
+                            ->orWhere('name', $animalName);
+                    })
+                    ->orderBy('id')
+                    ->first();
+            }
+
+            if ($existing) {
+                $payload['new_animal_match_id'] = $existing->id;
+                $this->saveSession($fromId, $chatId, 'quick_new_animal_match', $payload);
+                $label = $existing->name.' · '.$this->quickAnimalSpeciesLabel($existing).' · '
+                    .($existing->client ? 'хозяин '.$existing->client->name : 'без хозяина');
+                $this->sendMessage($chatId, 'Такой питомец уже есть: '.$label.'. Это новый питомец или нужно записать найденного?', [
+                    'inline_keyboard' => [
+                        [['text' => 'Всё равно новое', 'callback_data' => 'quick_new_match:new']],
+                        [['text' => 'Записать найденное', 'callback_data' => 'quick_new_match:existing:'.$existing->id]],
+                        [['text' => 'Отмена', 'callback_data' => 'cancel']],
+                    ],
+                ]);
+
+                return true;
+            }
+
             $payload['animal_match_checked'] = true;
             $this->askQuickDates($chatId, $fromId, $payload);
 
