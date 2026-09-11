@@ -872,7 +872,7 @@ class TelegramBotController extends Controller
 
             if ($matches[1] === 'custom') {
                 $this->saveSession($fromId, $chatId, 'quick_custom_dates', $payload);
-                $this->sendMessage($chatId, 'Напишите период так: 12.09.2026 — 14.09.2026. Для одного дня: 12.09.2026.');
+                $this->sendMessage($chatId, 'Введите даты без года: 12, 12 сентября, 12–14 сентября или 12, 13, 14.');
 
                 return true;
             }
@@ -1093,7 +1093,7 @@ class TelegramBotController extends Controller
             $payload['animal_ids'] = $animals->pluck('id')->all();
             $this->saveSession($fromId, $chatId, 'quick_existing_animal_selection', $payload);
             $buttons = $animals->map(fn (Animal $animal): array => [[
-                'text' => mb_strimwidth($animal->name.' · '.($animal->client ? 'хозяин '.$animal->client->name : 'без хозяина'), 0, 60, '…'),
+                'text' => mb_strimwidth($animal->name.' · '.$this->quickAnimalSpeciesLabel($animal).' · '.($animal->client ? 'хозяин '.$animal->client->name : 'без хозяина'), 0, 60, '…'),
                 'callback_data' => 'quick_existing:'.$animal->id,
             ]])->all();
             $buttons[] = [['text' => 'Отмена', 'callback_data' => 'cancel']];
@@ -1133,29 +1133,15 @@ class TelegramBotController extends Controller
         }
 
         if ($session->state === 'quick_custom_dates') {
-            $datePattern = '(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{4})';
-            if (! preg_match('/^\s*'.$datePattern.'(?:\s*(?:—|–|\s-\s|до|по)\s*'.$datePattern.')?\s*$/u', $text, $dates)) {
-                $this->sendMessage($chatId, 'Не удалось распознать даты. Пример: 12.09.2026 — 14.09.2026 или 12.09.2026.');
+            $period = $this->parseQuickDatePeriod($text);
+            if (! $period) {
+                $this->sendMessage($chatId, 'Не удалось распознать даты. Примеры: 12, 12 сентября, 12–14 сентября или 12, 13, 14.');
 
                 return true;
             }
 
-            try {
-                $startValue = str_replace(['/', '-'], '.', $dates[1]);
-                $endValue = str_replace(['/', '-'], '.', $dates[2] ?? $dates[1]);
-                $start = Carbon::createFromFormat('!d.m.Y', $startValue);
-                $end = Carbon::createFromFormat('!d.m.Y', $endValue);
-                if ($start->format('d.m.Y') !== $startValue || $end->format('d.m.Y') !== $endValue || $end->lt($start)) {
-                    throw new \InvalidArgumentException;
-                }
-            } catch (Throwable) {
-                $this->sendMessage($chatId, 'Проверьте даты: конец периода не может быть раньше начала. Формат: 12.09.2026 — 14.09.2026.');
-
-                return true;
-            }
-
-            $payload['start_date'] = $start->toDateString();
-            $payload['end_date'] = $end->toDateString();
+            $payload['start_date'] = $period['start_date'];
+            $payload['end_date'] = $period['end_date'];
             $this->continueAfterRequiredFields($chatId, $fromId, $payload);
 
             return true;
@@ -1168,6 +1154,136 @@ class TelegramBotController extends Controller
         }
 
         return false;
+    }
+
+    private function quickAnimalSpeciesLabel(Animal $animal): string
+    {
+        $species = mb_strtolower(trim((string) ($animal->category?->name ?: $animal->species)));
+
+        return match ($species) {
+            'кошки' => 'кошка',
+            'собаки' => 'собака',
+            'грызуны' => 'грызун',
+            'птицы' => 'птица',
+            'рептилии' => 'рептилия',
+            'рыбки' => 'рыбка',
+            'насекомые' => 'насекомое',
+            'пауки' => 'паук',
+            'другие', '' => 'вид не указан',
+            default => $species,
+        };
+    }
+
+    /** @return array{start_date: string, end_date: string}|null */
+    private function parseQuickDatePeriod(string $text): ?array
+    {
+        $text = mb_strtolower(trim(str_replace('ё', 'е', $text)));
+        if ($text === '') {
+            return null;
+        }
+
+        $commaParts = preg_split('/\s*,\s*/u', $text);
+        if (is_array($commaParts) && count($commaParts) > 1) {
+            $context = now()->startOfDay();
+            foreach ($commaParts as $part) {
+                if ($this->quickDateHasExplicitMonth($part)) {
+                    $context = $this->parseQuickDateValue($part, $context) ?: $context;
+                    break;
+                }
+            }
+
+            $dates = [];
+            foreach ($commaParts as $part) {
+                $date = $this->parseQuickDateValue($part, $context);
+                if (! $date || ($dates && $date->lt(end($dates)))) {
+                    return null;
+                }
+                $dates[] = $date;
+            }
+
+            return [
+                'start_date' => $dates[0]->toDateString(),
+                'end_date' => end($dates)->toDateString(),
+            ];
+        }
+
+        $parts = preg_split(
+            '/\s*(?:—|–)\s*|\s+-\s+|\s+(?:до|по)\s+|(?<=\d)-(?=\d{1,2}(?:\s|$))/u',
+            $text,
+        );
+        if (! is_array($parts) || count($parts) > 2) {
+            return null;
+        }
+
+        if (count($parts) === 1) {
+            $date = $this->parseQuickDateValue($parts[0], now()->startOfDay());
+
+            return $date ? ['start_date' => $date->toDateString(), 'end_date' => $date->toDateString()] : null;
+        }
+
+        $context = now()->startOfDay();
+        if ($this->quickDateHasExplicitMonth($parts[0])) {
+            $context = $this->parseQuickDateValue($parts[0], $context) ?: $context;
+        } elseif ($this->quickDateHasExplicitMonth($parts[1])) {
+            $context = $this->parseQuickDateValue($parts[1], $context) ?: $context;
+        }
+
+        $start = $this->parseQuickDateValue($parts[0], $context);
+        $end = $this->parseQuickDateValue($parts[1], $start ?: $context);
+        if (! $start || ! $end || $end->lt($start)) {
+            return null;
+        }
+
+        return ['start_date' => $start->toDateString(), 'end_date' => $end->toDateString()];
+    }
+
+    private function quickDateHasExplicitMonth(string $value): bool
+    {
+        return (bool) preg_match('/[.\/]\d{1,2}|\d{1,2}-\d{1,2}|[а-я]/u', trim($value));
+    }
+
+    private function parseQuickDateValue(string $value, Carbon $context): ?Carbon
+    {
+        $value = trim(preg_replace('/\s+(?:г\.?|года)$/u', '', $value) ?? '');
+        $day = null;
+        $month = $context->month;
+        $year = $context->year;
+
+        if (preg_match('/^(\d{1,2})$/', $value, $matches)) {
+            $day = (int) $matches[1];
+        } elseif (preg_match('/^(\d{1,2})[.\/-](\d{1,2})(?:[.\/-](\d{4}))?$/', $value, $matches)) {
+            $day = (int) $matches[1];
+            $month = (int) $matches[2];
+            $year = isset($matches[3]) ? (int) $matches[3] : $year;
+        } elseif (preg_match('/^(\d{1,2})\s+([а-я]+)(?:\s+(\d{4}))?$/u', $value, $matches)) {
+            $months = [
+                'январь' => 1, 'января' => 1,
+                'февраль' => 2, 'февраля' => 2,
+                'март' => 3, 'марта' => 3,
+                'апрель' => 4, 'апреля' => 4,
+                'май' => 5, 'мая' => 5,
+                'июнь' => 6, 'июня' => 6,
+                'июль' => 7, 'июля' => 7,
+                'август' => 8, 'августа' => 8,
+                'сентябрь' => 9, 'сентября' => 9,
+                'октябрь' => 10, 'октября' => 10,
+                'ноябрь' => 11, 'ноября' => 11,
+                'декабрь' => 12, 'декабря' => 12,
+            ];
+            $day = (int) $matches[1];
+            $month = $months[$matches[2]] ?? 0;
+            $year = isset($matches[3]) ? (int) $matches[3] : $year;
+        }
+
+        if (! $day || ! $month) {
+            return null;
+        }
+
+        try {
+            return Carbon::createSafe($year, $month, $day)->startOfDay();
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     private function startQuickBooking(int|string $chatId, string $fromId): void
@@ -2852,7 +2968,7 @@ TEXT);
         $trimmed = trim($name);
         $normalized = mb_strtolower($trimmed);
 
-        return Animal::with(['client', 'photos', 'boardings' => fn ($query) => $query->latest('start_date')])
+        return Animal::with(['client', 'category', 'photos', 'boardings' => fn ($query) => $query->latest('start_date')])
             ->where(function ($query) use ($normalized, $trimmed) {
                 $query->whereRaw('LOWER(name) = ?', [$normalized])
                     ->orWhereRaw('LOWER(name) LIKE ?', ['%'.$normalized.'%'])
@@ -3498,7 +3614,7 @@ TEXT);
 
         $hint = match (true) {
             str_contains($normalized, 'переимен') => 'Напишите: «Переименуй питомца Старое имя в Новое имя» или «Переименуй клиента Старое имя в Новое имя».',
-            str_contains($normalized, 'дат') => 'Напишите период так: «с 10 по 11 сентября» или «10.09.2026 — 11.09.2026».',
+            str_contains($normalized, 'дат') => 'Введите: «12», «12 сентября», «12–14 сентября» или «12, 13, 14».',
             str_contains($normalized, 'цен') => 'Напишите цену целым числом, например: «500».',
             str_contains($normalized, 'хозяин') || str_contains($normalized, 'клиент') => 'Укажите имя клиента или напишите «без хозяина».',
             str_contains($normalized, 'питом') || str_contains($normalized, 'кличк') => 'Напишите кличку питомца. Например: «Покажи Пухлю».',

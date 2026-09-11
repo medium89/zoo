@@ -98,10 +98,11 @@ class TelegramQuickBookingTest extends TestCase
     public function test_partial_search_displays_multiple_same_named_pets_with_their_owners(): void
     {
         $category = $this->category('Собаки');
+        $catCategory = $this->category('Кошки');
         $ivan = Client::create(['name' => 'Иван']);
         $anna = Client::create(['name' => 'Анна']);
         Animal::create(['client_id' => $ivan->id, 'category_id' => $category->id, 'name' => 'Бобик', 'species' => 'Собаки', 'order' => 1]);
-        Animal::create(['client_id' => $anna->id, 'category_id' => $category->id, 'name' => 'Бобик-младший', 'species' => 'Собаки', 'order' => 2]);
+        Animal::create(['client_id' => $anna->id, 'category_id' => $catCategory->id, 'name' => 'Бобик-младший', 'species' => 'Кошки', 'order' => 2]);
 
         $this->startExistingWizard();
         $this->sendText('Боб');
@@ -109,8 +110,8 @@ class TelegramQuickBookingTest extends TestCase
         $session = TelegramBotSession::where('telegram_user_id', '100')->firstOrFail();
         $this->assertSame('quick_existing_animal_selection', $session->state);
         $labels = collect($this->lastMessage()['reply_markup']['inline_keyboard'])->flatten(1)->pluck('text');
-        $this->assertTrue($labels->contains('Бобик · хозяин Иван'));
-        $this->assertTrue($labels->contains('Бобик-младший · хозяин Анна'));
+        $this->assertTrue($labels->contains('Бобик · собака · хозяин Иван'));
+        $this->assertTrue($labels->contains('Бобик-младший · кошка · хозяин Анна'));
     }
 
     public function test_selecting_existing_pet_copies_its_booking_fields_and_opens_dates(): void
@@ -171,12 +172,11 @@ class TelegramQuickBookingTest extends TestCase
         $this->assertSame('2026-09-12', $session->payload['start_date']);
         $this->assertSame('2026-09-12', $session->payload['end_date']);
 
-        $this->putQuickDatesSession($category, 'Период');
-        $this->pressCallback('quick_date:custom');
-        $this->sendText('12.09.2026 — 14.09.2026');
-        $session = TelegramBotSession::where('telegram_user_id', '100')->firstOrFail();
-        $this->assertSame('2026-09-12', $session->payload['start_date']);
-        $this->assertSame('2026-09-14', $session->payload['end_date']);
+        $this->assertQuickCustomPeriod($category, '12', '2026-09-12', '2026-09-12');
+        $this->assertQuickCustomPeriod($category, '12 сентября', '2026-09-12', '2026-09-12');
+        $this->assertQuickCustomPeriod($category, '12, 13, 14', '2026-09-12', '2026-09-14');
+        $this->assertQuickCustomPeriod($category, '12–14 сентября', '2026-09-12', '2026-09-14');
+        $this->assertQuickCustomPeriod($category, '12.09.2026 — 14.09.2026', '2026-09-12', '2026-09-14');
     }
 
     public function test_final_callback_is_the_only_step_that_creates_all_booking_records(): void
@@ -229,6 +229,16 @@ class TelegramQuickBookingTest extends TestCase
         $this->sendText('➕ Добавить запись');
         $this->pressCallback('quick_service:'.$service);
         $this->pressCallback('quick_animal:new');
+    }
+
+    private function assertQuickCustomPeriod(Category $category, string $input, string $start, string $end): void
+    {
+        $this->putQuickDatesSession($category, 'Период');
+        $this->pressCallback('quick_date:custom');
+        $this->sendText($input);
+        $session = TelegramBotSession::where('telegram_user_id', '100')->firstOrFail();
+        $this->assertSame($start, $session->payload['start_date'], $input);
+        $this->assertSame($end, $session->payload['end_date'], $input);
     }
 
     private function putQuickDatesSession(Category $category, string $name): void
