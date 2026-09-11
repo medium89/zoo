@@ -3575,7 +3575,7 @@ TEXT);
             $replyMarkup = [
                 'keyboard' => [
                     [['text' => 'Записи сегодня'], ['text' => 'Записи завтра']],
-                    [['text' => '➕ Добавить запись']],
+                    [['text' => 'Календарь'], ['text' => '➕ Добавить запись']],
                 ],
                 'resize_keyboard' => true,
                 'is_persistent' => true,

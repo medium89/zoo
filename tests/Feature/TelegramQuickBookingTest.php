@@ -61,6 +61,7 @@ class TelegramQuickBookingTest extends TestCase
         $this->assertStringContainsString('Мурка', $message['text']);
         $this->assertStringContainsString('Пушок', $message['text']);
         $this->assertSame('Записи сегодня', $message['reply_markup']['keyboard'][0][0]['text']);
+        $this->assertSame('Календарь', $message['reply_markup']['keyboard'][1][0]['text']);
         $this->assertTrue($message['reply_markup']['is_persistent']);
     }
 
