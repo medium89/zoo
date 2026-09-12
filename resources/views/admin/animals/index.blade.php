@@ -14,7 +14,7 @@
     </x-admin.filters>
 
     @if($animals->count())
-        <div class="admin-entity-list" style="--entity-cols: 54px minmax(170px,1.15fr) minmax(130px,1fr) minmax(140px,1fr) 90px 150px; --entity-cols-mobile: 54px minmax(0,1fr) 120px;">
+        <div class="admin-entity-list animals-entity-list" style="--entity-cols: 54px minmax(170px,1.15fr) minmax(130px,1fr) minmax(140px,1fr) 90px 150px; --entity-cols-mobile: 54px minmax(0,1fr) 120px;">
             <div class="admin-entity-list__head">
                 <div></div>
                 <div>Кличка</div>

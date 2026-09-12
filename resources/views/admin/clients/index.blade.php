@@ -15,7 +15,7 @@
 
     @if($clients->count())
         <section class="clients-workspace__list" aria-label="Список клиентов">
-            <div class="admin-entity-list" style="--entity-cols: 54px minmax(170px,1.15fr) minmax(125px,.85fr) minmax(170px,1.15fr) 80px 150px; --entity-cols-mobile: 54px minmax(0,1fr) 120px;">
+            <div class="admin-entity-list clients-entity-list" style="--entity-cols: 54px minmax(170px,1.15fr) minmax(125px,.85fr) minmax(170px,1.15fr) 80px 150px; --entity-cols-mobile: 54px minmax(0,1fr) 120px;">
                 <div class="admin-entity-list__head">
                     <div></div>
                     <div>Клиент</div>

@@ -34,7 +34,8 @@ class AdminListPaginationTest extends TestCase
             ->assertSee('category_id='.$category->id, false)
             ->assertSee('owner=without', false)
             ->assertSee('data-auto-filters', false)
-            ->assertDontSee('>Применить</button>', false);
+            ->assertDontSee('>Применить</button>', false)
+            ->assertSee('animals-entity-list', false);
     }
 
     public function test_categories_list_is_searchable_and_paginated(): void
@@ -175,7 +176,8 @@ class AdminListPaginationTest extends TestCase
             ->assertSee('aria-haspopup="menu"', false)
             ->assertSeeText('Просмотреть')
             ->assertSeeText('Редактировать')
-            ->assertSeeText('Удалить');
+            ->assertSeeText('Удалить')
+            ->assertSee('clients-entity-list', false);
     }
 
     public function test_contextual_action_inventory_uses_the_shared_menu_component(): void
