@@ -2402,6 +2402,11 @@
                 if (shouldOpen) requestAnimationFrame(() => adminActionsMenuItems(popup)[0]?.focus());
                 return;
             }
+            const selectedItem = event.target.closest('.admin-actions-menu__item');
+            if (selectedItem) {
+                closeAdminActionsMenus();
+                return;
+            }
 
             if (!event.target.closest('[data-admin-actions-menu]')) closeAdminActionsMenus();
         });
