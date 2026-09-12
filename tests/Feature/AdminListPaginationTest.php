@@ -107,7 +107,8 @@ class AdminListPaginationTest extends TestCase
             ->assertSee('per_page=10', false)
             ->assertSee('name="search"', false)
             ->assertSee('value="Клиент"', false)
-            ->assertSee('data-fab-target=".js-new-service-order"', false);
+            ->assertSee('data-fab-target=".js-new-service-order"', false)
+            ->assertSee('orders-date-field__label', false);
     }
 
     public function test_service_orders_pagination_footer_is_outside_the_table_shell(): void
