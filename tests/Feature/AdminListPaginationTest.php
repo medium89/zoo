@@ -52,7 +52,8 @@ class AdminListPaginationTest extends TestCase
             ->assertSee('name="per_page"', false)
             ->assertSee('per_page=10', false)
             ->assertSee('name="search"', false)
-            ->assertSee('value="Вид"', false);
+            ->assertSee('value="Вид"', false)
+            ->assertSee("categories-entity-list", false);
     }
 
     public function test_articles_and_comments_filters_are_applied_automatically(): void

@@ -11,7 +11,7 @@
     <x-admin.filters :action="route('admin.categories.index')" :filters="$filters" placeholder="Название или slug" :auto="true" :attached="true" />
 
     @if($categories->count())
-        <section class="admin-entity-list" aria-label="Список категорий" style="--entity-cols: minmax(190px,1.25fr) minmax(170px,1fr) 150px; --entity-cols-mobile: 1fr 120px;">
+        <section class="admin-entity-list categories-entity-list" aria-label="Список категорий" style="--entity-cols: minmax(190px,1.25fr) minmax(170px,1fr) 150px; --entity-cols-mobile: 1fr 120px;">
             <div class="admin-entity-list__head">
                 <div>Категория</div><div>Slug</div><div class="text-end">Действия</div>
             </div>
