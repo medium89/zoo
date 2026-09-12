@@ -51,8 +51,16 @@
             --bs-btn-disabled-border-color: var(--admin-primary);
         }
 
+        html {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
         body {
             min-height: 100vh;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
             background: #f7f8fa;
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
@@ -1354,7 +1362,7 @@
 
         /* Каркас админки: узкая панель разделов + контекстная навигация. */
         :root { --admin-rail-width: 72px; --admin-context-width: 260px; }
-        .admin-layout { display: flex; min-height: 100vh; overflow: visible; }
+        .admin-layout { display: flex; width: 100%; max-width: 100%; min-height: 100vh; overflow-x: clip; }
         .admin-menu-toggle { display: none; }
         .sidebar {
             display: flex; position: sticky; inset: 0 auto auto 0; z-index: 1020; width: calc(var(--admin-rail-width) + var(--admin-context-width));
@@ -1383,7 +1391,8 @@
         .admin-contextual-nav__footer form { margin: 0; }
         .admin-contextual-nav__footer button { width: 100%; gap: 9px; }
         .admin-contextual-nav__footer button:hover, .admin-contextual-nav__footer button:focus-visible { background: #2d3b4d; color: #fff; outline: 0; }
-        .content { min-width: 0; padding: 20px 32px 32px; overflow-x: clip; }
+        .content { width: 100%; max-width: 100%; min-width: 0; padding: 20px 32px 32px; overflow-x: clip; }
+        #admin-content > * { max-width: 100%; min-width: 0; }
         .admin-command-palette kbd { padding: 2px 5px; border: 1px solid #dce3eb; border-radius: 5px; background: #f7f9fb; color: #8490a0; font-family: inherit; font-size: .7rem; }
         .admin-command-palette[hidden] { display: none; }
         .admin-command-palette { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: start center; padding: min(12vh, 120px) 18px 18px; }
