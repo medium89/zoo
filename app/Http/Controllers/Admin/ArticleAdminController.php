@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Support\ImageProcessor;
+use App\Services\SitemapGenerator;
 use Illuminate\Support\Str;
 
 class ArticleAdminController extends Controller
@@ -39,7 +40,7 @@ class ArticleAdminController extends Controller
         return view('admin.articles.create', compact('categories'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, SitemapGenerator $sitemapGenerator)
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
@@ -83,6 +84,7 @@ class ArticleAdminController extends Controller
         }
 
         $this->storeImages($request, $article, $scale, $quality);
+        $sitemapGenerator->rebuild();
 
         return redirect()->route('admin.articles.index')->with('success', 'Статья добавлена');
     }
@@ -94,7 +96,7 @@ class ArticleAdminController extends Controller
         return view('admin.articles.edit', compact('article','categories'));
     }
 
-    public function update(Request $request, Article $article)
+    public function update(Request $request, Article $article, SitemapGenerator $sitemapGenerator)
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
@@ -153,11 +155,12 @@ class ArticleAdminController extends Controller
         }
 
         $this->storeImages($request, $article, $scale, $quality);
+        $sitemapGenerator->rebuild();
 
         return redirect()->route('admin.articles.edit', $article)->with('success', 'Статья обновлена');
     }
 
-    public function destroy(Article $article)
+    public function destroy(Article $article, SitemapGenerator $sitemapGenerator)
     {
         foreach ($article->images as $img) {
             if ($img->path && Storage::disk('public')->exists($img->path)) {
@@ -165,6 +168,7 @@ class ArticleAdminController extends Controller
             }
         }
         $article->delete();
+        $sitemapGenerator->rebuild();
         return redirect()->route('admin.articles.index')->with('success', 'Статья удалена');
     }
 
@@ -226,7 +230,7 @@ class ArticleAdminController extends Controller
         return $slug;
     }
 
-    public function updateStatus(Request $request)
+    public function updateStatus(Request $request, SitemapGenerator $sitemapGenerator)
     {
         foreach ($request->input('statuses', []) as $id => $status) {
             if ($model = Article::find($id)) {
@@ -240,6 +244,8 @@ class ArticleAdminController extends Controller
                 $model->save();
             }
         }
+
+        $sitemapGenerator->rebuild();
 
         return back()->with('success', 'Изменения сохранены');
     }

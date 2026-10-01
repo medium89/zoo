@@ -56,5 +56,28 @@
         </div>
         <button type="submit" class="btn btn-primary">Сохранить</button>
     </form>
+
+    <section class="card mt-4">
+        <div class="card-body">
+            <h2 class="h5">Файлы для поисковых систем</h2>
+            <p class="text-muted mb-3">Опубликованные статьи автоматически добавляются в sitemap.xml. При ручной пересборке карта формируется заново из публичных страниц и активных статей.</p>
+            <form action="{{ route('admin.settings.seo-files') }}" method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label for="robots_txt" class="form-label">robots.txt</label>
+                    <textarea class="form-control font-monospace" id="robots_txt" name="robots_txt" rows="8">{{ old('robots_txt', $robotsText) }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="sitemap_xml" class="form-label">sitemap.xml</label>
+                    <textarea class="form-control font-monospace" id="sitemap_xml" name="sitemap_xml" rows="12">{{ old('sitemap_xml', $sitemapText) }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-outline-primary">Сохранить robots.txt и sitemap.xml</button>
+            </form>
+            <form action="{{ route('admin.settings.sitemap.rebuild') }}" method="POST" class="mt-3">
+                @csrf
+                <button type="submit" class="btn btn-primary">Пересобрать sitemap.xml</button>
+            </form>
+        </div>
+    </section>
 </div>
 @endsection

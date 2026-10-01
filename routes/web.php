@@ -46,6 +46,8 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
     Route::delete('client-map/animals/{animal}/client', [ClientMapController::class, 'detachAnimal'])->name('client-map.animals.detach');
     Route::get('settings', [AdminController::class, 'settings'])->name('settings');
     Route::post('settings/site', [AdminController::class, 'saveSiteStatus'])->name('settings.site');
+    Route::post('settings/seo-files', [AdminController::class, 'saveSeoFiles'])->name('settings.seo-files');
+    Route::post('settings/sitemap/rebuild', [AdminController::class, 'rebuildSitemap'])->name('settings.sitemap.rebuild');
     Route::get('settings/telegram-bot', [TelegramBotSettingsController::class, 'edit'])->name('telegram-bot-settings.edit');
     Route::put('settings/telegram-bot', [TelegramBotSettingsController::class, 'update'])->name('telegram-bot-settings.update');
     Route::get('personal-data-consent', [PersonalDataConsentController::class, 'edit'])->name('personal-data-consent.edit');
