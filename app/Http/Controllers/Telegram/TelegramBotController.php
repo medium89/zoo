@@ -2192,6 +2192,9 @@ TEXT);
         $text .= 'Стоимость: '.number_format($payload['unit_price'], 0, '.', ' ')." ₽ {$unitLabel}{$quantity}\n";
         $text .= 'Итого: '.number_format($total, 0, '.', ' ').' ₽ за '.$days.' '.$this->daysLabel($days)."\n";
 
+        if (Carbon::parse($payload['end_date'])->lt(today())) {
+            $text .= "\n⚠️ Внимание: указанный период уже закончился. После создания запись сразу попадёт в архив.\n";
+        }
         if ($overlaps->count()) {
             $text .= "\nНа эти даты уже есть другие записи:\n";
             foreach ($overlaps as $row) {

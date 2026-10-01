@@ -286,6 +286,20 @@ class TelegramQuickBookingTest extends TestCase
         );
     }
 
+    public function test_expired_period_warning_is_shown_in_confirmation(): void
+    {
+        $category = $this->category('Кошки');
+        $this->putQuickDatesSession($category, 'Прошлая запись');
+
+        $this->pressCallback('quick_date:custom');
+        $this->sendText('9 сентября');
+        $this->pressCallback('owner_skip');
+
+        $this->assertStringContainsString(
+            'указанный период уже закончился. После создания запись сразу попадёт в архив',
+            $this->lastMessage()['text'],
+        );
+    }
     private function startExistingWizard(): void
     {
         $this->sendText('➕ Добавить запись');
