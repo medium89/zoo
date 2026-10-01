@@ -1410,6 +1410,18 @@
         .admin-command-palette__result.is-selected, .admin-command-palette__result:hover, .admin-command-palette__result:focus-visible { background: #f0edff; color: #5b46c5; outline: 0; }
         .admin-command-palette__hint { display: flex; gap: 15px; margin: 0; padding: 10px 16px; border-top: 1px solid #e8edf2; color: #8492a2; font-size: .75rem; }
         .admin-command-palette__hint span { display: inline-flex; gap: 3px; align-items: center; }
+        @media (min-width: 992px) {
+            .sidebar {
+                position: fixed;
+                inset: 0 auto 0 0;
+                height: 100dvh;
+                min-height: 100dvh;
+            }
+
+            .content {
+                margin-left: calc(var(--admin-rail-width) + var(--admin-context-width));
+            }
+        }
         @media (max-width: 991.98px) {
             #sidebarToggle.admin-menu-toggle { position: fixed; top: 14px; left: 14px; z-index: 1035; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 10px; background: #202b39; color: #fff; box-shadow: 0 8px 20px rgba(31, 45, 63, .2); }
             .sidebar, body.sidebar-collapsed .sidebar { position: fixed; inset: 0 auto 0 0; width: min(338px, calc(100vw - 34px)); height: 100dvh; min-height: 100dvh; transform: translateX(-105%); transition: transform .22s ease; }
