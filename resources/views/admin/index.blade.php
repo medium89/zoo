@@ -1366,11 +1366,11 @@
 
         /* Каркас админки: узкая панель разделов + контекстная навигация. */
         :root { --admin-rail-width: 72px; --admin-context-width: 260px; }
-        .admin-layout { display: flex; width: 100%; max-width: 100%; min-height: 100vh; overflow-x: clip; }
+        .admin-layout { display: flex; width: 100%; max-width: 100%; min-height: 100vh; min-height: 100dvh; align-items: stretch; overflow-x: clip; }
         .admin-menu-toggle { display: none; }
         .sidebar {
             display: flex; position: sticky; inset: 0 auto auto 0; z-index: 1020; width: calc(var(--admin-rail-width) + var(--admin-context-width));
-            min-height: 100vh; height: 100vh; padding: 0; overflow: hidden; flex: 0 0 auto; color: #dce5f0; background: #18212d;
+            align-self: stretch; min-height: 100vh; min-height: 100dvh; height: 100vh; height: 100dvh; padding: 0; overflow: hidden; flex: 0 0 auto; color: #dce5f0; background: #18212d;
             border: 0; box-shadow: 6px 0 22px rgba(25, 38, 53, .08); transform: none; opacity: 1; visibility: visible;
         }
         body.sidebar-collapsed .sidebar { width: calc(var(--admin-rail-width) + var(--admin-context-width)); flex-basis: auto; transform: none; opacity: 1; visibility: visible; }
