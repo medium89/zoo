@@ -11,7 +11,7 @@ use App\Http\Controllers\Admin\{
     ServiceOrderAdminController, SliderController, SocialController,
     TagClassificationController, TelegramBotSettingsController, UserController,
 };
-use App\Http\Controllers\Public\{ArticlePublicController, FeedbackController, HomeController};
+use App\Http\Controllers\Public\{ArticlePublicController, FeedbackController, HomeController, SitemapController};
 
 /*
 |--------------------------------------------------------------------------
@@ -120,6 +120,7 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
 });
 
 // Main page
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/', [HomeController::class, 'index']);
 Route::get('/v2', [HomeController::class, 'v2'])->name('v2');
 Route::get('/calendar', [BoardingController::class, 'publicCalendar'])->name('calendar.index');
