@@ -913,7 +913,7 @@ class TelegramBotController extends Controller
 
             if ($matches[1] === 'custom') {
                 $this->saveSession($fromId, $chatId, 'quick_custom_dates', $payload);
-                $this->sendMessage($chatId, 'Введите даты без года: 12, 12 сентября, 12–14 сентября или 12, 13, 14.');
+                $this->sendMessage($chatId, 'Введите даты без года: 12, 12 '.$this->currentMonthGenitive().', 12–14 '.$this->currentMonthGenitive().' или 12, 13, 14.');
 
                 return true;
             }
@@ -1205,7 +1205,7 @@ class TelegramBotController extends Controller
         if ($session->state === 'quick_custom_dates') {
             $period = $this->parseQuickDatePeriod($text);
             if (! $period) {
-                $this->sendMessage($chatId, 'Не удалось распознать даты. Примеры: 12, 12 сентября, 12–14 сентября или 12, 13, 14.');
+                $this->sendMessage($chatId, 'Не удалось распознать даты. Примеры: 12, 12 '.$this->currentMonthGenitive().', 12–14 '.$this->currentMonthGenitive().' или 12, 13, 14.');
 
                 return true;
             }
@@ -1245,6 +1245,14 @@ class TelegramBotController extends Controller
     }
 
     /** @return array{start_date: string, end_date: string}|null */
+    private function currentMonthGenitive(): string
+    {
+        return [
+            1 => 'января', 2 => 'февраля', 3 => 'марта', 4 => 'апреля',
+            5 => 'мая', 6 => 'июня', 7 => 'июля', 8 => 'августа',
+            9 => 'сентября', 10 => 'октября', 11 => 'ноября', 12 => 'декабря',
+        ][now()->month];
+    }
     private function parseQuickDatePeriod(string $text): ?array
     {
         $text = mb_strtolower(trim(str_replace('ё', 'е', $text)));
@@ -1469,7 +1477,7 @@ class TelegramBotController extends Controller
         ];
 
         if (! $payload['start_date'] || ! $payload['end_date']) {
-            $this->sendMessage($chatId, 'Не хватает периода для записи. Например: «с 13 по 25 сентября».');
+            $this->sendMessage($chatId, 'Не хватает периода для записи. Например: «с 13 по 25 '.$this->currentMonthGenitive().'».');
 
             return;
         }
@@ -3687,7 +3695,7 @@ TEXT);
 
         $hint = match (true) {
             str_contains($normalized, 'переимен') => 'Напишите: «Переименуй питомца Старое имя в Новое имя» или «Переименуй клиента Старое имя в Новое имя».',
-            str_contains($normalized, 'дат') => 'Введите: «12», «12 сентября», «12–14 сентября» или «12, 13, 14».',
+            str_contains($normalized, 'дат') => 'Введите: «12», «12 '.$this->currentMonthGenitive().'», «12–14 '.$this->currentMonthGenitive().'» или «12, 13, 14».',
             str_contains($normalized, 'цен') => 'Напишите цену целым числом, например: «500».',
             str_contains($normalized, 'хозяин') || str_contains($normalized, 'клиент') => 'Укажите имя клиента или напишите «без хозяина».',
             str_contains($normalized, 'питом') || str_contains($normalized, 'кличк') => 'Напишите кличку питомца. Например: «Покажи Пухлю».',

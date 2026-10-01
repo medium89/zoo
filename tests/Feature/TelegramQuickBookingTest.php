@@ -225,6 +225,17 @@ class TelegramQuickBookingTest extends TestCase
         $this->assertSame(2, Animal::where('name', 'Мия')->where('category_id', $category->id)->count());
     }
 
+    public function test_custom_date_prompt_uses_the_current_month_name(): void
+    {
+        Carbon::setTestNow('2026-10-01 10:00:00');
+        $category = $this->category('Кошки');
+        $this->putQuickDatesSession($category, 'Октябрь');
+
+        $this->pressCallback('quick_date:custom');
+
+        $this->assertStringContainsString('12 октября', $this->lastMessage()['text']);
+        $this->assertStringNotContainsString('12 сентября', $this->lastMessage()['text']);
+    }
     public function test_today_tomorrow_and_manual_period_are_saved_by_the_date_step(): void
     {
         $category = $this->category('Кошки');
