@@ -14,6 +14,7 @@ use App\Models\Client;
 use App\Models\ServiceOrder;
 use App\Models\TelegramBotSession;
 use App\Models\TelegramWebhookUpdate;
+use App\Models\TelegramBotLog;
 use App\Services\AitunnelService;
 use App\Services\AnonymousOrderAnimalLinker;
 use App\Services\BoardingPricingService;
@@ -21,6 +22,7 @@ use App\Services\BoardingTaskInstructionParser;
 use App\Services\BookingListPeriodParser;
 use App\Services\TelegramApiClient;
 use App\Services\TelegramCalendarImageService;
+use App\Services\TelegramDateParser;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -33,6 +35,8 @@ use Throwable;
 
 class TelegramBotController extends Controller
 {
+    private ?int $activeWebhookUpdateId = null;
+
     public function __construct(
         private readonly AitunnelService $aitunnel,
         private readonly AnonymousOrderAnimalLinker $anonymousOrderAnimalLinker,
@@ -40,6 +44,7 @@ class TelegramBotController extends Controller
         private readonly BookingListPeriodParser $bookingListPeriodParser,
         private readonly BoardingPricingService $pricing,
         private readonly TelegramCalendarImageService $calendarImage,
+        private readonly TelegramDateParser $dateParser,
         private readonly TelegramApiClient $telegram,
     ) {}
 
@@ -73,16 +78,29 @@ class TelegramBotController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function processUpdate(array $update): void
+    public function processUpdate(array $update, ?TelegramWebhookUpdate $webhookUpdate = null): void
     {
+        $this->activeWebhookUpdateId = $webhookUpdate?->id;
+        $isCallback = isset($update['callback_query']);
+        $chatId = data_get($update, $isCallback ? 'callback_query.message.chat.id' : 'message.chat.id');
+        $fromId = data_get($update, $isCallback ? 'callback_query.from.id' : 'message.from.id');
+        $text = $isCallback ? data_get($update, 'callback_query.data') : data_get($update, 'message.text');
+
+        $this->recordTelegramLog('incoming', $isCallback ? 'callback_received' : 'message_received', $chatId, $fromId, is_string($text) ? $text : null, [
+            'update_id' => data_get($update, 'update_id'),
+            'has_voice' => isset($update['message.voice']),
+            'has_photo' => isset($update['message.photo']),
+        ]);
+
         try {
-            if (isset($update['callback_query'])) {
+            if ($isCallback) {
                 $this->handleCallback($update['callback_query']);
             } elseif (isset($update['message'])) {
                 $this->handleMessage($update['message']);
             }
         } catch (Throwable $e) {
-            $chatId = data_get($update, 'message.chat.id') ?: data_get($update, 'callback_query.message.chat.id');
+            $this->recordTelegramLog('system', 'processing_error', $chatId, $fromId, $e->getMessage(), ['exception' => $e::class], 'error');
+
             if ($e instanceof TelegramApiException) {
                 Log::warning('Telegram transport failed while processing update.', ['error' => $e->getMessage()]);
                 throw $e;
@@ -92,6 +110,8 @@ class TelegramBotController extends Controller
                 Log::warning('Telegram bot could not process update.', ['error' => $e->getMessage()]);
                 $this->sendMessage($chatId, 'Не понял сообщение. Напишите, например: «Запиши кошку Пухлю с 22 по 25 августа, уход» — или уточните, что нужно сделать.');
             }
+        } finally {
+            $this->activeWebhookUpdateId = null;
         }
     }
 
@@ -121,6 +141,7 @@ class TelegramBotController extends Controller
 
                 return;
             }
+            $this->recordTelegramLog('system', 'voice_transcribed', $chatId, $fromId, $text, ['file_id' => data_get($message, 'voice.file_id')]);
             $this->sendMessage($chatId, 'Распознал: '.$text);
         }
 
@@ -1205,7 +1226,8 @@ class TelegramBotController extends Controller
         if ($session->state === 'quick_custom_dates') {
             $period = $this->parseQuickDatePeriod($text);
             if (! $period) {
-                $this->sendMessage($chatId, 'Не удалось распознать даты. Примеры: 12, 12 '.$this->currentMonthGenitive().', 12–14 '.$this->currentMonthGenitive().' или 12, 13, 14.');
+                $this->recordTelegramLog('system', 'date_parse_failed', $chatId, $fromId, $text, ['session_state' => $session->state], 'warning');
+                $this->sendMessage($chatId, 'Не удалось распознать даты. Примеры: «с 24 ноября по 5 декабря», «24.11–05.12», «12–14 '.$this->currentMonthGenitive().'» или «12, 13 и 14».');
 
                 return true;
             }
@@ -1255,6 +1277,8 @@ class TelegramBotController extends Controller
     }
     private function parseQuickDatePeriod(string $text): ?array
     {
+        return $this->dateParser->parse($text);
+
         $text = mb_strtolower(trim(str_replace('ё', 'е', $text)));
         if ($text === '') {
             return null;
@@ -3671,9 +3695,34 @@ TEXT);
             $payload['parse_mode'] = $parseMode;
         }
 
+        $this->recordTelegramLog('outgoing', 'message_outgoing', $chatId, null, $payload['text'], ['has_reply_markup' => $replyMarkup !== null]);
         $this->telegramApi('sendMessage', $payload);
     }
 
+    private function recordTelegramLog(
+        string $direction,
+        string $event,
+        int|string|null $chatId,
+        int|string|null $fromId,
+        ?string $text,
+        array $context = [],
+        string $level = 'info',
+    ): void {
+        try {
+            TelegramBotLog::create([
+                'telegram_webhook_update_id' => $this->activeWebhookUpdateId,
+                'direction' => $direction,
+                'event' => $event,
+                'chat_id' => $chatId === null ? null : (string) $chatId,
+                'telegram_user_id' => $fromId === null ? null : (string) $fromId,
+                'text' => $text,
+                'context' => $context ?: null,
+                'level' => $level,
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Could not write Telegram bot log.', ['error' => $e->getMessage()]);
+        }
+    }
     private function withHelpfulHint(string $text): string
     {
         if (str_contains($text, 'Подсказка:')) {

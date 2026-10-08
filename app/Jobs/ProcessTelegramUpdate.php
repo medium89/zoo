@@ -29,7 +29,7 @@ class ProcessTelegramUpdate implements ShouldQueue
             return;
         }
 
-        $bot->processUpdate($update->payload);
+        $bot->processUpdate($update->payload, $update);
         $update->update(['processed_at' => now()]);
     }
 
