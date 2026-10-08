@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SendTomorrowBookingsNotification extends Command
 {
@@ -24,29 +25,29 @@ class SendTomorrowBookingsNotification extends Command
         $tomorrow = $now->copy()->addDay()->startOfDay();
         $force = (bool) $this->option('force');
 
-        if (!$force && !$settings->tomorrow_notifications_enabled) {
+        if (! $force && ! $settings->tomorrow_notifications_enabled) {
             return self::SUCCESS;
         }
 
         $configuredTime = substr((string) $settings->tomorrow_notification_time, 0, 5);
-        if (!$force && $configuredTime !== $now->format('H:i')) {
+        if (! $force && $configuredTime !== $now->format('H:i')) {
             return self::SUCCESS;
         }
 
-        if (!$force && $settings->last_tomorrow_notification_for?->isSameDay($tomorrow)) {
+        if (! $force && $settings->last_tomorrow_notification_for?->isSameDay($tomorrow)) {
             return self::SUCCESS;
         }
 
         $chatIds = array_values(array_filter(config('services.telegram.chat_ids', [])));
         $token = config('services.telegram.bot_token');
-        if (!$token || $chatIds === []) {
+        if (! $token || $chatIds === []) {
             Log::warning('Telegram tomorrow notification was skipped: bot token or chat ID is missing.');
             $this->error('TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not configured.');
 
             return self::FAILURE;
         }
 
-        $bookings = Boarding::with(['animal', 'client'])
+        $bookings = Boarding::with(['animal.photos', 'client'])
             ->whereNull('archived_at')
             ->whereDate('start_date', '<=', $tomorrow)
             ->whereDate('end_date', '>=', $tomorrow)
@@ -65,6 +66,11 @@ class SendTomorrowBookingsNotification extends Command
 
                 if ($response->ok()) {
                     $sent++;
+
+                    foreach ($bookings as $booking) {
+                        $this->sendBookingCard($chatId, $token, $booking);
+                    }
+
                     continue;
                 }
 
@@ -86,7 +92,7 @@ class SendTomorrowBookingsNotification extends Command
             return self::FAILURE;
         }
 
-        if (!$force) {
+        if (! $force) {
             $settings->last_tomorrow_notification_for = $tomorrow;
             $settings->save();
         }
@@ -98,19 +104,46 @@ class SendTomorrowBookingsNotification extends Command
 
     private function notificationText(Carbon $tomorrow, $bookings): string
     {
-        $heading = 'Напоминание на завтра, '.$this->russianDate($tomorrow).":";
+        $heading = 'Напоминание на завтра, '.$this->russianDate($tomorrow).':';
 
-        if ($bookings->isEmpty()) {
-            return $heading."\n\nЗаписей нет.";
+        return $bookings->isEmpty() ? $heading."\n\nЗаписей нет." : $heading;
+    }
+
+    private function sendBookingCard(int|string $chatId, string $token, Boarding $booking): void
+    {
+        $animal = $booking->animal?->name ?: $booking->name;
+        $caption = "🐾 {$animal}\n📅 ".$this->russianPeriod($booking->start_date, $booking->end_date)."\n🛎 ".$this->serviceLabel($booking->service_type);
+        $photo = $booking->animal?->photos->sortBy('id')->first();
+
+        try {
+            if ($photo && Storage::disk('public')->exists($photo->path)) {
+                $response = Http::timeout(30)
+                    ->attach('photo', Storage::disk('public')->get($photo->path), basename($photo->path))
+                    ->post("https://api.telegram.org/bot{$token}/sendPhoto", [
+                        'chat_id' => $chatId,
+                        'caption' => $caption,
+                    ]);
+            } else {
+                $response = Http::timeout(30)->post("https://api.telegram.org/bot{$token}/sendMessage", [
+                    'chat_id' => $chatId,
+                    'text' => $caption,
+                ]);
+            }
+
+            if (! $response->ok()) {
+                Log::warning('Telegram tomorrow booking card was not delivered.', [
+                    'chat_id' => $chatId,
+                    'boarding_id' => $booking->id,
+                    'status' => $response->status(),
+                ]);
+            }
+        } catch (\Throwable $exception) {
+            Log::warning('Telegram tomorrow booking card failed.', [
+                'chat_id' => $chatId,
+                'boarding_id' => $booking->id,
+                'message' => $exception->getMessage(),
+            ]);
         }
-
-        $lines = [$heading];
-        foreach ($bookings as $booking) {
-            $animal = $booking->animal?->name ?: $booking->name;
-            $lines[] = "🐾 {$animal}\n📅 ".$this->russianPeriod($booking->start_date, $booking->end_date)."\n🛎 ".$this->serviceLabel($booking->service_type);
-        }
-
-        return implode("\n\n", $lines);
     }
 
     private function russianDate(Carbon $date): string
