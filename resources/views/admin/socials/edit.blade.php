@@ -1,5 +1,7 @@
 @extends('admin.index')
 @section('content')
+<div class="admin-live-preview-layout">
+<div class="admin-live-preview-layout__fields">
 <h3>Редактировать контакт</h3>
 @if($errors->any())
     <div class="alert alert-danger">
@@ -72,66 +74,7 @@
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
 </form>
-@endsection
-
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const selectIconButton = document.getElementById('selectIconButton');
-        const iconPickerModal = document.getElementById('iconPickerModal');
-        const closeIconPickerModal = document.getElementById('closeIconPickerModal');
-        const iconSearchInput = document.getElementById('iconSearchInput');
-        const iconList = document.getElementById('iconList');
-        const hiddenIconInput = document.getElementById('icon');
-        const selectedIconPreview = document.getElementById('selectedIconPreview');
-
-        // Список популярных иконок Font Awesome (можно расширить)
-        const icons = [
-            'fab fa-whatsapp', 'fab fa-telegram', 'fab fa-vk', 'fab fa-instagram',
-            'fab fa-facebook-f', 'fab fa-twitter', 'fab fa-youtube', 'fab fa-linkedin-in',
-            'fab fa-pinterest', 'fab fa-github', 'fab fa-discord', 'fab fa-viber',
-            'fas fa-phone', 'fas fa-envelope', 'fas fa-map-marker-alt', 'fas fa-globe',
-            'fas fa-link', 'fas fa-share-alt', 'fas fa-comments', 'fas fa-heart', 'fab fa-odnoklassniki'
-        ];
-
-        function renderIcons(filter = '') {
-            iconList.innerHTML = ''; // Очищаем список
-            const filteredIcons = icons.filter(icon => icon.toLowerCase().includes(filter.toLowerCase()));
-
-            filteredIcons.forEach(iconClass => {
-                const iconElement = document.createElement('i');
-                iconElement.className = `${iconClass} fa-2x m-2 p-2 border rounded`;
-                iconElement.style.cursor = 'pointer';
-                iconElement.title = iconClass;
-                iconElement.addEventListener('click', () => {
-                    hiddenIconInput.value = iconClass;
-                    selectedIconPreview.innerHTML = `<i class="${iconClass} fa-2x"></i>`;
-                    iconPickerModal.style.display = 'none';
-                });
-                iconList.appendChild(iconElement);
-            });
-        }
-
-        // Инициализация отображения иконок при загрузке
-        renderIcons();
-
-        // Открытие модального окна
-        selectIconButton.addEventListener('click', () => {
-            iconPickerModal.style.display = 'block';
-            iconSearchInput.value = ''; // Очистить поиск при открытии
-            renderIcons(); // Рендерить все иконки
-        });
-
-        // Закрытие модального окна
-        closeIconPickerModal.addEventListener('click', () => {
-            iconPickerModal.style.display = 'none';
-        });
-
-        // Поиск иконок
-    iconSearchInput.addEventListener('keyup', (e) => {
-        renderIcons(e.target.value);
-    });
-
-});
-</script>
+</div>
+@include('admin.partials.live-preview', ['kind' => 'social'])
+</div>
 @endsection

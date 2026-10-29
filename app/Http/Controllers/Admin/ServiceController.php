@@ -19,7 +19,8 @@ class ServiceController extends Controller
 
     public function create()
     {
-        return view('admin.services.create');
+        $previewOrders = Service::where('active', true)->orderBy('order')->orderBy('id')->get(['id', 'order']);
+        return view('admin.services.create', compact('previewOrders'));
     }
 
     public function store(Request $request)
@@ -62,7 +63,8 @@ class ServiceController extends Controller
 
     public function edit(Service $service)
     {
-        return view('admin.services.edit', compact('service'));
+        $previewOrders = Service::where('active', true)->orderBy('order')->orderBy('id')->get(['id', 'order']);
+        return view('admin.services.edit', compact('service', 'previewOrders'));
     }
 
     public function update(Request $request, Service $service)

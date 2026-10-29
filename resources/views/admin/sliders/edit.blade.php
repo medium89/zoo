@@ -1,5 +1,7 @@
 @extends('admin.index')
 @section('content')
+<div class="admin-live-preview-layout">
+<div class="admin-live-preview-layout__fields">
 <h3>Редактировать слайд</h3>
 @if($errors->any())
     <div class="alert alert-danger">
@@ -73,6 +75,9 @@
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
 </form>
+</div>
+@include('admin.partials.live-preview', ['kind' => 'slider'])
+</div>
 @endsection
 
 @section('scripts')

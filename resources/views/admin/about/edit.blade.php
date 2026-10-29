@@ -1,4 +1,6 @@
 @extends('admin.index')@section('content')
+<div class="admin-live-preview-layout">
+<div class="admin-live-preview-layout__fields">
 <h1>Обо мне</h1>
 @if (session('success'))
     <div class="alert alert-success">
@@ -46,6 +48,9 @@
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
 </form>
+</div>
+@include('admin.partials.live-preview', ['kind' => 'about'])
+</div>
 @endsection
 
 @section('scripts')

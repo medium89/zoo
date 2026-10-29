@@ -1,5 +1,7 @@
 @extends('admin.index')
 @section('content')
+<div class="admin-live-preview-layout">
+<div class="admin-live-preview-layout__fields">
 <h3>Редактировать преимущество</h3>
 @if($errors->any())
     <div class="alert alert-danger">
@@ -54,6 +56,9 @@
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
 </form>
+</div>
+@include('admin.partials.live-preview', ['kind' => 'advantage'])
+</div>
 @endsection
 
 @section('scripts')

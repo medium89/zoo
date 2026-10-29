@@ -75,6 +75,7 @@
                 <label class="form-check-label" for="hero-image-active">Показывать единую картинку на главной</label>
             </div>
         </form>
+        <div class="admin-live-preview-layout"><div class="admin-live-preview-layout__fields">
         <form action="{{ route('admin.sliders.hero-image') }}" method="POST" enctype="multipart/form-data" class="card">
             @csrf
             <div class="card-body">
@@ -100,6 +101,9 @@
                 <button type="submit" class="btn btn-success">Сохранить картинку и текст</button>
             </div>
         </form>
+        </div>
+        @include('admin.partials.live-preview', ['kind' => 'hero_image'])
+        </div>
     </div>
 </div>
 <script>

@@ -1,5 +1,7 @@
 @extends('admin.index')
 @section('content')
+<div class="admin-live-preview-layout">
+<div class="admin-live-preview-layout__fields">
 <h3>Добавить фото</h3>
 @if($errors->any())
     <div class="alert alert-danger">
@@ -26,4 +28,7 @@
     </div>
     <button type="submit" class="btn btn-success" id="submitBtn">Загрузить</button>
 </form>
+</div>
+@include('admin.partials.live-preview', ['kind' => 'gallery'])
+</div>
 @endsection

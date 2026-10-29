@@ -29,7 +29,8 @@ class AdvantageController extends Controller
 
     public function create()
     {
-        return view('admin.advantages.create');
+        $previewOrders = Advantage::where('active', true)->orderBy('order')->orderBy('id')->get(['id', 'order']);
+        return view('admin.advantages.create', compact('previewOrders'));
     }
 
     public function store(Request $request)
@@ -58,7 +59,8 @@ class AdvantageController extends Controller
 
     public function edit(Advantage $advantage)
     {
-        return view('admin.advantages.edit', compact('advantage'));
+        $previewOrders = Advantage::where('active', true)->orderBy('order')->orderBy('id')->get(['id', 'order']);
+        return view('admin.advantages.edit', compact('advantage', 'previewOrders'));
     }
 
     public function update(Request $request, Advantage $advantage)

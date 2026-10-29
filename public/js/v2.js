@@ -122,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
       svg.querySelector('[data-seam]').setAttribute('d', seam);
     }
   });
+  window.ZoolandStickerFold = card => foldObserver.observe(card);
   document.querySelectorAll('.v2-service[data-sticker]').forEach(card => foldObserver.observe(card));
 
   const menuButton = document.querySelector('.v2-menu-toggle');

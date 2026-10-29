@@ -1705,6 +1705,10 @@
     <link rel="stylesheet" href="{{ asset('css/admin-image-upload.css') }}?v=20261026-1">
     <script src="{{ asset('js/admin-image-upload.js') }}?v=20261026-1" defer></script>
     <script src="{{ asset('js/admin-gallery-previews.js') }}?v=20261026-1" defer></script>
+    <link rel="stylesheet" href="{{ asset('css/v2.css') }}?v=20261029-9">
+    <link rel="stylesheet" href="{{ asset('css/admin-live-preview.css') }}?v=20261029-1">
+    <script src="{{ asset('js/v2.js') }}?v=20261029-4" defer></script>
+    <script src="{{ asset('js/admin-live-preview.js') }}?v=20261029-1" defer></script>
     @stack('styles')
 </head>
 <body>
