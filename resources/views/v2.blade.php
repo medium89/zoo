@@ -1,6 +1,33 @@
 @extends('layouts.app')
 
 @push('styles')
+<script>
+if ('IntersectionObserver' in window && Element.prototype.animate &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('v2-reveal-ready');
+    setTimeout(() => {
+        if (!window.__v2RevealInitialized) document.documentElement.classList.remove('v2-reveal-ready');
+    }, 8000);
+}
+</script>
+<style>
+html.v2-reveal-ready body:not(.ve-active) .v2-page :is(
+    .v2-hero__copy,
+    .v2-about .v2-heading, .v2-about__photo, .v2-about__text,
+    .v2-advantages .v2-heading, .v2-advantage,
+    .v2-services .v2-heading, .v2-service,
+    .v2-gallery .v2-heading, .v2-gallery__item,
+    .v2-reviews__heading, .v2-review,
+    .v2-contact .v2-heading, .v2-contact__grid > .v2-panel
+):not(.v2-reveal-done) { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+    html.v2-reveal-ready .v2-page :is(
+        .v2-hero__copy, .v2-heading, .v2-about__photo, .v2-about__text,
+        .v2-advantage, .v2-service, .v2-gallery__item,
+        .v2-reviews__heading, .v2-review, .v2-contact__grid > .v2-panel
+    ):not(.v2-reveal-done) { opacity: 1; }
+}
+</style>
 <link rel="stylesheet" href="{{ asset('css/v2.css') }}?v=20261029-9">
 @if(auth()->user()?->is_admin)
 <link rel="stylesheet" href="{{ asset('css/admin-editor.css') }}?v=20261029-1">
@@ -324,7 +351,7 @@
 <div class="v2-lightbox" id="v2-lightbox" role="dialog" aria-modal="true" aria-label="Просмотр фотографии" hidden><button type="button" class="v2-lightbox__close" aria-label="Закрыть">×</button><button type="button" class="v2-lightbox__prev" aria-label="Предыдущее фото">‹</button><img src="" alt="Фото питомца"><button type="button" class="v2-lightbox__next" aria-label="Следующее фото">›</button></div>
 @push('scripts')
 <script src="{{ asset('js/v2.js') }}?v=20261029-2" defer></script>
-<script src="{{ asset('js/v2-reveal.js') }}?v=20261029-1" defer></script>
+<script src="{{ asset('js/v2-reveal.js') }}?v=20261029-2" defer></script>
 @if(auth()->user()?->is_admin)
 <script src="{{ asset('js/admin-editor.js') }}?v=20261029-1" defer></script>
 <script src="{{ asset('js/visual-editor.js') }}?v=20261029-4" defer></script>
