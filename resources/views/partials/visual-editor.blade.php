@@ -19,11 +19,11 @@
         @endforeach
     </div>
 </div>
-<dialog class="ve-modal" id="veModal" aria-labelledby="veModalTitle">
-    <div class="ve-modal__head"><h2 id="veModalTitle">Редактировать текст</h2><button type="button" id="veClose" aria-label="Закрыть">×</button></div>
+<dialog class="ve-modal ve-popover" id="veModal" aria-labelledby="veModalTitle">
+    <div class="ve-modal__head"><h2 id="veModalTitle">Редактировать текст</h2><button type="button" id="veClose" aria-label="Закрыть"><span aria-hidden="true">×</span></button></div>
     <div class="ve-modal__body" id="veModalBody"></div>
     <p class="ve-modal__status" id="veModalStatus" role="status"></p>
-    <div class="ve-modal__actions"><button type="button" id="veFieldCancel">Отменить</button><button type="button" id="veFieldSave">Применить</button></div>
+    <div class="ve-modal__actions"><button type="button" id="veFieldCancel">Отменить</button><button type="button" id="veFieldSave">Сохранить</button></div>
 </dialog>
 
 
@@ -32,14 +32,14 @@
     <button type="button" id="veDockUndo" class="ve-dock__undo">Отменить последнее</button>
     <button type="button" id="veDockSave" class="ve-dock__save">Сохранить</button>
 </div>
-<dialog class="ve-modal" id="veImageModal" aria-labelledby="veImageTitle">
-    <div class="ve-modal__head"><h2 id="veImageTitle">Заменить изображение</h2><button type="button" data-ve-image-close aria-label="Закрыть">×</button></div>
+<dialog class="ve-modal ve-popover" id="veImageModal" aria-labelledby="veImageTitle">
+    <div class="ve-modal__head"><h2 id="veImageTitle">Заменить изображение</h2><button type="button" data-ve-image-close aria-label="Закрыть"><span aria-hidden="true">×</span></button></div>
     <label class="ve-image-drop" id="veImageDrop">Перетащите изображение сюда или выберите файл
         <input type="file" id="veImageFile" accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/bmp,image/svg+xml">
     </label>
     <img class="ve-image-preview" id="veImagePreview" alt="Предпросмотр изображения" hidden>
     <p class="ve-modal__status" id="veImageStatus" role="status"></p>
-    <div class="ve-modal__actions"><button type="button" data-ve-image-close>Отменить</button><button type="button" id="veImageApply">Применить</button></div>
+    <div class="ve-modal__actions"><button type="button" data-ve-image-close>Отменить</button><button type="button" id="veImageApply">Сохранить</button></div>
 </dialog>
 <dialog class="ve-modal" id="veNavModal" aria-labelledby="veNavTitle">
     <div class="ve-modal__head"><h2 id="veNavTitle">Добавить пункт меню</h2><button type="button" data-ve-nav-close aria-label="Закрыть">×</button></div>

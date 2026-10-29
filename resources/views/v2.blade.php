@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ asset('css/v2.css') }}?v=20261029-9">
 @if(auth()->user()?->is_admin)
 <link rel="stylesheet" href="{{ asset('css/admin-editor.css') }}?v=20261029-1">
-<link rel="stylesheet" href="{{ asset('css/visual-editor.css') }}?v=20261029-3">
+<link rel="stylesheet" href="{{ asset('css/visual-editor.css') }}?v=20261029-5">
 @endif
 @endpush
 
@@ -39,7 +39,7 @@
                         @if(auth()->user()?->is_admin)
                             <div class="ve-nav-item" data-ve-item="nav_links" data-ve-id="{{ $link->id }}" data-ve-type="nav_link">
                                 <a href="{{ $href }}" class="{{ $link->key === 'articles' ? 'nav-articles' : '' }}"><span data-ve-field="label">{{ $link->label }}</span></a>
-                                <button type="button" class="ve-nav-link-edit" data-ve-field="href" aria-label="Изменить ссылку пункта {{ $link->label }}" title="Изменить ссылку">↗</button>
+                                <button type="button" class="ve-nav-link-edit" data-ve-field="href" aria-label="Изменить ссылку пункта {{ $link->label }}" title="Изменить ссылку"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                             </div>
                         @else
                             <a href="{{ $href }}" class="{{ $link->key === 'articles' ? 'nav-articles' : '' }}"><span>{{ $link->label }}</span></a>
@@ -327,7 +327,7 @@
 <script src="{{ asset('js/v2-reveal.js') }}?v=20261029-1" defer></script>
 @if(auth()->user()?->is_admin)
 <script src="{{ asset('js/admin-editor.js') }}?v=20261029-1" defer></script>
-<script src="{{ asset('js/visual-editor.js') }}?v=20261029-2" defer></script>
+<script src="{{ asset('js/visual-editor.js') }}?v=20261029-4" defer></script>
 @endif
 @endpush
 @endsection

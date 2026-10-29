@@ -15,6 +15,22 @@
   const modal = $('#veModal');
   const imageModal = $('#veImageModal');
   const navModal = $('#veNavModal');
+  document.body.append(modal, imageModal);
+  const placePopover = (dialog, anchor) => {
+    if (!dialog.open || !anchor?.isConnected) return;
+    const point = anchor.getBoundingClientRect();
+    const box = dialog.getBoundingClientRect();
+    const gap = 9;
+    const pad = 12;
+    let left = point.left;
+    if (left + box.width > innerWidth - pad) left = point.right - box.width;
+    left = Math.max(pad, Math.min(left, innerWidth - box.width - pad));
+    let top = point.bottom + gap;
+    if (top + box.height > innerHeight - pad) top = point.top - box.height - gap;
+    top = Math.max(pad, Math.min(top, innerHeight - box.height - pad));
+    dialog.style.left = Math.round(left) + 'px';
+    dialog.style.top = Math.round(top) + 'px';
+  };
   const csrf = $('meta[name="csrf-token"]')?.content || '';
   let enabled = false;
   let editing = null;
@@ -66,14 +82,18 @@
       if (!originals.has(group)) remember(group);
     });
     document.querySelectorAll('[data-ve-field]:not([hidden])').forEach(target => {
-      if (target.matches('button, input') || target.closest('[data-ve-new]') || target.querySelector(':scope > .ve-pencil')) return;
+      if (target.matches('button, input') || target.closest('[data-ve-new]')) return;
+      const navItem = target.dataset.veField === 'label' ? target.closest('.ve-nav-item') : null;
+      const holder = navItem || target;
+      if (holder.querySelector(':scope > .ve-pencil')) return;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 've-pencil';
       button.innerHTML = svgPencil;
       button.setAttribute('aria-label','Редактировать текст');
       button.title = 'Редактировать';
-      target.append(button);
+      if (navItem) navItem.insertBefore(button, navItem.querySelector(':scope > .ve-nav-link-edit'));
+      else target.append(button);
     });
     document.querySelectorAll('[data-ve-image-type]').forEach(slot => {
       if (slot.querySelector(':scope > .ve-image-action')) return;
@@ -139,20 +159,26 @@
     const surface = $('#veModalBody .admin-editor__surface');
     return surface ? surface.innerHTML : $('#veModalBody .ve-modal__input')?.value || '';
   };
-  const openField = async target => {
+  const openField = async (target, anchor = target) => {
     if (!enabled || editing || !target?.dataset.veField) return;
     const params = paramsOf(target);
     if (!params) return;
-    editing = {target, params, mode:'plain', version:null};
+    editing = {target, anchor, params, mode:'plain', version:null};
+    modal.classList.remove('ve-popover--rich');
     $('#veModalBody').replaceChildren();
     $('#veModalStatus').textContent = 'Загружаем поле…';
-    modal.showModal();
+    modal.show();
+    placePopover(modal, anchor);
     try {
       const data = await api(root.dataset.fieldUrl + '?' + new URLSearchParams(params));
       if (!editing || editing.target !== target) return;
       editing.mode = data.mode;
       editing.version = data.version;
-      const value = pendingFields.get(target)?.value ?? data.value ?? '';
+      const stored = pendingFields.get(target)?.value ?? data.value ?? '';
+      const value = stored === '' && data.mode !== 'color'
+        ? displayOf(target, data.mode, params).trim()
+        : stored;
+      modal.classList.toggle('ve-popover--rich', data.mode === 'rich');
       const labels = {home_label:'Заголовок раздела',short_text:'Краткий текст',sticker_color:'Цвет стикера',tape_color:'Цвет липучки',advantages_bg_color:'Фон преимуществ',href:'Адрес ссылки',label:'Название пункта меню'};
       $('#veModalTitle').textContent = labels[params.field] || 'Редактировать текст';
       if (data.mode === 'color') {
@@ -175,17 +201,21 @@
         input.addEventListener('input', () => { checkbox.checked = false; });
         $('#veModalBody').append(row);
       } else {
-        const input = data.mode === 'rich' || value.length > 100 ? document.createElement('textarea') : document.createElement('input');
+        const input = data.mode === 'rich' || value.length > 100 || (params.field === 'hero_text' && value.length > 35) ? document.createElement('textarea') : document.createElement('input');
         if (data.mode === 'rich') input.dataset.richEditor = '';
         input.className = 've-modal__input';
         input.value = value;
         input.setAttribute('aria-label', $('#veModalTitle').textContent);
-        if (input.tagName === 'TEXTAREA') input.rows = data.mode === 'rich' ? 8 : 5;
+        if (input.tagName === 'TEXTAREA') input.rows = data.mode === 'rich' ? 6 : 3;
         $('#veModalBody').append(input);
         if (data.mode !== 'rich') input.focus();
       }
       $('#veModalStatus').textContent = '';
-    } catch (error) { $('#veModalStatus').textContent = error.message; }
+      requestAnimationFrame(() => placePopover(modal, anchor));
+    } catch (error) {
+      $('#veModalStatus').textContent = error.message;
+      requestAnimationFrame(() => placePopover(modal, anchor));
+    }
   };
   const closeField = () => {
     editing = null;
@@ -194,20 +224,21 @@
     $('#veModalStatus').textContent = '';
   };
   const applyField = () => {
-    if (!editing || !$('#veModalBody').children.length) return;
+    if (!editing || !$('#veModalBody').children.length) return false;
     const {target,params,mode,version} = editing;
     const value = fieldValue().trim();
     if (!value && !['sticker_color','tape_color','advantages_bg_color','hero_text','short_text','name'].includes(params.field)) {
       $('#veModalStatus').textContent = 'Поле не может быть пустым';
-      return;
+      return false;
     }
     const previous = pendingFields.get(target);
     history.push({kind:'field',target,params,mode,before:displayOf(target,mode,params),previous});
     pendingFields.set(target,{params,mode,version,value});
     applyDisplay(target,value,mode,params);
     closeField();
-    message('Правка добавлена. Сохраните её в плавающей панели.');
+    message('Сохраняем правку…');
     sync();
+    return true;
   };
   const imageDisplay = slot => slot.matches('.v2-hero') ? slot.style.backgroundImage : (slot.querySelector('img')?.getAttribute('src') || '');
   const applyImage = (slot, url) => {
@@ -218,16 +249,17 @@
       if (slot.matches('.v2-gallery__item')) slot.dataset.full = url;
     }
   };
-  const openImage = slot => {
+  const openImage = (slot, anchor = slot) => {
     if (!enabled || editingImage) return;
-    editingImage = {slot,file:null,previewUrl:null};
+    editingImage = {slot,anchor,file:null,previewUrl:null};
     $('#veImageFile').value = '';
     $('#veImageStatus').textContent = '';
     const current = imageDisplay(slot);
     const preview = $('#veImagePreview');
     preview.hidden = !current || slot.matches('.v2-hero');
     if (!preview.hidden) preview.src = current;
-    imageModal.showModal();
+    imageModal.show();
+    requestAnimationFrame(() => placePopover(imageModal, anchor));
   };
   const closeImage = () => {
     if (editingImage?.previewUrl) URL.revokeObjectURL(editingImage.previewUrl);
@@ -247,9 +279,10 @@
     preview.src = editingImage.previewUrl;
     preview.hidden = false;
     $('#veImageStatus').textContent = file.name;
+    requestAnimationFrame(() => placePopover(imageModal, editingImage?.anchor));
   };
   const applyImageStage = () => {
-    if (!editingImage?.file) { $('#veImageStatus').textContent = 'Сначала выберите изображение'; return; }
+    if (!editingImage?.file) { $('#veImageStatus').textContent = 'Сначала выберите изображение'; return false; }
     const {slot,file} = editingImage;
     const previous = pendingImages.get(slot);
     const old = imageDisplay(slot);
@@ -258,8 +291,9 @@
     pendingImages.set(slot,{file,previewUrl,params:{type:slot.dataset.veImageType,id:slot.dataset.veImageId || '',field:slot.dataset.veImageField}});
     applyImage(slot,slot.matches('.v2-hero') ? 'url("' + previewUrl + '")' : previewUrl);
     closeImage();
-    message('Новое изображение выбрано. Нажмите «Сохранить».');
+    message('Сохраняем изображение…');
     sync();
+    return true;
   };
   const createNav = () => {
     const label = $('#veNavLabel').value.trim();
@@ -287,7 +321,8 @@
     edit.className = 've-nav-link-edit';
     edit.dataset.veField = 'href';
     edit.title = 'Изменить ссылку';
-    edit.textContent = '↗';
+    edit.setAttribute('aria-label','Изменить ссылку пункта ' + label);
+    edit.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     row.append(edit);
     group.insertBefore(row,group.querySelector('[data-ve-add-nav]'));
     pendingNav.set(row,{label,href});
@@ -404,6 +439,10 @@
     } finally { busy = false; sync(); }
   };
   document.addEventListener('pointerdown', event => {
+    if (editing && !modal.contains(event.target) && !editing.anchor?.contains(event.target)) closeField();
+    if (editingImage && !imageModal.contains(event.target) && !editingImage.anchor?.contains(event.target)) closeImage();
+  }, true);
+  document.addEventListener('pointerdown', event => {
     const handle = event.target.closest('.ve-drag-handle');
     if (!enabled || !handle || drag) return;
     const item = handle.closest('[data-ve-item]');
@@ -453,25 +492,25 @@
     const pencil = event.target.closest('.ve-pencil');
     if (pencil) {
       event.preventDefault(); event.stopPropagation();
-      openField(pencil.closest('[data-ve-field]'));
+      openField(pencil.closest('[data-ve-field]') || pencil.closest('.ve-nav-item')?.querySelector('[data-ve-field="label"]'), pencil);
       return;
     }
     const imageButton = event.target.closest('.ve-image-action');
     if (imageButton) {
       event.preventDefault(); event.stopPropagation();
-      openImage(imageButton.closest('[data-ve-image-type]'));
+      openImage(imageButton.closest('[data-ve-image-type]'), imageButton);
       return;
     }
     const colorOrLink = event.target.closest('.ve-color-button, .ve-nav-link-edit');
     if (colorOrLink) {
       event.preventDefault(); event.stopPropagation();
-      openField(colorOrLink);
+      openField(colorOrLink, colorOrLink);
       return;
     }
     const full = event.target.closest('[data-ve-edit-full]');
     if (full) {
       event.preventDefault(); event.stopPropagation();
-      openField(full.parentElement.querySelector('[data-ve-field="text"]'));
+      openField(full.parentElement.querySelector('[data-ve-field="text"]'), full);
       return;
     }
     if (event.target.closest('[data-ve-add-nav]')) {
@@ -502,7 +541,7 @@
   $('#veDockSave').addEventListener('click',saveAll);
   toolbarUndo.addEventListener('click',undoLast);
   $('#veDockUndo').addEventListener('click',undoLast);
-  $('#veFieldSave').addEventListener('click',applyField);
+  $('#veFieldSave').addEventListener('click',async () => { if (applyField()) await saveAll(); });
   $('#veFieldCancel').addEventListener('click',closeField);
   $('#veClose').addEventListener('click',closeField);
   modal.addEventListener('cancel',event => {event.preventDefault();closeField();});
@@ -513,7 +552,12 @@
     event.preventDefault();event.currentTarget.classList.remove('is-dragover');
     chooseImage([...event.dataTransfer.files].find(file => file.type.startsWith('image/')));
   });
-  $('#veImageApply').addEventListener('click',applyImageStage);
+  $('#veImageApply').addEventListener('click',async () => { if (applyImageStage()) await saveAll(); });
+  $('#veImagePreview').addEventListener('load',() => placePopover(imageModal, editingImage?.anchor));
+  window.addEventListener('resize',() => {
+    placePopover(modal, editing?.anchor);
+    placePopover(imageModal, editingImage?.anchor);
+  });
   imageModal.querySelectorAll('[data-ve-image-close]').forEach(button => button.addEventListener('click',closeImage));
   imageModal.addEventListener('cancel',event => {event.preventDefault();closeImage();});
   $('#veNavCreate').addEventListener('click',createNav);
