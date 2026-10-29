@@ -11,7 +11,7 @@
     $categoryName = mb_strtolower((string) $animal->category?->name);
     $imageKey = str_contains($categoryName, 'кош') ? 'cat' : (str_contains($categoryName, 'соб') ? 'dog' : (str_contains($categoryName, 'грыз') ? 'rodent' : (str_contains($categoryName, 'птиц') ? 'bird' : (str_contains($categoryName, 'рыб') ? 'fish' : (str_contains($categoryName, 'репт') ? 'reptile' : (str_contains($categoryName, 'паук') ? 'spider' : (str_contains($categoryName, 'насек') ? 'insect' : 'other')))))));
     $mainPhoto = $animal->photos->first();
-    $profileImage = $mainPhoto ? Storage::url($mainPhoto->path) : asset('images/animal-types/'.$imageKey.'.png');
+    $profileImage = $mainPhoto ? Storage::url($mainPhoto->path) : asset('images/animal-types/'.$imageKey.'.webp');
 @endphp
 
 <div class="client-profile-view animal-profile-view">

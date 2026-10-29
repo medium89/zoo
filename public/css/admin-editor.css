@@ -1,0 +1,58 @@
+.admin-editor {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #cfd5df;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(33, 40, 60, .05);
+}
+.admin-editor:focus-within { border-color: #8d61c4; box-shadow: 0 0 0 3px rgba(141, 97, 196, .14); }
+.admin-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: #f7f4fa;
+  border-bottom: 1px solid #e2dce9;
+}
+.admin-editor__button, .admin-editor__format {
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #483160;
+  font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.2;
+}
+.admin-editor__button { padding: 6px 9px; }
+.admin-editor__format { padding: 4px 8px; background: #fff; border-color: #e2dce9; }
+.admin-editor__button:hover, .admin-editor__button:focus-visible, .admin-editor__button[aria-pressed="true"] {
+  background: #eaddf6;
+  border-color: #ccb3e8;
+}
+.admin-editor__toolbar--source > :not([data-action="source"]) { opacity: .45; pointer-events: none; }
+.admin-editor__surface, .admin-editor__source {
+  display: block;
+  width: 100%;
+  padding: 16px 18px;
+  border: 0;
+  outline: 0;
+  background: #fff;
+  color: #25212b;
+  font: 15px/1.6 Arial, sans-serif;
+  overflow: auto;
+}
+.admin-editor__surface[hidden], .admin-editor__source[hidden] { display: none; }
+.admin-editor__surface h2, .admin-editor__surface h3 { margin: .8em 0 .4em; }
+.admin-editor__surface p { margin: 0 0 .75em; }
+.admin-editor__surface ul, .admin-editor__surface ol { padding-left: 1.8em; }
+.admin-editor__surface img { max-width: 100%; height: auto; }
+.admin-editor__surface table { border-collapse: collapse; width: 100%; }
+.admin-editor__surface td, .admin-editor__surface th { border: 1px solid #d8d2df; padding: 6px 9px; }
+.admin-editor__surface blockquote { margin: .8em 0; padding: .4em 1em; border-left: 3px solid #9b6cc9; background: #f9f6fc; }
+.admin-editor__source { resize: vertical; font: 13px/1.5 Consolas, monospace; }
+.admin-editor__status { min-height: 0; padding: 0 12px; color: #705183; font-size: 12px; }
+.admin-editor__status:not(:empty) { padding-block: 5px; border-top: 1px solid #eee9f3; }
+.admin-editor__original { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; opacity: 0 !important; pointer-events: none !important; }
+
+.admin-editor__surface.is-image-drag { background: #f4eafb; outline: 2px dashed #935fc1; outline-offset: -8px; }

@@ -9,6 +9,12 @@
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
+<form action="{{ route('admin.advantages.background') }}" method="POST" class="d-flex flex-wrap align-items-end gap-2 mb-3">
+    @csrf
+    <label class="form-label mb-0">Фон секции преимуществ<br><input class="form-control form-control-color" type="color" name="advantages_bg_color" value="{{ \App\Models\SiteSetting::first()?->advantages_bg_color ?? '#7845ab' }}"></label>
+    <button type="submit" class="btn btn-primary">Сохранить цвет</button>
+    <button type="submit" class="btn btn-outline-secondary" name="reset_bg" value="1">По умолчанию</button>
+</form>
 <form id="status-form" action="{{ route('admin.advantages.status') }}" method="POST">
     @csrf
 </form>
@@ -17,24 +23,25 @@
         <div>Порядок</div>
         <div>Изображение</div>
         <div>Заголовок</div>
-        <div>Текст</div>
+        <div>Краткое содержание</div>
         <div>Статус</div>
         <div class="text-end">Действия</div>
     </div>
     <div class="admin-grid-body js-sortable" id="advSort" data-custom-sort="1">
         @foreach($advantages as $advantage)
-            <div class="admin-grid-row adv-card-row" data-id="{{ $advantage->id }}">
-                <div class="js-order-label text-muted" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
-                <div><img src="{{ asset('storage/'.$advantage->image) }}" alt="" width="90" class="rounded shadow-sm"></div>
-                <div class="fw-semibold">{{ $advantage->title }}</div>
-                <div class="adv-text text-clip">{{ Str::limit(strip_tags($advantage->text), 260) }}</div>
-                <div class="d-flex align-items-center">
+            <div class="admin-grid-row admin-grid-row--media adv-card-row" data-id="{{ $advantage->id }}">
+                <div class="js-order-label text-muted admin-grid-cell--order" style="cursor:grab;"><i class="fa fa-grip-vertical me-1"></i>{{ $loop->iteration }}</div>
+                <div class="admin-grid-cell--image"><img src="{{ $advantage->image ? asset('storage/' . $advantage->image) : asset('images/image-placeholder.svg') }}" alt="" width="90" class="rounded shadow-sm"></div>
+                <div class="fw-semibold admin-grid-cell--title">{{ $advantage->title }}</div>
+                <div class="adv-text text-clip admin-grid-cell--description">{{ Str::limit(strip_tags($advantage->short_text ?: $advantage->text), 260) }}</div>
+                <div class="d-flex align-items-center admin-grid-cell--status">
                     <div class="form-check form-switch mb-0">
-                        <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $advantage->id }}" {{ $advantage->active ? 'checked' : '' }}>
+                        <input class="form-check-input js-status-toggle" type="checkbox" data-id="{{ $advantage->id }}" {{ $advantage->active ? 'checked' : '' }} aria-label="Показывать преимущество">
                     </div>
+                    <span class="admin-status-label">{{ $advantage->active ? 'Включено' : 'Выключено' }}</span>
                     <input type="hidden" name="orders[{{ $advantage->id }}]" value="{{ $loop->iteration }}" class="js-order-input" form="status-form">
                 </div>
-                <div class="actions">
+                <div class="actions admin-grid-cell--actions">
                     <x-admin.actions-menu label="Действия с преимуществом {{ $advantage->title }}">
                         <a href="{{ route('admin.advantages.edit', $advantage->id) }}" class="admin-actions-menu__item"><i class="fa fa-pen" aria-hidden="true"></i><span>Редактировать</span></a>
                         <form action="{{ route('admin.advantages.destroy', $advantage->id) }}" method="POST" class="js-delete-form" data-confirm="Удалить преимущество?">

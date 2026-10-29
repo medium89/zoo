@@ -18,7 +18,7 @@
     </div>
     <div class="mb-3">
         <label for="text" class="form-label">Текст</label>
-        <textarea class="form-control wysiwyg" id="text" name="text" rows="4"></textarea>
+        <textarea class="form-control" data-rich-editor id="text" name="text" rows="4"></textarea>
     </div>
     <div class="mb-3">
         <label for="text_bg" class="form-label">Картинка-подложка</label>
@@ -35,5 +35,4 @@
     <button type="submit" class="btn btn-success">Сохранить</button>
     <a href="{{ route('admin.sliders.index') }}" class="btn btn-secondary">Назад</a>
 </form>
-@include('admin.partials.wysiwyg-scripts')
 @endsection

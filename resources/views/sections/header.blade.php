@@ -1,7 +1,7 @@
 <header id="index">
     <div class="header-content container">
         <a href="{{ url('/') }}" class="logo">
-            <img src="{{ asset('assets/img/logo.png') }}" alt="Логотип">
+            <img src="{{ asset('assets/img/logo.webp') }}" alt="Логотип">
         </a>
         <nav class="nav">
             <div class="nav-toggle" id="navToggle">

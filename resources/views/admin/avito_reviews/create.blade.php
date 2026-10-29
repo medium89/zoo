@@ -26,6 +26,8 @@
             <textarea class="form-control" id="text" name="text" rows="6">{{ old('text') }}</textarea>
         </div>
 
+        <div class="mb-3"><label for="original_url" class="form-label">Прямая ссылка на этот отзыв на Avito</label><input type="url" class="form-control" id="original_url" name="original_url" value="{{ old('original_url') }}" placeholder="https://www.avito.ru/..."></div>
+
         <div class="row">
             <div class="col-md-6">
                 <div class="mb-3">

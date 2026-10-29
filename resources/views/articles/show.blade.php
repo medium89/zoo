@@ -134,7 +134,7 @@
         padding: 0;
         align-items: center;
         background-color: var(--color-secondary);
-        background-image: var(--hero-bg, none), url('/assets/img/bg.png');
+        background-image: var(--hero-bg, none), url('/assets/img/bg.webp');
         background-repeat: no-repeat, repeat;
         background-position: center, center;
         background-size: cover, 6%;

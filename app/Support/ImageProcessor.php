@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ImageProcessor
 {
-    public static function processAndStore(UploadedFile $uploaded, string $dir, int $scale = 100, int $quality = 85, ?int $cropWidth = null, ?int $cropHeight = null, ?int $cropX = null, ?int $cropY = null): string
+    public static function processAndStore(UploadedFile $uploaded, string $dir, int $scale = 100, int $quality = 85, ?int $cropWidth = null, ?int $cropHeight = null, ?int $cropX = null, ?int $cropY = null, bool $convertToWebp = true): string
     {
         $scale = max(10, min(100, (int)$scale));
         $quality = max(40, min(100, (int)$quality));
@@ -16,10 +16,14 @@ class ImageProcessor
         $origExt = strtolower($uploaded->getClientOriginalExtension());
         $mime = (string)$uploaded->getMimeType();
 
-        // Only raster formats supported for processing
+        // SVG and other non-raster files retain their native format.
         $processable = (bool)preg_match('/jpeg|jpg|png|gif|webp/i', $mime);
         if (!$processable) {
             return $uploaded->store($dir, 'public');
+        }
+
+        if (!function_exists('imagecreatetruecolor') || !function_exists('imagewebp')) {
+            throw new \RuntimeException('Для загрузки изображений необходима поддержка GD с WebP.');
         }
 
         $imgInfo = @getimagesize($origPath);
@@ -39,7 +43,7 @@ class ImageProcessor
         elseif (defined('IMAGETYPE_WEBP') && $type === IMAGETYPE_WEBP && function_exists('imagecreatefromwebp')) $src = @imagecreatefromwebp($origPath);
 
         if (!$src) {
-            return $uploaded->store($dir, 'public');
+            throw new \RuntimeException('Не удалось обработать загруженное изображение.');
         }
 
         // Optional crop (custom position, defaults to center)
@@ -73,17 +77,20 @@ class ImageProcessor
         imagecopyresampled($dst, $src, 0, 0, 0, 0, $targetW, $targetH, $w, $h);
 
         ob_start();
-        if ($type === IMAGETYPE_JPEG) {
+        if ($convertToWebp) {
+            imagewebp($dst, null, $quality);
+            $ext = 'webp';
+        } elseif ($type === IMAGETYPE_JPEG) {
             imagejpeg($dst, null, $quality);
             $ext = $origExt ?: 'jpg';
         } elseif ($type === IMAGETYPE_PNG) {
-            $level = (int)max(0, min(9, round((100 - $quality) / 10)));
+            $level = (int) max(0, min(9, round((100 - $quality) / 10)));
             imagepng($dst, null, $level);
             $ext = $origExt ?: 'png';
-        } elseif (defined('IMAGETYPE_WEBP') && $type === IMAGETYPE_WEBP && function_exists('imagewebp')) {
+        } elseif (defined('IMAGETYPE_WEBP') && $type === IMAGETYPE_WEBP) {
             imagewebp($dst, null, $quality);
             $ext = 'webp';
-        } else { // GIF
+        } else {
             imagegif($dst);
             $ext = $origExt ?: 'gif';
         }

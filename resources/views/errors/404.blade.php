@@ -33,7 +33,7 @@
             <a class="error-page__home" href="{{ url('/') }}">На главную</a>
         </section>
         <div class="error-page__image-wrap">
-            <img class="error-page__image" src="{{ asset('images/404-pets.png') }}" alt="Питомцы ищут игрушки">
+            <img class="error-page__image" src="{{ asset('images/404-pets.webp') }}" alt="Питомцы ищут игрушки">
         </div>
     </main>
 </body>

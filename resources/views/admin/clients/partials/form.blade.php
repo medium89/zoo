@@ -29,7 +29,7 @@
         <label class="form-label">Фото клиента</label>
         <input type="file" name="photos[]" class="form-control" accept="image/*" multiple>
         @if($client?->photos?->isNotEmpty())
-            <div class="d-flex flex-wrap gap-2 mt-2">@foreach($client->photos as $photo)<img src="{{ Storage::url($photo->path) }}" alt="" style="width:56px;height:56px;border-radius:10px;object-fit:cover">@endforeach</div>
+            <div class="d-flex flex-wrap gap-2 mt-2" data-upload-current-for="photos[]">@foreach($client->photos as $photo)<span data-upload-current-src="{{ Storage::url($photo->path) }}" data-upload-delete-url="{{ route('admin.clients.photos.destroy', [$client, $photo]) }}"><img src="{{ Storage::url($photo->path) }}" alt="" style="width:56px;height:56px;border-radius:10px;object-fit:cover"></span>@endforeach</div>
         @endif
     </div>
     <div class="mb-3">

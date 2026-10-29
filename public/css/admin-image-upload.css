@@ -1,0 +1,86 @@
+.admin-upload {
+  position: relative;
+  width: 100%;
+  margin: 7px 0 10px;
+  padding: 14px;
+  border: 1px solid #d9cbe7;
+  border-radius: 16px;
+  background: #fbf9fd;
+}
+.admin-upload.is-dragging { border-color: #8f55c2; background: #f2e8fb; box-shadow: 0 0 0 3px rgba(143, 85, 194, .15); }
+.admin-upload.is-invalid { border-color: #d14b69; }
+.admin-upload__input {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+.admin-upload__drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 108px;
+  padding: 12px 16px;
+  border: 1px dashed #b99ccf;
+  border-radius: 11px;
+  color: #61417b;
+  text-align: center;
+  cursor: pointer;
+  transition: background .16s ease, border-color .16s ease;
+}
+.admin-upload__drop:hover, .admin-upload__drop:focus-visible {
+  outline: none;
+  border-color: #8650b7;
+  background: #f4ecfa;
+}
+.admin-upload__icon { display: block; margin-bottom: 5px; color: #935fc1; font-size: 26px; }
+.admin-upload__drop strong { font-size: 14px; }
+.admin-upload__drop small { margin-top: 3px; color: #8b7997; font-size: 12px; }
+.admin-upload__previews { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 11px; }
+.admin-upload__previews:empty { display: none; }
+.admin-upload__thumb {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  overflow: hidden;
+  border: 1px solid #e2d9e9;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(46, 32, 61, .1);
+}
+.admin-upload__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.admin-upload__remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: #9b3052;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity .15s ease, transform .15s ease;
+}
+.admin-upload__thumb:hover .admin-upload__remove,
+.admin-upload__thumb:focus-within .admin-upload__remove {
+  opacity: 1;
+  transform: translateY(0);
+}
+.admin-upload__remove:hover { background: #cc3760; color: #fff; }
+.admin-upload__message { color: #76578e; font-size: 12px; }
+.admin-upload__message:not(:empty) { margin-top: 8px; }
+@media (hover: none) {
+  .admin-upload__remove { opacity: 1; transform: none; }
+}
+
+[data-upload-current-for][hidden], [data-upload-old-preview][hidden] { display: none !important; }

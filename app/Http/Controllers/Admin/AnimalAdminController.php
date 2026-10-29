@@ -10,6 +10,7 @@ use App\Models\Client;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Support\ImageProcessor;
 
 class AnimalAdminController extends Controller
 {
@@ -144,7 +145,7 @@ class AnimalAdminController extends Controller
     {
         abort_unless($photo->animal_id === $animal->id, 404);
 
-        Storage::disk('public')->delete($photo->path);
+        \App\Support\AuditedStorage::deletePublic($photo->path);
         $photo->delete();
 
         return back()->with('success', 'Фото удалено');
@@ -195,7 +196,7 @@ class AnimalAdminController extends Controller
     private function storeUploadedPhotos(Request $request, Animal $animal): void
     {
         foreach ($request->file('photos', []) as $photo) {
-            $path = $photo->store('animals/'.$animal->id, 'public');
+            $path = ImageProcessor::processAndStore($photo, 'animals/'.$animal->id);
             $animal->photos()->create(['path' => $path]);
         }
     }

@@ -3,15 +3,15 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\{
-    AboutController, AdminController, AdvantageController, AnimalAdminController,
-    ArticleAdminController, ArticleCommentAdminController, AvitoReviewController,
+    AboutController, AdminController, AdvantageController, AnimalAdminController, ChangeLogController,
+    ArticleAdminController, ArticleCommentAdminController, AvitoReviewController, SiteReviewController,
     BoardingController, BoardingTaskController, CategoryController, ClientAdminController,
     ClientMapController, DashboardController, FeedbackAdminController, GalleryController, ImageManagerController,
     NavLinkController, PersonalDataConsentController, ServiceController,
     ServiceOrderAdminController, SliderController, SocialController,
-    TagClassificationController, TelegramBotSettingsController, UserController,
+    TagClassificationController, TelegramBotSettingsController, UserController, VisualEditorController,
 };
-use App\Http\Controllers\Public\{ArticlePublicController, FeedbackController, HomeController, SitemapController};
+use App\Http\Controllers\Public\{ArticlePublicController, FeedbackController, HomeController, SitemapController, SiteReviewController as PublicSiteReviewController};
 
 /*
 |--------------------------------------------------------------------------
@@ -29,10 +29,19 @@ Auth::routes(['register' => false]);
 
 // Public Routes
 Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('throttle:10,1')->name('feedback.store');
+Route::post('/site-reviews', [PublicSiteReviewController::class, 'store'])->middleware('throttle:3,10')->name('site-reviews.store');
 
 // Admin Routes
-Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin', 'no.cache', 'audit.changes'])->prefix('zooadmin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('index');
+    Route::get('visual-editor/field', [VisualEditorController::class, 'field'])->name('visual.field');
+    Route::patch('visual-editor/field', [VisualEditorController::class, 'saveField'])->name('visual.field.save');
+    Route::post('visual-editor/reorder', [VisualEditorController::class, 'reorder'])->name('visual.reorder');
+    Route::post('visual-editor/image', [VisualEditorController::class, 'saveImage'])->name('visual.image.save');
+    Route::post('visual-editor/nav-link', [VisualEditorController::class, 'createNavLink'])->name('visual.nav-link.create');
+    Route::get('logs', [ChangeLogController::class, 'index'])->name('logs.index');
+    Route::get('logs/{changeLog}', [ChangeLogController::class, 'show'])->name('logs.show');
+    Route::post('logs/{changeLog}/revert', [ChangeLogController::class, 'revert'])->name('logs.revert');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('dashboard/tariffs', [DashboardController::class, 'updateTariffs'])->name('dashboard.tariffs.update');
     Route::post('tags/classify', TagClassificationController::class)->name('tags.classify');
@@ -54,21 +63,26 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
     Route::post('personal-data-consent', [PersonalDataConsentController::class, 'update'])->name('personal-data-consent.update');
     Route::resource('sliders', SliderController::class);
     Route::post('sliders/status', [SliderController::class, 'updateStatus'])->name('sliders.status');
+    Route::post('sliders/hero-mode', [SliderController::class, 'updateHeroMode'])->name('sliders.hero-mode');
+    Route::post('sliders/hero-image', [SliderController::class, 'updateHeroImage'])->name('sliders.hero-image');
     Route::get('about', [AboutController::class, 'edit'])->name('about.edit');
     Route::post('about', [AboutController::class, 'update'])->name('about.update');
     Route::resource('advantages', AdvantageController::class);
     Route::post('advantages/status', [AdvantageController::class, 'updateStatus'])->name('advantages.status');
+    Route::post('advantages/background', [AdvantageController::class, 'updateBackgroundColor'])->name('advantages.background');
     Route::resource('services', ServiceController::class);
     Route::post('services/status', [ServiceController::class, 'updateStatus'])->name('services.status');
     Route::resource('galleries', GalleryController::class)->except(['show', 'edit', 'update']);
     Route::post('galleries/status', [GalleryController::class, 'updateStatus'])->name('galleries.status');
     Route::get('images', [ImageManagerController::class, 'index'])->name('images.index');
+    Route::view('business-cards', 'admin.business-cards.index')->name('business-cards.index');
     Route::post('images/refresh', [ImageManagerController::class, 'refresh'])->name('images.refresh');
     Route::post('images/revert', [ImageManagerController::class, 'revert'])->name('images.revert');
     Route::resource('socials', SocialController::class);
     Route::post('socials/status', [SocialController::class, 'updateStatus'])->name('socials.status');
     Route::post('clients/{client}/animals', [ClientAdminController::class, 'attachAnimal'])->name('clients.animals.attach');
     Route::delete('clients/{client}/animals/{animal}', [ClientAdminController::class, 'detachAnimal'])->name('clients.animals.detach');
+    Route::delete('clients/{client}/photos/{photo}', [ClientAdminController::class, 'destroyPhoto'])->name('clients.photos.destroy');
     Route::resource('clients', ClientAdminController::class);
     Route::delete('animals/{animal}/photos/{photo}', [AnimalAdminController::class, 'destroyPhoto'])->name('animals.photos.destroy');
     Route::post('animals/{animal}/client', [AnimalAdminController::class, 'assignClient'])->name('animals.client.assign');
@@ -106,6 +120,9 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
     Route::resource('article-comments', ArticleCommentAdminController::class)->only(['index','update','destroy']);
     Route::post('article-comments/status', [ArticleCommentAdminController::class, 'updateStatus'])->name('article-comments.status');
     Route::post('articles/upload-image', [ArticleAdminController::class, 'uploadImage'])->name('articles.upload');
+    Route::get('site-reviews', [SiteReviewController::class, 'index'])->name('site-reviews.index');
+    Route::patch('site-reviews/{siteReview}/status', [SiteReviewController::class, 'updateStatus'])->name('site-reviews.status');
+    Route::delete('site-reviews/{siteReview}', [SiteReviewController::class, 'destroy'])->name('site-reviews.destroy');
     Route::get('avito-reviews', [AvitoReviewController::class, 'index'])->name('avito-reviews.index');
     Route::get('avito-reviews/create', [AvitoReviewController::class, 'create'])->name('avito-reviews.create');
     Route::post('avito-reviews', [AvitoReviewController::class, 'store'])->name('avito-reviews.store');
@@ -123,8 +140,9 @@ Route::middleware(['auth', 'admin', 'no.cache'])->prefix('zooadmin')->name('admi
 
 // Main page
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
-Route::get('/', [HomeController::class, 'index']);
-Route::get('/v2', [HomeController::class, 'v2'])->name('v2');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/v1', [HomeController::class, 'legacy'])->name('v1');
+Route::redirect('/v2', '/', 301)->name('v2');
 Route::get('/calendar', [BoardingController::class, 'publicCalendar'])->name('calendar.index');
 Route::get('/gallery/more', [HomeController::class, 'galleryMore'])->name('gallery.more');
 Route::get('/articles', [ArticlePublicController::class, 'index'])->name('articles.index');

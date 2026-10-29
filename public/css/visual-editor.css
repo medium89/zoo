@@ -1,0 +1,90 @@
+.ve-toolbar { position: relative; z-index: 1100; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px max(18px, calc((100vw - 1200px)/2)); color: #56337d; background: #fff; border-bottom: 1px solid #e8dff0; box-shadow: 0 3px 14px #58397114; font-size: 14px; line-height: 1.35; }
+.ve-toolbar button, .ve-toolbar a { font: inherit; border-radius: 12px; padding: 9px 14px; cursor: pointer; }
+.ve-toggle { display: inline-flex; gap: 9px; align-items: center; border: 1px solid #bb9bdb; color: #56337d; background: #f8f3fc; font-weight: 700 !important; }
+.ve-toggle__dot { display: block; width: 14px; height: 14px; border: 2px solid #8d5aba; border-radius: 50%; background: #fff; }
+.ve-toggle.is-active { background: #7945a9; color: #fff; }
+.ve-toggle.is-active .ve-toggle__dot { border-color: #fff; background: #ff7899; }
+.ve-toolbar__hint { flex: 1 1 220px; }
+.ve-toolbar__save { color: #fff; background: #804bac; border: 1px solid #804bac; }
+.ve-toolbar__secondary, .ve-toolbar__logs { color: #643d86; background: #fff; border: 1px solid #d9c4e8; text-decoration: none; }
+.ve-toolbar button:disabled { opacity: .45; cursor: default; }
+.ve-active [data-ve-field]:not([hidden]) { cursor: text; outline: 1px dashed #a276c8; outline-offset: 3px; }
+.ve-active [data-ve-field]:not([hidden]):hover { background: #f5eafe44; outline-color: #693a9c; }
+.ve-active [data-ve-item] { position: relative; }
+.ve-drag-handle { display: none; }
+.ve-active .ve-drag-handle { display: grid; place-items: center; position: absolute; top: 8px; right: 8px; z-index: 30; width: 36px; height: 36px; border-radius: 10px; color: #fff; background: #63348d; box-shadow: 0 3px 10px #2c164866; cursor: grab; touch-action: none; font-size: 24px; line-height: 1; user-select: none; }
+.ve-active .ve-drag-handle:active { cursor: grabbing; }
+.ve-active .ve-drag-handle:focus-visible { outline: 3px solid #ff7294; }
+.ve-dragging { opacity: .43; }
+.ve-drag-ghost { position: fixed; z-index: 5000; max-width: 240px; padding: 9px 13px; color: #fff; background: #63348d; border-radius: 12px; box-shadow: 0 8px 22px #28133855; pointer-events: none; transform: translate(14px, -50%); font: 700 14px/1.3 sans-serif; }
+.ve-full-button { display: none; }
+.ve-active .ve-full-button { display: inline-flex; margin-top: 8px; padding: 6px 10px; border: 1px solid #a579cb; border-radius: 9px; color: #6e3b9c; background: #fff; cursor: pointer; }
+.ve-slides { position: relative; z-index: 1100; margin: 0 auto; padding: 18px max(18px, calc((100vw - 1200px)/2)); background: #f9f4fc; color: #56337d; }
+.ve-slides h2 { margin: 0 0 5px; font-size: 20px; }
+.ve-slides p { margin: 0 0 12px; font-size: 14px; }
+.ve-slides__list { display: flex; flex-wrap: wrap; gap: 12px; }
+.ve-slides__item { position: relative; display: flex; align-items: center; gap: 10px; width: min(250px, 100%); min-height: 76px; padding: 7px 50px 7px 7px; background: #fff; border: 1px solid #dfcdeb; border-radius: 12px; }
+.ve-slides__item img { width: 65px; height: 60px; object-fit: cover; border-radius: 7px; }
+.ve-modal { width: min(680px, calc(100vw - 24px)); max-height: min(85vh, 850px); border: 0; border-radius: 18px; padding: 22px; color: #543772; background: #fff; box-shadow: 0 20px 80px #24103355; }
+.ve-modal::backdrop { background: #21152ab3; }
+.ve-modal__head, .ve-modal__actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ve-modal__head h2 { margin: 0 0 12px; font-size: 22px; }
+.ve-modal__head button { width: 36px; height: 36px; border: 0; border-radius: 50%; font-size: 26px; color: #69408d; background: #f4eaf9; cursor: pointer; }
+.ve-modal__input { box-sizing: border-box; display: block; width: 100%; min-height: 44px; border: 1px solid #ccbadc; border-radius: 9px; padding: 11px; font: inherit; color: #332642; }
+textarea.ve-modal__input { min-height: 140px; resize: vertical; }
+.ve-modal__status { min-height: 22px; margin: 8px 0; color: #a02e4b; font-size: 14px; }
+.ve-modal__actions { justify-content: flex-end; }
+.ve-modal__actions button { border-radius: 9px; padding: 9px 16px; border: 1px solid #d8c4e7; background: #fff; color: #66378e; cursor: pointer; }
+#veFieldSave { color: #fff; background: #814baa; border-color: #814baa; }
+@media (max-width: 650px) { .ve-toolbar { padding: 10px 14px; } .ve-toolbar__hint { flex-basis: 100%; order: 3; font-size: 12px; } .ve-toolbar button, .ve-toolbar a { padding: 8px 10px; } .ve-modal { padding: 15px; } }
+
+.ve-pencil,.ve-image-action,.ve-color-button,.ve-nav-link-edit,.ve-add{display:none}
+.ve-active [data-ve-field]:not(button):not([hidden]){position:relative;padding-right:34px}
+.ve-active .ve-pencil,.ve-active .ve-image-action{position:absolute;z-index:45;top:2px;right:2px;display:grid;place-items:center;width:27px;height:27px;padding:4px;border:1px solid #b895d4;border-radius:9px;color:#63348d;background:#fff;box-shadow:0 3px 8px #29134230;cursor:pointer}
+.ve-pencil svg,.ve-image-action svg{width:17px;height:17px;display:block}
+.ve-active .ve-image-action{top:8px;left:8px;right:auto;width:32px;height:32px}
+.ve-active [data-ve-image-type]{position:relative}
+.ve-active .v2-hero > .ve-image-action{top:18px;right:18px;left:auto;z-index:80}
+.ve-active .v2-service__icon .ve-image-action,.ve-active .v2-advantage__icon .ve-image-action{top:-5px;left:-4px}
+.ve-active .ve-image-doodle .ve-image-action{top:-18px;left:-14px;width:25px;height:25px}
+.ve-active .ve-color-tools{display:flex}
+.ve-color-tools{display:none;position:absolute;right:8px;top:47px;z-index:35;flex-direction:column;gap:5px}
+.ve-active .ve-color-button{display:inline-flex;align-items:center;justify-content:center;min-height:26px;padding:4px 8px;border:1px solid #9260bd;border-radius:8px;color:#60338e;background:#fff;font:700 11px/1.1 sans-serif;cursor:pointer;box-shadow:0 3px 8px #29134230}
+.ve-active .v2-advantages .ve-color-button{vertical-align:middle;font-size:18px;margin-left:12px}
+.ve-active .ve-add{display:inline-grid;place-items:center;vertical-align:middle;min-width:30px;height:30px;margin-left:10px;border:2px solid currentColor;border-radius:50%;font:700 22px/1 sans-serif;text-decoration:none;color:#70429e;background:#fff;cursor:pointer}
+.ve-active .v2-heading--light .ve-add{color:#694095}
+.ve-active .ve-add--nav{min-width:25px;height:25px;margin-left:4px;font-size:18px}
+.ve-nav-item{display:contents}
+.ve-active .ve-nav-item{display:flex;align-items:center;position:relative;min-width:0;padding-right:17px}
+.ve-active .ve-nav-item > a{display:inline-flex;min-width:0}
+.ve-active .ve-nav-item .ve-pencil{top:-17px;right:-8px;width:22px;height:22px}
+.ve-active .ve-nav-link-edit{display:inline-grid;place-items:center;position:absolute;right:0;bottom:-13px;width:23px;height:23px;padding:0;border:1px solid #b895d4;border-radius:6px;color:#63348d;background:#fff;font-size:14px;cursor:pointer}
+.ve-active .ve-nav-item .ve-drag-handle{top:-20px;right:15px;width:22px;height:22px;font-size:15px}
+.ve-dock{position:fixed;z-index:5000;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;align-items:center;gap:9px;width:max-content;max-width:calc(100vw - 20px);padding:10px;border:1px solid #e4d4ed;border-radius:16px;background:#fff;box-shadow:0 12px 35px #29134255;color:#5f3b7d;font:600 13px/1.3 sans-serif}
+.ve-dock[hidden]{display:none}
+.ve-dock button{border-radius:10px;padding:10px 13px;font:700 13px/1.2 sans-serif;cursor:pointer}
+.ve-dock__undo{border:1px solid #d4bde4;color:#643a88;background:#fff}
+.ve-dock__save{border:1px solid #7843aa;color:#fff;background:#7843aa}
+.ve-dock button:disabled{opacity:.45;cursor:default}
+.ve-modal__color-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.ve-modal__color{width:110px;height:70px;border:0;background:transparent;cursor:pointer}
+.ve-modal__color-row label{display:flex;gap:8px;align-items:center}
+.ve-modal__label{display:block;margin-bottom:14px;font-weight:700}
+.ve-modal__label .ve-modal__input{margin-top:6px}
+.ve-image-drop{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;min-height:145px;padding:20px;border:2px dashed #b99bd2;border-radius:14px;text-align:center;background:#f9f4fc;cursor:pointer}
+.ve-image-drop.is-dragover{background:#f0e4f7;border-color:#7646a2}
+.ve-image-drop input{max-width:100%}
+.ve-image-preview{display:block;max-width:100%;max-height:240px;object-fit:contain;margin:14px auto;border-radius:10px}
+.ve-image-preview[hidden]{display:none}
+@media(max-width:650px){.ve-dock{flex-wrap:wrap;width:calc(100vw - 20px);justify-content:center}.ve-dock span{flex-basis:100%;text-align:center}.ve-dock button{flex:1}.ve-active .ve-nav-item{width:100%;justify-content:space-between}.ve-active .ve-nav-item .ve-drag-handle{top:4px;right:50px}.ve-active .ve-nav-item .ve-pencil{top:4px;right:25px}.ve-active .ve-nav-link-edit{bottom:auto;top:4px;right:0}}
+.ve-active .ve-image-doodle{position:absolute}
+.ve-active .v2-services__grid{row-gap:54px;padding-top:36px}
+.ve-active .ve-color-tools{top:-33px;right:46px;bottom:auto;flex-direction:row;gap:5px;transform:none}
+@media(max-width:760px){.ve-active .v2-services__grid{gap:48px;padding-top:36px}}
+@media(min-width:993px){
+  .ve-active #index{height:auto;min-height:90px}
+  .ve-active #index .header-content{height:auto;min-height:90px;flex-wrap:wrap;padding-block:10px}
+  .ve-active #index .nav{width:100%}
+  .ve-active #navMenu{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 8px;width:100%;margin:0;padding:8px 0 12px}
+}
+.ve-active .v2-quick-contact{display:none!important}

@@ -27,6 +27,8 @@
             <textarea class="form-control" id="text" name="text" rows="6">{{ old('text', $review->text) }}</textarea>
         </div>
 
+        <div class="mb-3"><label for="original_url" class="form-label">Прямая ссылка на этот отзыв на Avito</label><input type="url" class="form-control" id="original_url" name="original_url" value="{{ old('original_url', $review->original_url) }}" placeholder="https://www.avito.ru/..."><small class="text-muted">Кнопка «Оригинал» появится на сайте только после заполнения ссылки.</small></div>
+
         <div class="row">
             <div class="col-md-6">
                 <div class="mb-3">
@@ -62,7 +64,7 @@
             <div class="col-md-6">
                 @php $photos = is_array($review->photos) ? $review->photos : []; @endphp
                 @if(count($photos))
-                    <div class="mb-3">
+                    <div class="mb-3" data-upload-current-for="photos_upload[]">
                         <label class="form-label">Текущие фото</label>
                         <div class="d-flex flex-wrap gap-2">
                             @foreach($photos as $photo)
@@ -70,7 +72,7 @@
                                     $src = preg_match('#^https?://#', $photo) ? $photo : asset('storage/' . ltrim($photo, '/'));
                                 @endphp
                                 <div style="width:70px;height:70px;border-radius:8px;overflow:hidden;border:1px solid #ddd;">
-                                    <img src="{{ $src }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                                    <img data-upload-current-src="{{ $src }}" data-upload-raw-value="{{ $photo }}" src="{{ $src }}" alt="" style="width:100%;height:100%;object-fit:cover;">
                                 </div>
                             @endforeach
                         </div>

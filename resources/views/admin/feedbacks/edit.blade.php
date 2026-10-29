@@ -33,5 +33,4 @@
 @endsection
 
 @section('scripts')
-    @include('admin.partials.wysiwyg-scripts')
 @endsection

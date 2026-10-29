@@ -19,3 +19,10 @@ yarn-error.log
 /.vscode
 /docker
 
+
+# Local Codex references and scratch files
+/.codex-remote-attachments/
+/.tmp-*
+/_section_sheet.png
+/screencapture-*.png
+*:Zone.Identifier

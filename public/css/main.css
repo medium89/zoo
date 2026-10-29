@@ -165,7 +165,7 @@ p {
     display: inline-block;
     width: 30px;
     height: 30px;
-    background: url(../assets/img/before_h2.png) no-repeat center center;
+    background: url(../assets/img/before_h2.webp) no-repeat center center;
     position: absolute;
     z-index: 50;
     background-size: contain;
@@ -175,7 +175,7 @@ p {
 }
 
 .foot.foot-white::before, .slider-content__empty-message .foot.foot-white::before {
-    background: url(../assets/img/before_h2_white.png) no-repeat center center;
+    background: url(../assets/img/before_h2_white.webp) no-repeat center center;
     background-size: contain;
 }
 
@@ -489,7 +489,7 @@ nav {
 /* ===== Ð¡Ð•ÐšÐ¦Ð˜Ð¯ "ÐŸÐ Ð•Ð˜ÐœÐ£Ð©Ð•Ð¡Ð¢Ð’Ð" ===== */
 #advantages {
     background-color: var(--color-secondary);
-    background-image: url(../assets/img/bg.png);
+    background-image: url(../assets/img/bg.webp);
     background-repeat: repeat;
     background-position: center center;
     background-size: 5%;
@@ -911,7 +911,7 @@ nav {
 
 /* ===== Ð¡Ð•ÐšÐ¦Ð˜Ð¯ "ÐšÐžÐÐ¢ÐÐšÐ¢Ð«" ===== */
 #contacts {
-    background: var(--color-secondary) url(../assets/img/bg.png) repeat center center;
+    background: var(--color-secondary) url(../assets/img/bg.webp) repeat center center;
     background-size: 5%;
     padding: 4rem 0;
 }
@@ -1900,7 +1900,7 @@ footer a, footer p {
 @media (max-width: 768px) {
     #advantages {
         background-color: var(--color-secondary);
-        background-image: url(../assets/img/bg.png);
+        background-image: url(../assets/img/bg.webp);
         background-repeat: repeat;
         background-position: center center;
         background-size: 14%;

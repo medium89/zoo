@@ -15,8 +15,8 @@
     @method('PUT')
     <div class="mb-3">
         <label for="image" class="form-label">Изображение</label><br>
-        <img src="{{ asset('storage/'.$slider->image) }}" alt="" width="120" class="mb-2"><br>
-        <input type="file" class="form-control" id="image" name="image">
+        @if($slider->image)<img data-upload-old-preview src="{{ asset('storage/'.$slider->image) }}" alt="" width="120" class="mb-2"><br>@endif
+        <input type="file" class="form-control" id="image" name="image" accept="image/*" data-current-src="{{ $slider->image ? asset('storage/'.$slider->image) : '' }}" data-remove-field="remove_image">
         <small class="text-muted">Оставьте пустым, если не хотите менять изображение</small>
         <div class="row g-2 mt-2">
             <div class="col-md-6">
@@ -33,14 +33,14 @@
     </div>
     <div class="mb-3">
         <label for="text" class="form-label">Текст</label>
-        <textarea class="form-control wysiwyg" id="text" name="text" rows="4">{{ $slider->text }}</textarea>
+        <textarea class="form-control" data-rich-editor id="text" name="text" rows="4">{{ $slider->text }}</textarea>
     </div>
     <div class="mb-3">
         <label for="text_bg" class="form-label">Картинка-подложка</label><br>
         @if($slider->text_bg)
-            <img src="{{ asset('storage/'.$slider->text_bg) }}" alt="" width="120" class="mb-2"><br>
+            <img data-upload-old-preview src="{{ asset('storage/'.$slider->text_bg) }}" alt="" width="120" class="mb-2"><br>
         @endif
-        <input type="file" class="form-control" id="text_bg" name="text_bg">
+        <input type="file" class="form-control" id="text_bg" name="text_bg" accept="image/*" data-current-src="{{ $slider->text_bg ? asset('storage/'.$slider->text_bg) : '' }}" data-remove-field="remove_text_bg">
         <small class="text-muted">Оставьте пустым, если не хотите менять картинку</small>
         <div class="row g-2 mt-2">
             <div class="col-md-6">
@@ -76,7 +76,6 @@
 @endsection
 
 @section('scripts')
-    @include('admin.partials.wysiwyg-scripts')
     <script>
         document.addEventListener('input', function(e){
             if(e.target.matches('.js-scale')){

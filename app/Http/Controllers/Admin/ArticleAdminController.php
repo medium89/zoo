@@ -127,28 +127,28 @@ class ArticleAdminController extends Controller
 
         if ($request->hasFile('cover')) {
             if ($article->cover_path && Storage::disk('public')->exists($article->cover_path)) {
-                Storage::disk('public')->delete($article->cover_path);
+                \App\Support\AuditedStorage::deletePublic($article->cover_path);
             }
             $article->cover_path = ImageProcessor::processAndStore($request->file('cover'), 'articles/covers', $scale, $quality);
             $article->save();
         }
         if ($request->hasFile('hero_image')) {
             if ($article->hero_image_path && Storage::disk('public')->exists($article->hero_image_path)) {
-                Storage::disk('public')->delete($article->hero_image_path);
+                \App\Support\AuditedStorage::deletePublic($article->hero_image_path);
             }
             $article->hero_image_path = ImageProcessor::processAndStore($request->file('hero_image'), 'articles/hero', $scale, $quality);
             $article->save();
         }
         if (!$request->hasFile('cover') && $request->boolean('remove_cover')) {
             if ($article->cover_path && Storage::disk('public')->exists($article->cover_path)) {
-                Storage::disk('public')->delete($article->cover_path);
+                \App\Support\AuditedStorage::deletePublic($article->cover_path);
             }
             $article->cover_path = null;
             $article->save();
         }
         if (!$request->hasFile('hero_image') && $request->boolean('remove_hero')) {
             if ($article->hero_image_path && Storage::disk('public')->exists($article->hero_image_path)) {
-                Storage::disk('public')->delete($article->hero_image_path);
+                \App\Support\AuditedStorage::deletePublic($article->hero_image_path);
             }
             $article->hero_image_path = null;
             $article->save();
@@ -164,7 +164,7 @@ class ArticleAdminController extends Controller
     {
         foreach ($article->images as $img) {
             if ($img->path && Storage::disk('public')->exists($img->path)) {
-                Storage::disk('public')->delete($img->path);
+                \App\Support\AuditedStorage::deletePublic($img->path);
             }
         }
         $article->delete();
@@ -178,7 +178,7 @@ class ArticleAdminController extends Controller
             abort(404);
         }
         if ($image->path && Storage::disk('public')->exists($image->path)) {
-            Storage::disk('public')->delete($image->path);
+            \App\Support\AuditedStorage::deletePublic($image->path);
         }
         $image->delete();
         return back()->with('success', 'Изображение удалено');
@@ -208,7 +208,7 @@ class ArticleAdminController extends Controller
             $field => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:12288',
         ]);
 
-        $path = $request->file($field)->store('articles', 'public');
+        $path = ImageProcessor::processAndStore($request->file($field), 'articles');
         return response()->json([
             'uploaded' => true,
             'url' => asset('storage/'.$path),

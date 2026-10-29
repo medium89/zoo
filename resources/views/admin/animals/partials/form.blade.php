@@ -46,6 +46,15 @@
         <div class="col-12">
             <label class="form-label">Фото питомца</label>
             <input type="file" name="photos[]" class="form-control" accept="image/*" multiple>
+            @if($animal?->photos?->isNotEmpty())
+                <div data-upload-current-for="photos[]" class="d-flex flex-wrap gap-2 mt-2">
+                    @foreach($animal->photos as $photo)
+                        <span data-upload-current-src="{{ Storage::url($photo->path) }}" data-upload-delete-url="{{ route('admin.animals.photos.destroy', [$animal, $photo]) }}">
+                            <img src="{{ Storage::url($photo->path) }}" alt="" width="70" height="70" style="object-fit:cover;border-radius:10px">
+                        </span>
+                    @endforeach
+                </div>
+            @endif
             <div class="form-text">Можно загрузить несколько фото.</div>
         </div>
     </div>

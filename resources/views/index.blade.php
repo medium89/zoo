@@ -23,7 +23,7 @@
         <div class="qc-dialog">
             <button type="button" class="qc-close" aria-label="Закрыть">&times;</button>
             <h4 class="mb-3">Связаться со мной</h4>
-            <form class="contact-form" action="{{ route('feedback.store') }}" method="POST">
+            <form class="contact-form" data-captcha-form action="{{ route('feedback.store') }}" method="POST">
                 @csrf
                 <div class="form-group">
                     <input type="text" name="name" placeholder="Ваше имя" required>
@@ -34,12 +34,8 @@
                 <div class="form-group">
                     <textarea name="message" placeholder="Опишите необходимую услугу, животное, даты и адрес" rows="3" required></textarea>
                 </div>
-                <div class="form-group consent-layout {{ $recaptchaKey ? '' : 'consent-layout--no-captcha' }}">
-                    @if($recaptchaKey)
-                        <div class="consent-layout__captcha">
-                            <div class="g-recaptcha" data-sitekey="{{ $recaptchaKey }}"></div>
-                        </div>
-                    @endif
+                @include('partials.captcha-inline')
+                <div class="form-group consent-layout consent-layout--no-captcha">
                     <div class="consent-layout__consent">
                         <div class="consent-check">
                             <input type="checkbox" id="contactConsentQuick" name="personal_data_consent" value="1">
@@ -203,7 +199,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const gallery = document.getElementById('gallery');
     if(!badge || !modal) return;
 
-    const openModal = ()=> modal.classList.add('open');
+    const openModal = ()=> { modal.classList.add('open'); window.renderInlineCaptchas?.(); };
     const closeModal = ()=> modal.classList.remove('open');
 
     let pulseTimer = null;

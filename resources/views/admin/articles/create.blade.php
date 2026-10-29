@@ -39,18 +39,18 @@
         <div class="row g-3 mb-3">
             <div class="col-12">
                 <label class="form-label">Краткое описание</label>
-                <textarea name="excerpt" class="form-control wysiwyg-excerpt" rows="3" data-editor-height="220"></textarea>
+                <textarea name="excerpt" class="form-control" data-rich-editor rows="3" data-editor-height="220"></textarea>
             </div>
             <div class="col-12">
                 <label class="form-label">Текст статьи</label>
-                <textarea name="content" class="form-control js-wysiwyg" rows="12" data-editor-custom="1"></textarea>
+                <textarea name="content" class="form-control" data-rich-editor rows="12" data-editor-height="460" data-editor-upload-url="{{ route('admin.articles.upload') }}"></textarea>
             </div>
         </div>
         <div class="row g-3 mb-3">
             <div class="col-lg-6">
                 <label class="form-label">Обложка статьи</label>
                 <div class="d-flex align-items-center gap-2">
-                    <input type="file" name="cover" class="form-control" id="coverInput">
+                    <input type="file" name="cover" class="form-control" id="coverInput" accept="image/*">
                     <button type="button" class="btn btn-outline-secondary btn-sm js-clear-file" data-target="#coverInput">Очистить</button>
                 </div>
             </div>
@@ -91,7 +91,7 @@
             <div class="mb-3">
                 <label class="form-label">Изображения (можно несколько)</label>
                 <div class="d-flex align-items-center gap-2">
-                    <input type="file" name="images[]" class="form-control" id="imagesInput" multiple>
+                    <input type="file" name="images[]" class="form-control" id="imagesInput" multiple accept="image/*">
                     <button type="button" class="btn btn-outline-secondary btn-sm js-clear-file" data-target="#imagesInput">Очистить</button>
                 </div>
             </div>
@@ -102,7 +102,6 @@
         <button type="submit" class="btn btn-success">Сохранить</button>
     </form>
 </div>
-@include('admin.partials.wysiwyg-scripts')
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function(){
@@ -122,44 +121,6 @@ document.addEventListener('DOMContentLoaded', function(){
         input.addEventListener('input', ()=>{
             input.closest('.col-md-6').querySelector('.js-quality-val').textContent = input.value;
         });
-    });
-
-    const target = document.querySelector('.js-wysiwyg');
-    if(!target || !window.tinymce){ return; }
-    const uploadUrl = '{{ route('admin.articles.upload') }}';
-    const csrf = '{{ csrf_token() }}';
-
-    tinymce.init({
-        target,
-        menubar: false,
-        branding: false,
-        height: 460,
-        plugins: 'advlist autolink lists link image media table code fullscreen',
-        toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | removeformat code fullscreen',
-        automatic_uploads: true,
-        images_upload_handler: (blobInfo, progress) => new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('file', blobInfo.blob(), blobInfo.filename());
-            fetch(uploadUrl, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': csrf },
-                body: formData,
-            }).then(async response => {
-                if(!response.ok){ throw new Error('Upload failed'); }
-                const data = await response.json();
-                const url = data.url || data.location;
-                if(url){ resolve(url); } else { reject('Неверный ответ загрузки'); }
-            }).catch(err => reject(err && err.message ? err.message : err));
-        }),
-        file_picker_types: 'image',
-        image_title: true,
-        image_dimensions: true,
-        image_caption: true,
-        image_advtab: true,
-        convert_urls: false,
-        relative_urls: false,
-        promotion: false,
-        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; }'
     });
 });
 </script>

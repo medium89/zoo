@@ -20,5 +20,11 @@ class SiteSetting extends Model
         'og_image',
         'og_url',
         'personal_data_consent_text',
+        'hero_mode',
+        'hero_image',
+        'hero_text',
+        'home_labels',
+        'advantages_bg_color',
     ];
+    protected $casts = ['home_labels' => 'array'];
 }

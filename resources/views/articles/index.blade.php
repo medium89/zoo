@@ -110,7 +110,7 @@
 <style>
     .article-hero{
         padding: 2rem 0 2.5rem;
-        background: var(--color-secondary) url('/assets/img/bg.png') repeat center center;
+        background: var(--color-secondary) url('/assets/img/bg.webp') repeat center center;
         background-size: 6%;
         color: #fff;
         box-shadow: inset 0 -1px 0 rgba(255,255,255,0.18);

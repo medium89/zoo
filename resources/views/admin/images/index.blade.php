@@ -48,6 +48,12 @@
                                     <input type="number" name="quality" class="form-control" value="85" min="40" max="100">
                                 </div>
                             </div>
+                            @if(!empty($img['is_raster']))
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input js-webp-switch" type="checkbox" role="switch" name="webp" value="1" id="webp-{{ $loop->index }}" @checked(str_ends_with(strtolower($img['path']), '.webp'))>
+                                    <label class="form-check-label small" for="webp-{{ $loop->index }}">WEBP — конвертировать и показать ожидаемый размер</label>
+                                </div>
+                            @endif
                             <div class="row g-2 mb-2">
                                 <div class="col-6">
                                     <label class="form-label mb-1 small">Кадрировать W (px)</label>
@@ -103,26 +109,56 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const cropWInput = form?.querySelector('[name="crop_width"]');
         const cropHInput = form?.querySelector('[name="crop_height"]');
         const cropXInput = form?.querySelector('[name="crop_x"]');
+        const cropYInput = form?.querySelector('[name="crop_y"]');
+        const webpInput = form?.querySelector('.js-webp-switch');
+        const sourceImage = card.querySelector('img');
         const hint = form?.querySelector('.js-size-estimate');
-        const currentText = baseKb ? `Текущий: ${baseKb} КБ (${(baseKb/1024).toFixed(2)} МБ)` : '';
-        const currentDims = baseW && baseH ? ` · ${baseW}×${baseH} px` : '';
+        const currentText = baseKb ? 'Текущий: ' + baseKb + ' КБ (' + (baseKb / 1024).toFixed(2) + ' МБ)' : '';
+        const currentDims = baseW && baseH ? ' · ' + baseW + '×' + baseH + ' px' : '';
+        let estimateRevision = 0;
         const updateHint = ()=>{
             if(!hint || !scaleInput || !qualityInput){ return; }
-            const s = Math.max(10, Math.min(100, parseInt(scaleInput.value||'100',10)));
-            const q = Math.max(40, Math.min(100, parseInt(qualityInput.value||'85',10)));
-            const cropW = cropWInput && cropWInput.value ? Math.max(1, parseInt(cropWInput.value,10)) : null;
-            const cropH = cropHInput && cropHInput.value ? Math.max(1, parseInt(cropHInput.value,10)) : null;
-            const baseDimW = cropW || baseW;
-            const baseDimH = cropH || baseH;
-            if(!baseKb){ hint.textContent = currentText + currentDims; return; }
-            const estimated = (baseKb * (s/100) * (q/100));
-            const estW = baseDimW ? Math.round(baseDimW * (s/100)) : null;
-            const estH = baseDimH ? Math.round(baseDimH * (s/100)) : null;
-            const estDims = estW && estH ? `${estW}×${estH} px` : '';
-            hint.textContent = `${currentText}${currentDims}${currentText || currentDims ? ' · ' : ''}Ожидаемо: ${estimated.toFixed(1)} КБ (${(estimated/1024).toFixed(2)} МБ)${estDims ? ' · '+estDims : ''}`;
+            const scale = Math.max(10, Math.min(100, parseInt(scaleInput.value || '100', 10)));
+            const quality = Math.max(40, Math.min(100, parseInt(qualityInput.value || '85', 10)));
+            const cropW = cropWInput && cropWInput.value ? Math.max(1, parseInt(cropWInput.value, 10)) : null;
+            const cropH = cropHInput && cropHInput.value ? Math.max(1, parseInt(cropHInput.value, 10)) : null;
+            const prefix = currentText + currentDims + (currentText || currentDims ? ' · ' : '');
+            if(!webpInput?.checked){
+                hint.textContent = prefix + 'Отметьте WEBP, чтобы увидеть ожидаемый размер.';
+                return;
+            }
+            const revision = ++estimateRevision;
+            const width = sourceImage?.naturalWidth || baseW;
+            const height = sourceImage?.naturalHeight || baseH;
+            if(!width || !height || !sourceImage?.complete){
+                hint.textContent = prefix + 'Загружаем изображение для расчёта WebP…';
+                return;
+            }
+            const sourceW = Math.min(cropW || width, width);
+            const sourceH = Math.min(cropH || height, height);
+            const sourceX = cropXInput?.value ? Math.max(0, Math.min(width - sourceW, parseInt(cropXInput.value, 10))) : Math.max(0, Math.round((width - sourceW) / 2));
+            const sourceY = cropYInput?.value ? Math.max(0, Math.min(height - sourceH, parseInt(cropYInput.value, 10))) : Math.max(0, Math.round((height - sourceH) / 2));
+            const targetW = Math.max(1, Math.round(sourceW * scale / 100));
+            const targetH = Math.max(1, Math.round(sourceH * scale / 100));
+            const canvas = document.createElement('canvas');
+            canvas.width = targetW;
+            canvas.height = targetH;
+            const context = canvas.getContext('2d');
+            context.drawImage(sourceImage, sourceX, sourceY, sourceW, sourceH, 0, 0, targetW, targetH);
+            hint.textContent = prefix + 'Считаем размер WebP…';
+            canvas.toBlob(blob=>{
+                if(revision !== estimateRevision){ return; }
+                if(!blob){
+                    hint.textContent = prefix + 'Не удалось рассчитать размер WebP.';
+                    return;
+                }
+                const kb = blob.size / 1024;
+                hint.textContent = prefix + 'Ожидаемый WebP: ' + kb.toFixed(1) + ' КБ (' + (kb / 1024).toFixed(2) + ' МБ) · ' + targetW + '×' + targetH + ' px';
+            }, 'image/webp', quality / 100);
         };
-        if(hint){ hint.textContent = currentText + currentDims; }
+        sourceImage?.addEventListener('load', updateHint, { once:true });
         [scaleInput, qualityInput, cropWInput, cropHInput].forEach(inp=>inp?.addEventListener('input', updateHint));
+        webpInput?.addEventListener('change', updateHint);
         updateHint();
     });
 

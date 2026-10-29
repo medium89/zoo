@@ -26,7 +26,7 @@
             <div class="admin-entity-list__body">
                 @foreach($animals as $animal)
                     <div class="admin-entity-list__row">
-                        <div><img src="{{ $animal->photos->first()?->path ? Storage::url($animal->photos->first()->path) : asset('images/animal-types/other.png') }}" alt="{{ $animal->name }}" class="admin-entity-list__avatar"></div>
+                        <div><img src="{{ $animal->photos->first()?->path ? Storage::url($animal->photos->first()->path) : asset('images/animal-types/other.webp') }}" alt="{{ $animal->name }}" class="admin-entity-list__avatar"></div>
                         <div class="admin-entity-list__primary" data-label="Питомец">
                             <a href="{{ route('admin.animals.show', $animal) }}">{{ $animal->name }}</a>
                             @include('admin.partials.tags-list', ['tags' => $animal->tags])

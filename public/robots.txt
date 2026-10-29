@@ -1,6 +1,7 @@
 User-agent: Yandex
 Disallow: /zooadmin/
 Disallow: /login/
+Disallow: /v1
 Allow: /
 
 Host: https://zooland22.ru
@@ -9,6 +10,7 @@ Sitemap: https://zooland22.ru/sitemap.xml
 User-agent: Googlebot
 Disallow: /zooadmin/
 Disallow: /login/
+Disallow: /v1
 Allow: /
 
 Sitemap: https://zooland22.ru/sitemap.xml

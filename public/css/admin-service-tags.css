@@ -1,0 +1,82 @@
+.service-tag-editor__entry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+}
+.service-tag-editor__entry .form-control {
+  flex: 1 1 230px;
+  min-width: 0;
+}
+.service-tag-editor__add {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.service-tag-editor__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  min-height: 38px;
+  margin-top: 12px;
+  align-content: flex-start;
+}
+.service-tag-editor__list:empty { min-height: 0; margin-top: 0; }
+.service-tag-editor__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-height: 38px;
+  padding: 5px 7px 5px 6px;
+  border: 1px solid #e9bc6f;
+  border-radius: 999px;
+  background: linear-gradient(130deg, #fff0cf, #ffd98d);
+  color: #583d18;
+  box-shadow: 0 2px 6px rgba(140, 91, 23, .1);
+}
+.service-tag-editor__chip.is-editing { outline: 2px solid #8655b6; outline-offset: 2px; }
+.service-tag-editor__chip.is-dragging { opacity: .32; }
+.service-tag-editor__ghost {
+  position: fixed;
+  z-index: 9999;
+  box-sizing: border-box;
+  pointer-events: none;
+  opacity: .96;
+  box-shadow: 0 14px 30px rgba(71, 47, 90, .22), 0 3px 9px rgba(71, 47, 90, .12);
+}
+.service-tag-editor__label { overflow-wrap: anywhere; font-size: 13px; font-weight: 600; }
+.service-tag-editor__actions {
+  display: inline-flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+.service-tag-editor__chip:hover .service-tag-editor__actions,
+.service-tag-editor__chip:focus-within .service-tag-editor__actions { opacity: 1; }
+.service-tag-editor__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.65);
+  color: #785326;
+  font-size: 11px;
+}
+.service-tag-editor__icon:hover,
+.service-tag-editor__icon:focus-visible { background: #fff; color: #51306b; }
+.service-tag-editor__drag {
+  background: transparent;
+  color: #8a642e;
+  cursor: grab;
+  touch-action: none;
+}
+.service-tag-editor__drag:active { cursor: grabbing; }
+.service-tag-editor__status { min-height: 0; margin-top: 5px; color: #a73c57; font-size: 12px; }
+.service-tag-editor__status:empty { display: none; }
+@media (hover: none) {
+  .service-tag-editor__actions { opacity: 1; }
+}

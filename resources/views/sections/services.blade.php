@@ -23,7 +23,7 @@
                         <h3>{{ $service->title }}</h3>
                     </div>
                     <div class="services-content__item-img">
-                        <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}">
+                        <img src="{{ $service->image ? asset('storage/' . $service->image) : asset('images/image-placeholder.svg') }}" alt="{{ $service->title }}">
                     </div>
                     <div class="services-content__item-description">
                         {!! $service->text !!}

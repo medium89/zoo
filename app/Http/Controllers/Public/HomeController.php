@@ -12,12 +12,20 @@ use App\Models\Gallery;
 use App\Models\Social;
 use App\Models\SiteSetting;
 use App\Models\AvitoReview;
+use App\Models\SiteReview;
+use App\Models\HomepageOrder;
+use App\Models\NavLink;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     public function index()
+    {
+        return $this->v2();
+    }
+
+    public function legacy()
     {
         $siteSettings = SiteSetting::first();
         $closed = $siteSettings?->site_closed;
@@ -86,7 +94,7 @@ class HomeController extends Controller
         $about = About::first();
         $advantages = Advantage::where('active', true)->orderBy('order')->orderBy('id')->get();
         $services = Service::where('active', true)->orderBy('order')->orderBy('id')->get();
-        $galleries = Gallery::where('active', true)->orderBy('number')->orderBy('id')->take(12)->get();
+        $galleries = Gallery::where('active', true)->orderBy('number')->orderBy('id')->take(13)->get();
         $socials = Social::where('active', true)->orderBy('order')->get();
         $avitoReviews = AvitoReview::where('status', 'published')
             ->orderByRaw('review_date IS NULL')
@@ -94,17 +102,32 @@ class HomeController extends Controller
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get();
+        $siteReviews = SiteReview::where('status', 'published')->latest()->get();
+        $reviewItems = $avitoReviews->map(fn ($review) => ['key' => 'avito:' . $review->id, 'type' => 'avito', 'review' => $review])
+            ->concat($siteReviews->map(fn ($review) => ['key' => 'site:' . $review->id, 'type' => 'site', 'review' => $review]))
+            ->values()->map(fn ($item, $index) => $item + ['original_index' => $index]);
+        $navLinks = NavLink::where('active', true)->orderBy('order')->orderBy('id')->get();
+        $reviewPositions = HomepageOrder::where('section', 'reviews')->pluck('position', 'item_key');
+        $reviewItems = $reviewItems->sortBy(fn ($item) => $reviewPositions[$item['key']] ?? (100000 + $item['original_index']))->values();
         $personalDataConsentText = $siteSettings?->personal_data_consent_text;
 
-        return view('v2', compact(
+        $response = response()->view('v2', compact(
             'sliders',
+            'siteSettings',
             'about',
             'advantages',
             'services',
             'galleries',
             'socials',
             'avitoReviews',
+            'siteReviews',
+            'reviewItems',
+            'navLinks',
             'personalDataConsentText'
         ));
+        if (Auth::user()?->is_admin) {
+            $response->headers->set('Cache-Control', 'private, no-store');
+        }
+        return $response;
     }
 }

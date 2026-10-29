@@ -15,6 +15,7 @@ class AvitoReview extends Model
         'text',
         'photos',
         'avatar_url',
+        'original_url',
         'status',
         'order',
         'source_hash',

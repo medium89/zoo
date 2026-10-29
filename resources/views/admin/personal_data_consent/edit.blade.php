@@ -21,7 +21,7 @@
             <textarea
                 id="personal_data_consent_text"
                 name="personal_data_consent_text"
-                class="form-control wysiwyg"
+                class="form-control" data-rich-editor
                 rows="12"
             >{{ old('personal_data_consent_text', $settings->personal_data_consent_text ?? '') }}</textarea>
         </div>
@@ -32,5 +32,4 @@
 @endsection
 
 @section('scripts')
-    @include('admin.partials.wysiwyg-scripts')
 @endsection

@@ -37,7 +37,7 @@
                                     @if($animal->photos->first())
                                         <img src="{{ Storage::url($animal->photos->first()->path) }}" alt="{{ $animal->name }}" class="boarding-animal-card__photo">
                                     @else
-                                        <img src="{{ asset('images/animal-types/'.$categoryImage.'.png') }}" alt="{{ $animal->category?->name ?: 'Тип животного' }}" class="boarding-animal-card__photo boarding-animal-card__photo--type">
+                                        <img src="{{ asset('images/animal-types/'.$categoryImage.'.webp') }}" alt="{{ $animal->category?->name ?: 'Тип животного' }}" class="boarding-animal-card__photo boarding-animal-card__photo--type">
                                     @endif
                                     <div>
                                         <a href="{{ route('admin.animals.show', $animal) }}" class="boarding-animal-card__name">{{ $animal->name }}</a>

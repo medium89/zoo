@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Support\ImageProcessor;
 
 class AvitoReviewController extends Controller
 {
@@ -56,6 +57,7 @@ class AvitoReviewController extends Controller
             'name' => 'nullable|string|max:255',
             'review_date' => 'nullable|date',
             'text' => 'nullable|string',
+            'original_url' => 'nullable|url|max:2048',
             'status' => 'required|string|max:50',
             'photos_raw' => 'nullable|string',
             'photos_upload' => 'nullable|array',
@@ -77,7 +79,7 @@ class AvitoReviewController extends Controller
                 if (!$file) {
                     continue;
                 }
-                $path = $file->store('avito_reviews', 'public');
+                $path = ImageProcessor::processAndStore($file, 'avito_reviews');
                 if ($path && !in_array($path, $photos, true)) {
                     $photos[] = $path;
                 }
@@ -88,6 +90,7 @@ class AvitoReviewController extends Controller
             'name' => $data['name'] ?? null,
             'review_date' => $data['review_date'] ?? null,
             'text' => $data['text'] ?? null,
+            'original_url' => $data['original_url'] ?? null,
             'status' => $data['status'],
             'photos' => $photos ?: null,
         ]);
@@ -103,6 +106,7 @@ class AvitoReviewController extends Controller
             'name' => 'nullable|string|max:255',
             'review_date' => 'nullable|date',
             'text' => 'nullable|string',
+            'original_url' => 'nullable|url|max:2048',
             'status' => 'required|string|max:50',
             'photos_raw' => 'nullable|string',
             'photos_upload' => 'nullable|array',
@@ -124,7 +128,7 @@ class AvitoReviewController extends Controller
                 if (!$file) {
                     continue;
                 }
-                $path = $file->store('avito_reviews', 'public');
+                $path = ImageProcessor::processAndStore($file, 'avito_reviews');
                 if ($path && !in_array($path, $photos, true)) {
                     $photos[] = $path;
                 }
@@ -145,6 +149,7 @@ class AvitoReviewController extends Controller
             'name' => $data['name'] ?? null,
             'review_date' => $data['review_date'] ?? null,
             'text' => $data['text'] ?? null,
+            'original_url' => $data['original_url'] ?? null,
             'status' => $data['status'],
             'photos' => $photos ?: null,
             'source_hash' => $sourceHash,

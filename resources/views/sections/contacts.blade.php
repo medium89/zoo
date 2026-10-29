@@ -16,7 +16,7 @@
                         <h3>Оставить заявку</h3>
                     </div>
                     <div class="contacts-content__item-description">
-                        <form class="contact-form" action="{{ route('feedback.store') }}" method="POST">
+                        <form class="contact-form" data-captcha-form action="{{ route('feedback.store') }}" method="POST">
                             @csrf
                             @if(session('success'))
                                 <div class="alert alert-success">{{ session('success') }}</div>
@@ -36,15 +36,8 @@
                             @if(!$recaptchaKey)
                                 <div class="alert alert-warning">reCAPTCHA не настроена. Добавьте ключи в .env</div>
                             @endif
-                            <div class="form-group consent-layout {{ $recaptchaKey ? '' : 'consent-layout--no-captcha' }}">
-                                @if($recaptchaKey)
-                                    <div class="consent-layout__captcha">
-                                        <div class="g-recaptcha" data-sitekey="{{ $recaptchaKey }}"></div>
-                                        @if($errors->has('g-recaptcha-response'))
-                                            <div class="text-danger small mt-1">{{ $errors->first('g-recaptcha-response') }}</div>
-                                        @endif
-                                    </div>
-                                @endif
+                            @include('partials.captcha-inline')
+                            <div class="form-group consent-layout consent-layout--no-captcha">
                                 <div class="consent-layout__consent">
                                     <div class="consent-check">
                                         <input type="checkbox" id="contactConsentMain" name="personal_data_consent" value="1">
@@ -58,6 +51,9 @@
                                     @endif
                                 </div>
                             </div>
+                            @if($errors->has('g-recaptcha-response'))
+                                <div class="text-danger small mb-2">{{ $errors->first('g-recaptcha-response') }}</div>
+                            @endif
                             <div class="form-group">
                                 <button type="submit" class="submit-btn" disabled>
                                     <i class="fas fa-paper-plane"></i>
@@ -92,6 +88,3 @@
         @endif
     </div>
 </section>
-@if($recaptchaKey)
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-@endif

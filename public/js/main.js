@@ -411,13 +411,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     showNotification('Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.', 'success');
                     contactForm.reset();
-                    if (window.grecaptcha) {
-                        document.querySelectorAll('.g-recaptcha').forEach((_, idx) => {
-                            try {
-                                window.grecaptcha.reset(idx);
-                            } catch (e) {}
-                        });
-                    }
+
                 } else if (response.status === 422) {
                     const data = await response.json();
                     const errors = Object.values(data.errors || {}).flat().join(' ');
@@ -428,6 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 showNotification('Произошла ошибка отправки. Попробуйте позже.', 'error');
             } finally {
+                window.resetInlineCaptcha?.(contactForm);
                 submitBtn.innerHTML = originalText;
                 syncSubmitState();
             }

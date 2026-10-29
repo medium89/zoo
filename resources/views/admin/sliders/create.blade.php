@@ -14,7 +14,7 @@
     @csrf
     <div class="mb-3">
         <label for="image" class="form-label">Изображение</label>
-        <input type="file" class="form-control" id="image" name="image" required>
+        <input type="file" class="form-control" id="image" name="image" required accept="image/*">
         <div class="row g-2 mt-2">
             <div class="col-md-6">
                 <label class="form-label">Размер (в %)</label>
@@ -30,11 +30,11 @@
     </div>
     <div class="mb-3">
         <label for="text" class="form-label">Текст</label>
-        <textarea class="form-control wysiwyg" id="text" name="text" rows="4"></textarea>
+        <textarea class="form-control" data-rich-editor id="text" name="text" rows="4"></textarea>
     </div>
     <div class="mb-3">
         <label for="text_bg" class="form-label">Картинка-подложка</label>
-        <input type="file" class="form-control" id="text_bg" name="text_bg">
+        <input type="file" class="form-control" id="text_bg" name="text_bg" accept="image/*">
         <div class="row g-2 mt-2">
             <div class="col-md-6">
                 <label class="form-label">Размер (в %)</label>
@@ -69,7 +69,6 @@
 @endsection
 
 @section('scripts')
-    @include('admin.partials.wysiwyg-scripts')
     <script>
         document.addEventListener('input', function(e){
             if(e.target.matches('.js-scale')){

@@ -4,7 +4,7 @@
             <div class="slider-content">
                 @foreach($sliders->where('active', true) as $slider)
                     <div class="slider-content__item">
-                        <img src="{{ asset('storage/' . $slider->image) }}" alt="Слайд">
+                        <img src="{{ $slider->image ? asset('storage/' . $slider->image) : asset('images/image-placeholder.svg') }}" alt="Слайд">
                         @if($slider->text)
                             <div class="slider-overlay pos-{{ $slider->position }}">
                                 @if($slider->text_bg)

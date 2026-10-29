@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" role="img" aria-labelledby="title">
+  <title id="title">Изображение не загружено</title>
+  <rect width="480" height="320" rx="28" fill="#f3eef9"/>
+  <rect x="66" y="48" width="348" height="224" rx="24" fill="#fff" stroke="#d9c9e9" stroke-width="4"/>
+  <circle cx="158" cy="120" r="24" fill="#eadff5"/>
+  <path d="m91 235 92-81 62 55 47-39 98 65" fill="none" stroke="#c9b2dd" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M216 103c4-11 15-18 24-18s20 7 24 18c7-5 16-3 21 3 6 8 3 18-5 24l-40 29-40-29c-8-6-11-16-5-24 5-6 14-8 21-3Z" fill="#a87ac7"/>
+</svg>

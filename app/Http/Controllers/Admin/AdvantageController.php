@@ -8,6 +8,7 @@ use App\Models\Advantage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Support\ImageProcessor;
+use Illuminate\Support\Str;
 
 class AdvantageController extends Controller
 {
@@ -15,6 +16,15 @@ class AdvantageController extends Controller
     {
         $advantages = Advantage::orderBy('order')->orderBy('id')->get();
         return view('admin.advantages.index', compact('advantages'));
+    }
+
+    public function updateBackgroundColor(Request $request)
+    {
+        $data = $request->validate(['advantages_bg_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/']]);
+        $settings = \App\Models\SiteSetting::firstOrNew([]);
+        $settings->advantages_bg_color = $request->boolean('reset_bg') ? null : ($data['advantages_bg_color'] ?? null);
+        $settings->save();
+        return back()->with('success', 'Цвет фона преимуществ сохранён');
     }
 
     public function create()
@@ -27,6 +37,7 @@ class AdvantageController extends Controller
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'title' => 'required|string|max:255',
+            'short_text' => 'nullable|string|max:5000',
             'text' => 'required|string',
             'active' => 'required|boolean',
             'order' => 'nullable|integer',
@@ -37,6 +48,7 @@ class AdvantageController extends Controller
         Advantage::create([
             'image' => $path,
             'title' => $request->title,
+            'short_text' => $request->input('short_text') ?: Str::words(trim(strip_tags($request->text)), 26, ''),
             'text' => $request->text,
             'active' => $request->boolean('active'),
             'order' => $request->input('order', 0),
@@ -53,7 +65,9 @@ class AdvantageController extends Controller
     {
         $request->validate([
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'remove_image' => 'nullable|boolean',
             'title' => 'required|string|max:255',
+            'short_text' => 'nullable|string|max:5000',
             'text' => 'required|string',
             'active' => 'required|boolean',
             'order' => 'nullable|integer',
@@ -62,12 +76,20 @@ class AdvantageController extends Controller
         ]);
         if ($request->hasFile('image')) {
             if ($advantage->image && Storage::disk('public')->exists($advantage->image)) {
-                Storage::disk('public')->delete($advantage->image);
+                \App\Support\AuditedStorage::deletePublic($advantage->image);
             }
             $path = ImageProcessor::processAndStore($request->file('image'), 'advantages', (int)$request->input('image_scale',100), (int)$request->input('image_quality',85));
             $advantage->image = $path;
+        } elseif ($request->boolean('remove_image')) {
+            if ($advantage->image && Storage::disk('public')->exists($advantage->image)) {
+                \App\Support\AuditedStorage::deletePublic($advantage->image);
+            }
+            $advantage->image = '';
         }
         $advantage->title = $request->title;
+        if ($request->filled('short_text')) {
+            $advantage->short_text = $request->short_text;
+        }
         $advantage->text = $request->text;
         $advantage->active = $request->boolean('active');
         $advantage->order = $request->input('order', 0);
@@ -78,7 +100,7 @@ class AdvantageController extends Controller
     public function destroy(Advantage $advantage)
     {
         if ($advantage->image && Storage::disk('public')->exists($advantage->image)) {
-            Storage::disk('public')->delete($advantage->image);
+            \App\Support\AuditedStorage::deletePublic($advantage->image);
         }
         $advantage->delete();
         return redirect()->route('admin.advantages.index')->with('success', 'Преимущество удалено');

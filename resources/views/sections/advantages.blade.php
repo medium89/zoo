@@ -9,7 +9,7 @@
                 @foreach($advantages->where('active', true) as $advantage)
                     <div class="advantages-content__item">
                         <div class="advantages-content__item-img">
-                            <img src="{{ asset('storage/' . $advantage->image) }}" alt="{{ $advantage->title }}">
+                            <img src="{{ $advantage->image ? asset('storage/' . $advantage->image) : asset('images/image-placeholder.svg') }}" alt="{{ $advantage->title }}">
                         </div>
                         <div class="advantages-content__item-title">
                             {{ $advantage->title }}

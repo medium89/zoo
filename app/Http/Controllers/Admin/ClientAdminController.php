@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 
 use App\Models\Client;
+use App\Models\ClientPhoto;
 use App\Models\Animal;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Support\ImageProcessor;
 
 class ClientAdminController extends Controller
 {
@@ -64,6 +66,7 @@ class ClientAdminController extends Controller
             'address' => $client->address,
             'note' => $client->note,
             'photo' => $client->photos->first()?->path ? Storage::url($client->photos->first()->path) : null,
+            'photos' => $client->photos->map(fn ($photo) => ['src' => Storage::url($photo->path), 'deleteUrl' => route('admin.clients.photos.destroy', [$client, $photo])])->values()->all(),
             'animals' => $client->animals->map(fn (Animal $animal) => [
                 'id' => $animal->id,
                 'name' => $animal->name,
@@ -152,6 +155,16 @@ class ClientAdminController extends Controller
         $this->storePhotos($client, $photos);
 
         return redirect()->route('admin.clients.index')->with('success', 'Клиент обновлён');
+    }
+
+    public function destroyPhoto(Client $client, ClientPhoto $photo)
+    {
+        abort_unless($photo->client_id === $client->id, 404);
+
+        \App\Support\AuditedStorage::deletePublic($photo->path);
+        $photo->delete();
+
+        return back()->with('success', 'Фото удалено');
     }
 
     public function destroy(Client $client)
@@ -243,7 +256,7 @@ class ClientAdminController extends Controller
         foreach ($photos as $photo) {
             if ($photo) {
                 $client->photos()->create([
-                    'path' => $photo->store('clients/'.$client->id, 'public'),
+                    'path' => ImageProcessor::processAndStore($photo, 'clients/'.$client->id),
                 ]);
             }
         }

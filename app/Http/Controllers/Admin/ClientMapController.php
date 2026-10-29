@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Support\ImageProcessor;
 
 class ClientMapController extends Controller
 {
@@ -61,7 +62,7 @@ class ClientMapController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            $animal->photos()->create(['path' => $request->file('photo')->store('animals/'.$animal->id, 'public')]);
+            $animal->photos()->create(['path' => ImageProcessor::processAndStore($request->file('photo'), 'animals/'.$animal->id)]);
         }
 
         return response()->json($this->animalPayload($animal->fresh('photos')), 201);

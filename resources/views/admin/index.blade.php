@@ -363,7 +363,7 @@
             white-space: nowrap;
             border: 0;
         }
-        @media (max-width: 1199.98px) {
+        @media (max-width: 998.98px) {
             .admin-entity-list__head { display: none; }
             .admin-entity-list { border: 0; background: transparent; box-shadow: none; }
             .admin-entity-list__body { gap: 10px; }
@@ -1167,7 +1167,8 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        @media (max-width: 767.98px) {
+        .admin-grid-row .admin-status-label { display: none; }
+        @media (max-width: 998.98px) {
             .admin-grid {
                 display: flex;
                 flex-direction: column;
@@ -1241,10 +1242,234 @@
             }
         }
 
-        @media (max-width: 767.98px) { .admin-grid-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 8px; padding: 12px; } .admin-grid-row > * { display: block; width: auto; min-width: 0; padding: 8px; border-radius: 8px; background: #f8fafc; overflow-wrap: anywhere; } .admin-grid-row > *::before { display: block; min-width: 0; margin: 0 0 4px; padding: 0; color: #8191a2; font-size: .65rem; font-weight: 800; line-height: 1.25; letter-spacing: .035em; text-transform: uppercase; } .admin-grid-row > .actions, .admin-grid-row > .text-clip, .admin-grid-row > [data-label*="Описание"], .admin-grid-row > [data-label*="Текст"], .admin-grid-row > [data-label*="Комментар"], .admin-grid-row > [data-label*="Ссылка"], .admin-grid-row > [data-label*="URL"] { grid-column: 1 / -1; } .admin-grid-row > .actions { display: flex; justify-content: flex-end; padding: 2px 0 0; background: transparent; } .admin-grid-row .actions > .d-flex { justify-content: flex-end; } .admin-grid-row .actions .btn { width: auto; } .admin-grid-row img { width: auto; max-width: 72px; max-height: 72px; object-fit: cover; } }
+        /* All admin-grid lists use readable cards on tablets and phones. */
+        @media (max-width: 998.98px) {
+            .admin-grid-row {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-items: start;
+                gap: 9px;
+                padding: 12px;
+            }
+            .admin-grid-row > * {
+                display: block;
+                width: auto;
+                min-width: 0;
+                padding: 9px 10px;
+                border-radius: 8px;
+                background: #f8fafc;
+                overflow-wrap: anywhere;
+            }
+            .admin-grid-row > *::before {
+                display: block;
+                min-width: 0;
+                margin: 0 0 5px;
+                padding: 0;
+                color: #8191a2;
+                font-size: .65rem;
+                font-weight: 800;
+                line-height: 1.25;
+                letter-spacing: .035em;
+                text-transform: uppercase;
+            }
+            .admin-grid-row > .actions,
+            .admin-grid-row > .text-clip,
+            .admin-grid-row > .admin-grid-cell--title,
+            .admin-grid-row > [data-label*="Описание"],
+            .admin-grid-row > [data-label*="Текст"],
+            .admin-grid-row > [data-label*="Комментар"],
+            .admin-grid-row > [data-label*="Ссылка"],
+            .admin-grid-row > [data-label*="URL"] {
+                grid-column: 1 / -1;
+            }
+            .admin-grid-row .text-clip {
+                display: block;
+                max-height: none;
+                overflow: visible;
+                -webkit-line-clamp: unset;
+            }
+            .admin-grid-row > .actions {
+                display: flex;
+                justify-content: flex-end;
+                padding: 2px 0 0;
+                background: transparent;
+            }
+            .admin-grid-row > .actions::before { display: none; }
+            .admin-grid-row .actions > .d-flex { justify-content: flex-end; }
+            .admin-grid-row .actions .btn { width: auto; }
+            .admin-grid-row img {
+                width: auto;
+                max-width: 88px;
+                max-height: 88px;
+                object-fit: contain;
+            }
+            .admin-grid-row .form-check.form-switch {
+                min-width: 2.4rem;
+                min-height: 1.4rem;
+                padding-left: 0;
+            }
+            .admin-grid-row .form-switch .form-check-input {
+                float: none;
+                width: 2.25rem;
+                min-width: 2.25rem;
+                height: 1.25rem;
+                margin: 0;
+                cursor: pointer;
+            }
+            .admin-grid-row .admin-status-label {
+                display: inline;
+                color: #52657a;
+                font-size: .75rem;
+                font-weight: 700;
+            }
+            .admin-grid-row--media {
+                grid-template-columns: minmax(0, 1fr) clamp(96px, 18vw, 150px);
+                align-items: start;
+            }
+            .admin-grid-row--media > .admin-grid-cell--order { grid-column: 1; }
+            .admin-grid-row--media > .admin-grid-cell--image { grid-column: 2; }
+            .admin-grid-row--media > .admin-grid-cell--title,
+            .admin-grid-row--media > .admin-grid-cell--description { grid-column: 1 / -1; }
+            .admin-grid-row--media > .admin-grid-cell--status {
+                display: flex;
+                grid-column: 1;
+                align-items: center;
+                justify-content: flex-start;
+                flex-wrap: nowrap;
+                gap: 12px;
+                min-height: 58px;
+            }
+            .admin-grid-row--media > .admin-grid-cell--status::before { flex: 0 0 auto; margin: 0; }
+            .admin-grid-row--media > .admin-grid-cell--actions {
+                display: flex;
+                grid-column: 2;
+                align-self: stretch;
+                align-items: flex-end;
+                justify-content: flex-end;
+                background: transparent;
+            }
+            .admin-grid-row--media > .admin-grid-cell--actions::before { display: none; }
+            .admin-grid-row--media > .admin-grid-cell--image img {
+                width: auto;
+                max-width: 100%;
+                max-height: 100px;
+            }
+        }
+        @media (max-width: 575.98px) {
+            .admin-grid-row { grid-template-columns: minmax(0, 1fr); }
+            .admin-grid-row > * { grid-column: 1 / -1; }
+            .admin-grid-row--media { grid-template-columns: minmax(0, 1fr) 96px; }
+            .admin-grid-row--media > .admin-grid-cell--image::before { display: none; }
+            .admin-grid-row--media > .admin-grid-cell--image img {
+                width: auto;
+                max-width: 100%;
+                max-height: 90px;
+            }
+            .admin-grid-row--media > .admin-grid-cell--title {
+                font-size: .95rem;
+                line-height: 1.35;
+            }
+        }
+        @media (max-width: 359.98px) { .admin-grid-row--media .admin-status-label { display: none; } }
         @media (max-width: 575.98px) { .categories-entity-list .admin-entity-list__row { grid-template-columns: minmax(0, 1fr) 38px; gap: 7px 10px; padding: 13px; border-radius: 14px; } .categories-entity-list .admin-entity-list__primary { grid-column: 1; grid-row: 1; align-self: center; } .categories-entity-list .admin-entity-list__primary::before, .categories-entity-list .admin-entity-list__actions::before { display: none !important; } .categories-entity-list .admin-entity-list__primary strong { font-size: .94rem; } .categories-entity-list .admin-entity-list__actions { grid-column: 2; grid-row: 1; align-self: start; justify-self: end; } .categories-entity-list .admin-entity-list__muted { grid-column: 1 / -1; grid-row: 2; min-width: 0; padding-top: 8px; border-top: 1px solid #edf2f6; overflow-wrap: anywhere; } .categories-entity-list .admin-entity-list__muted::before { display: inline-block; margin: 0 7px 0 0; } .categories-entity-list .admin-actions-menu__popup { right: 0; max-width: calc(100vw - 48px); } .content .admin-flex-table:not(.boarding-history-table) tr { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 8px; padding: 12px; } .content .admin-flex-table:not(.boarding-history-table) td { display: grid; grid-template-columns: minmax(82px, 100px) minmax(0, 1fr); align-items: start; gap: 8px; width: 100%; min-width: 0; overflow-wrap: anywhere; } .content .admin-flex-table:not(.boarding-history-table) td::before { min-width: 0; padding-top: 2px; color: #8191a2; font-size: .68rem; font-weight: 800; line-height: 1.25; letter-spacing: .025em; text-transform: uppercase; } .content .admin-flex-table:not(.boarding-history-table) td.no-label { grid-template-columns: minmax(0, 1fr); } .content .admin-flex-table:not(.boarding-history-table) .btn { width: auto; max-width: 100%; } }
         @media (max-width: 575.98px) { #admin-content .card, #admin-content .card-body, #admin-content form, #admin-content fieldset, #admin-content .row > * { min-width: 0; max-width: 100%; } #admin-content .card .text-muted, #admin-content .card .small { overflow-wrap: anywhere; } #admin-content input, #admin-content select, #admin-content textarea, #admin-content img, #admin-content video, #admin-content iframe { max-width: 100%; } }
-        /* Грид-списки */
+        /* Wide lists stay tabular through 999px; scroll the work area if a list needs more columns. */
+        @media (min-width: 999px) {
+            .content:has(.admin-grid), .content:has(.admin-entity-list), .content:has(.orders-workspace) { overflow-x: auto; }
+            .admin-grid { min-width: var(--admin-grid-desktop-min, 0); }
+            .admin-grid-header, .admin-grid-row { gap: clamp(7px, 1vw, 13px); padding-right: clamp(10px, 1.25vw, 18px); padding-left: clamp(10px, 1.25vw, 18px); }
+            .admin-grid-row > *, .admin-grid-header > * { min-width: 0; overflow-wrap: anywhere; }
+            .admin-entity-list { min-width: var(--admin-entity-desktop-min, 0); }
+            .orders-workspace .orders-table { min-width: 960px; }
+        }
+        @media (max-width: 998.98px) {
+            #admin-content .card, #admin-content .card-body, #admin-content form,
+            #admin-content fieldset, #admin-content .row > * { min-width: 0; max-width: 100%; }
+            #admin-content input, #admin-content select, #admin-content textarea,
+            #admin-content img, #admin-content video, #admin-content iframe { max-width: 100%; }
+            .content .admin-flex-table:not(.boarding-history-table) tr {
+                display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-items: stretch; gap: 8px; padding: 12px;
+            }
+            .content .admin-flex-table:not(.boarding-history-table) td {
+                display: block; min-width: 0; width: auto; overflow-wrap: anywhere;
+            }
+            .content .admin-flex-table:not(.boarding-history-table) td::before {
+                display: block; min-width: 0; margin-bottom: 4px; padding: 0;
+                color: #8191a2; font-size: .68rem; font-weight: 800;
+                line-height: 1.25; letter-spacing: .025em; text-transform: uppercase;
+            }
+            .content .admin-flex-table:not(.boarding-history-table) td:last-child { grid-column: 1 / -1; }
+        }
+                @media (max-width: 575.98px) {
+            .content .admin-flex-table:not(.boarding-history-table) tr { grid-template-columns: minmax(0, 1fr); }
+            .content .admin-flex-table:not(.boarding-history-table) td {
+                display: grid; grid-template-columns: minmax(82px, 100px) minmax(0, 1fr);
+                align-items: start; gap: 8px; width: 100%;
+            }
+            .content .admin-flex-table:not(.boarding-history-table) td::before { margin: 0; }
+            .content .admin-flex-table:not(.boarding-history-table) td.no-label { grid-template-columns: minmax(0, 1fr); }
+        }
+                /* Compact admin cards use a clear title, data rows and one action button. */
+        @media (max-width: 998.98px) {
+            .admin-grid:not(.services-grid) .admin-grid-row:not(.admin-grid-row--media) {
+                display: grid; grid-template-columns: minmax(0,1fr) 40px;
+                align-items: start; gap: 0 10px; min-height: 0; padding: 14px; border-radius: 14px;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row:not(.admin-grid-row--media) > * {
+                display: block; grid-column: 1 / -1; width: auto; min-width: 0;
+                padding: 8px 0; border-bottom: 1px solid #edf1f5;
+                border-radius: 0; background: transparent; overflow-wrap: anywhere;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row:not(.admin-grid-row--media) > .admin-grid-cell--primary {
+                grid-column: 1; grid-row: 1; align-self: center; padding: 0; border: 0;
+                color: #2d435a; font-size: .96rem; font-weight: 800; line-height: 1.35;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row > .admin-grid-cell--primary::before { display: none; }
+            .admin-grid:not(.services-grid) .admin-grid-row:not(.admin-grid-row--media) > .actions {
+                grid-column: 2; grid-row: 1; justify-self: end; align-self: start;
+                width: 40px; padding: 0; border: 0; z-index: 2;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row:not(.admin-grid-row--media) > .js-order-label {
+                grid-column: 1 / -1; justify-self: end; order: 9;
+                width: auto; margin-top: 7px; padding: 5px 8px;
+                border: 0; border-radius: 7px; background: #f2f5f9;
+                color: #718094; font-size: .7rem; touch-action: none;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row:not(.admin-grid-row--media) > .js-order-label::before { display: none; }
+            .admin-grid:not(.services-grid) .admin-grid-row--media {
+                display: grid; grid-template-columns: 64px minmax(0,1fr) 40px;
+                align-items: start; gap: 0 12px; min-height: 0; padding: 14px; border-radius: 14px;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row--media > * {
+                min-width: 0; padding: 0; border-radius: 0; background: transparent;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row--media > *::before { display: none; }
+            .admin-grid:not(.services-grid) .admin-grid-row--media > .admin-grid-cell--image { grid-column: 1; grid-row: 1 / 3; }
+            .admin-grid:not(.services-grid) .admin-grid-row--media > .admin-grid-cell--image img {
+                width: 64px; height: 64px; max-width: 64px; max-height: 64px; object-fit: contain;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row--media > .admin-grid-cell--title {
+                grid-column: 2; grid-row: 1; align-self: end; font-weight: 800;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row--media > .admin-grid-cell--status {
+                grid-column: 2; grid-row: 2; min-height: 0; margin-top: 5px;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row--media:not(:has(.admin-grid-cell--title)) > .admin-grid-cell--status { grid-row: 1; align-self: center; }
+            .admin-grid:not(.services-grid) .admin-grid-row--media > .admin-grid-cell--actions {
+                grid-column: 3; grid-row: 1 / 3; align-self: start; justify-self: end; z-index: 2;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row--media > .admin-grid-cell--description {
+                grid-column: 1 / -1; grid-row: 3; margin-top: 10px;
+                padding-top: 9px; border-top: 1px solid #edf1f5;
+            }
+            .admin-grid:not(.services-grid) .admin-grid-row--media > .admin-grid-cell--order {
+                grid-column: 1 / -1; grid-row: 4; justify-self: end; width: auto;
+                margin-top: 7px; padding: 5px 8px; border-radius: 7px;
+                background: #f2f5f9; font-size: .7rem;
+            }
+        }
+                /* Грид-списки */
         .admin-grid-table {
             width: 100%;
             border-collapse: separate;
@@ -1300,7 +1525,7 @@
             white-space: nowrap;
         }
 
-        @media (max-width: 991.98px) {
+        @media (max-width: 1399.98px) {
             :root { --sidebar-width: 280px; }
 
             .admin-layout {
@@ -1357,7 +1582,7 @@
             }
         }
 
-        @media (min-width: 992px) {
+        @media (min-width: 1400px) {
             #sidebarToggle {
                 top: 18px;
                 left: 18px;
@@ -1410,7 +1635,7 @@
         .admin-command-palette__result.is-selected, .admin-command-palette__result:hover, .admin-command-palette__result:focus-visible { background: #f0edff; color: #5b46c5; outline: 0; }
         .admin-command-palette__hint { display: flex; gap: 15px; margin: 0; padding: 10px 16px; border-top: 1px solid #e8edf2; color: #8492a2; font-size: .75rem; }
         .admin-command-palette__hint span { display: inline-flex; gap: 3px; align-items: center; }
-        @media (min-width: 992px) {
+        @media (min-width: 1400px) {
             .sidebar {
                 position: fixed;
                 inset: 0 auto 0 0;
@@ -1419,10 +1644,13 @@
             }
 
             .content {
+                width: calc(100% - var(--admin-rail-width) - var(--admin-context-width));
+                max-width: calc(100% - var(--admin-rail-width) - var(--admin-context-width));
+                flex: 0 0 auto;
                 margin-left: calc(var(--admin-rail-width) + var(--admin-context-width));
             }
         }
-        @media (max-width: 991.98px) {
+        @media (max-width: 1399.98px) {
             #sidebarToggle.admin-menu-toggle { position: fixed; top: 14px; left: 14px; z-index: 1035; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 10px; background: #202b39; color: #fff; box-shadow: 0 8px 20px rgba(31, 45, 63, .2); }
             .sidebar, body.sidebar-collapsed .sidebar { position: fixed; inset: 0 auto 0 0; width: min(338px, calc(100vw - 34px)); height: 100dvh; min-height: 100dvh; transform: translateX(-105%); transition: transform .22s ease; }
             body.sidebar-open .sidebar { transform: translateX(0); }
@@ -1430,7 +1658,7 @@
             .admin-rail { inset: 72px auto 0 0; }
             .admin-contextual-nav { width: calc(100% - var(--admin-rail-width)); }
             .sidebar-backdrop { z-index: 1010; }
-            .content { padding: 72px 16px 28px; }
+            .content { margin-left: 0; padding: 72px 16px 28px; }
         }
         @media (max-width: 575.98px) {
             .content { padding: 70px 14px 24px; }
@@ -1444,12 +1672,6 @@
             .admin-fab--map-animal:hover, .admin-fab--map-animal:focus-visible { right: 80px; }
             .admin-fab--map-client:hover, .admin-fab--map-client:focus-visible { right: 18px; }
         }
-
-        /* WYSIWYG базовые размеры */
-        textarea.wysiwyg,
-        textarea.js-wysiwyg,
-        textarea.wysiwyg-excerpt { min-height: 220px; resize: vertical; }
-        .tox-tinymce { width: 100%; border-radius: 8px; }
 
         /* Ползунки масштаба/качества */
         .form-range::-webkit-slider-thumb { background: #0d6efd; }
@@ -1476,6 +1698,13 @@
             font-weight: 400 !important;
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/admin-editor.css') }}?v=20261026-2">
+    <script src="{{ asset('js/admin-editor.js') }}?v=20261026-3" defer></script>
+    <link rel="stylesheet" href="{{ asset('css/admin-service-tags.css') }}?v=20261029-1">
+    <script src="{{ asset('js/admin-service-tags.js') }}?v=20261029-1" defer></script>
+    <link rel="stylesheet" href="{{ asset('css/admin-image-upload.css') }}?v=20261026-1">
+    <script src="{{ asset('js/admin-image-upload.js') }}?v=20261026-1" defer></script>
+    <script src="{{ asset('js/admin-gallery-previews.js') }}?v=20261026-1" defer></script>
     @stack('styles')
 </head>
 <body>
@@ -1488,12 +1717,14 @@
             ['Карта клиентов', 'admin.client-map.index', 'zooadmin/client-map*'], ['Категории животных', 'admin.categories.index', 'zooadmin/categories*'],
         ]],
         'communication' => ['label' => 'Коммуникации', 'icon' => 'fa-comment-dots', 'items' => [
-            ['Обратная связь', 'admin.feedbacks.index', 'zooadmin/feedbacks*'], ['Отзывы Avito', 'admin.avito-reviews.index', 'zooadmin/avito-reviews*'],
+            ['Обратная связь', 'admin.feedbacks.index', 'zooadmin/feedbacks*'], ['Новые отзывы', 'admin.site-reviews.index', 'zooadmin/site-reviews*'], ['Отзывы Avito', 'admin.avito-reviews.index', 'zooadmin/avito-reviews*'],
         ]],
         'site' => ['label' => 'Сайт', 'icon' => 'fa-wand-magic-sparkles', 'items' => [
+            ['Визуальный редактор', 'home', '/'], ['Логи', 'admin.logs.index', 'zooadmin/logs*'],
             ['Слайдер', 'admin.sliders.index', 'zooadmin/sliders*'], ['Обо мне', 'admin.about.edit', 'zooadmin/about*'],
             ['Преимущества', 'admin.advantages.index', 'zooadmin/advantages*'], ['Услуги', 'admin.services.index', 'zooadmin/services*'],
             ['Фотоальбом', 'admin.galleries.index', 'zooadmin/galleries*'], ['Изображения', 'admin.images.index', 'zooadmin/images*'],
+            ['Печать визиток', 'admin.business-cards.index', 'zooadmin/business-cards*'],
             ['Социальные контакты', 'admin.socials.index', 'zooadmin/socials*'], ['Статьи', 'admin.articles.index', 'zooadmin/articles*'],
             ['Комментарии', 'admin.article-comments.index', 'zooadmin/article-comments*'], ['Меню сайта', 'admin.nav-links.index', 'zooadmin/nav-links*'],
         ]],
@@ -1524,7 +1755,7 @@
                 <section id="admin-group-{{ $key }}" class="admin-contextual-nav__group {{ $key === $activeNavigationGroup ? 'is-active' : '' }}" data-admin-group="{{ $key }}" data-admin-group-label="{{ $group['label'] }}" aria-label="{{ $group['label'] }}" aria-hidden="{{ $key === $activeNavigationGroup ? 'false' : 'true' }}">
                     <p class="admin-contextual-nav__title">{{ $group['label'] }}</p>
                     @foreach($group['items'] as [$label, $route, $pattern])
-                        <a href="{{ route($route) }}" class="{{ request()->is($pattern) ? 'active' : '' }}">{{ $label }}</a>
+                        <a href="{{ $route === 'home' ? route($route, ['edit' => 1]) : route($route) }}" class="{{ request()->is($pattern) ? 'active' : '' }}">{{ $label }}</a>
                     @endforeach
                 </section>
             @endforeach
@@ -2122,7 +2353,7 @@
             }
         });
 
-        const isDesktop = () => window.innerWidth >= 992;
+        const isDesktop = () => window.innerWidth >= 1400;
         let mobileOpen = false;
         let lastDesktopBreakpoint = isDesktop();
         let activeNavigationGroup = @json($activeNavigationGroup);
@@ -2332,16 +2563,26 @@
             }
         });
 
+        document.querySelectorAll('.admin-entity-list').forEach((list) => {
+            const count = list.querySelectorAll(':scope > .admin-entity-list__head > *').length;
+            if (count) list.style.setProperty('--admin-entity-desktop-min', Math.max(0, (count - 1) * 120 + 240) + 'px');
+        });
+
         document.querySelectorAll('.admin-grid').forEach((grid)=>{
             const headerCells = grid.querySelectorAll(':scope > .admin-grid-header > *');
             if (!headerCells.length) return;
             const labels = Array.from(headerCells).map(cell => cell.textContent.trim());
+            grid.style.setProperty('--admin-grid-desktop-min', Math.max(0, (labels.length - 1) * 140 + 300) + 'px');
             grid.querySelectorAll(':scope > .admin-grid-body > .admin-grid-row').forEach((row)=>{
                 Array.from(row.children).forEach((cell, idx)=>{
                     if (!cell.dataset.label && labels[idx]) {
                         cell.dataset.label = labels[idx];
                     }
                 });
+                const primary = Array.from(row.children).find((cell) =>
+                    /^(Имя|Заголовок|Название|Кличка|Клиент|Автор)$/.test(cell.dataset.label || ''))
+                    || (row.children[0]?.matches('.js-order-label') ? row.children[1] : row.children[0]);
+                primary?.classList.add('admin-grid-cell--primary');
             });
         });
 

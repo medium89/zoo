@@ -51,7 +51,7 @@
                                         $animalPhoto = $animal->photos->first()?->path;
                                     @endphp
                                     <div class="client-pet">
-                                        <span class="client-pet__image"><img src="{{ $animalPhoto ? Storage::url($animalPhoto) : asset('images/animal-types/'.$categoryImage.'.png') }}" alt="{{ $animal->name }}"></span>
+                                        <span class="client-pet__image"><img src="{{ $animalPhoto ? Storage::url($animalPhoto) : asset('images/animal-types/'.$categoryImage.'.webp') }}" alt="{{ $animal->name }}"></span>
                                         <span class="client-pet__copy"><strong>{{ $animal->name }}</strong><small>{{ mb_strtolower($categoryName) }}</small></span>
                                     </div>
                                 @empty
@@ -294,6 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const openCreate = () => {
         const form = modalElement.querySelector('form');
         form.reset();
+        form.querySelector('[name="photos[]"]').dispatchEvent(new CustomEvent('admin-image-upload:set-current', { detail: [] }));
         form.action = '{{ route('admin.clients.store') }}';
         document.getElementById('clientCreateMethod').value = 'POST';
         document.getElementById('clientCreateTitle').textContent = 'Новый клиент';
@@ -341,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = JSON.parse(button.dataset.client);
         const form = modalElement.querySelector('form');
         form.reset();
+        form.querySelector('[name="photos[]"]').dispatchEvent(new CustomEvent('admin-image-upload:set-current', { detail: data.photos || [] }));
         form.action = '{{ url('/zooadmin/clients') }}/' + data.id;
         document.getElementById('clientCreateMethod').value = 'PUT';
         document.getElementById('clientCreateTitle').textContent = 'Редактировать клиента';

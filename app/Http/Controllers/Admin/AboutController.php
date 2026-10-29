@@ -32,13 +32,13 @@ class AboutController extends Controller
         ]);
         if ($request->boolean('remove_image') && $about->image) {
             if (Storage::disk('public')->exists($about->image)) {
-                Storage::disk('public')->delete($about->image);
+                \App\Support\AuditedStorage::deletePublic($about->image);
             }
             $about->image = null;
         }
         if ($request->hasFile('image')) {
             if ($about->image && Storage::disk('public')->exists($about->image)) {
-                Storage::disk('public')->delete($about->image);
+                \App\Support\AuditedStorage::deletePublic($about->image);
             }
             $path = ImageProcessor::processAndStore($request->file('image'), 'about', (int)$request->input('image_scale',100), (int)$request->input('image_quality',85));
             $about->image = $path;

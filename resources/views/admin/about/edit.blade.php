@@ -19,13 +19,13 @@
     <div class="form-group mb-3">
         <label for="image" class="form-label">Фото</label><br>
         @if($about && $about->image)
-            <img src="{{ asset('storage/'.$about->image) }}" alt="" width="120" class="mb-2"><br>
+            <img data-upload-old-preview src="{{ asset('storage/'.$about->image) }}" alt="" width="120" class="mb-2"><br>
             <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" value="1" id="remove_image" name="remove_image">
                 <label class="form-check-label" for="remove_image">Удалить фото</label>
             </div>
         @endif
-        <input type="file" class="form-control" id="image" name="image">
+        <input type="file" class="form-control" id="image" name="image" accept="image/*" data-current-src="{{ $about && $about->image ? asset('storage/'.$about->image) : '' }}" data-remove-field="remove_image">
         <small class="text-muted">Оставьте пустым, если не хотите менять фото</small>
         <div class="row g-2 mt-2">
             <div class="col-md-6">
@@ -42,14 +42,13 @@
     </div>
     <div class="form-group mb-3">
         <label for="text" class="form-label">Текст</label>
-        <textarea class="form-control wysiwyg" id="text" name="text" rows="6">{{ $about ? $about->text : '' }}</textarea>
+        <textarea class="form-control" data-rich-editor id="text" name="text" rows="6">{{ $about ? $about->text : '' }}</textarea>
     </div>
     <button type="submit" class="btn btn-success">Сохранить</button>
 </form>
 @endsection
 
 @section('scripts')
-    @include('admin.partials.wysiwyg-scripts')
     <script>
         document.addEventListener('input', function(e){
             if(e.target.matches('.js-scale')){

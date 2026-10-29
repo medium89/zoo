@@ -52,6 +52,7 @@ class ImageManagerController extends Controller
             'crop_height' => 'nullable|integer|min:1|max:8000',
             'crop_x' => 'nullable|integer|min:0',
             'crop_y' => 'nullable|integer|min:0',
+            'webp' => 'nullable|boolean',
         ]);
 
         $path = $data['path'];
@@ -79,7 +80,8 @@ class ImageManagerController extends Controller
             $data['crop_width'] ?? null,
             $data['crop_height'] ?? null,
             $data['crop_x'] ?? null,
-            $data['crop_y'] ?? null
+            $data['crop_y'] ?? null,
+            $request->boolean('webp')
         );
 
         $this->updateModelPath($target, $data['field'], $newPath);
@@ -109,7 +111,7 @@ class ImageManagerController extends Controller
         $this->updateModelPath($target, $data['field'], $backup['path']);
 
         if ($currentPath && $currentPath !== $backup['path'] && Storage::disk('public')->exists($currentPath)) {
-            Storage::disk('public')->delete($currentPath);
+            \App\Support\AuditedStorage::deletePublic($currentPath);
         }
 
         $this->clearBackup($data['type'], $data['id'], $data['field']);
@@ -122,7 +124,9 @@ class ImageManagerController extends Controller
         $items = collect();
 
         Slider::orderBy('id')->get()->each(function($slider) use ($items){
-            $items->push($this->mapItem('slider', $slider->id, 'image', $slider->image, 'Слайдер #'.$slider->id));
+            if ($slider->image) {
+                $items->push($this->mapItem('slider', $slider->id, 'image', $slider->image, 'Слайдер #'.$slider->id));
+            }
             if ($slider->text_bg) {
                 $items->push($this->mapItem('slider_bg', $slider->id, 'text_bg', $slider->text_bg, 'Слайдер фон текста #'.$slider->id));
             }
@@ -136,7 +140,10 @@ class ImageManagerController extends Controller
 
         Service::orderBy('id')->get()->each(function($service) use ($items){
             if ($service->image) {
-                $items->push($this->mapItem('service', $service->id, 'image', $service->image, 'Услуга #'.$service->id));
+                $items->push($this->mapItem('service', $service->id, 'image', $service->image, 'Услуга V1: '.$service->title));
+            }
+            if ($service->sticker_image) {
+                $items->push($this->mapItem('service', $service->id, 'sticker_image', $service->sticker_image, 'Стикер V2: '.$service->title));
             }
         });
 
@@ -193,6 +200,7 @@ class ImageManagerController extends Controller
             'size_kb' => $sizeKb,
             'size_mb' => $sizeMb,
             'dims' => $dims,
+            'is_raster' => $dims !== null,
             'backup' => $backup,
         ];
     }

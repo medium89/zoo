@@ -105,7 +105,7 @@ class GalleryController extends Controller
 
                 // Prepare destination canvas
                 $dst = imagecreatetruecolor($targetW, $targetH);
-                if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_GIF) {
+                if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_GIF || (defined('IMAGETYPE_WEBP') && $type === IMAGETYPE_WEBP)) {
                     imagealphablending($dst, false);
                     imagesavealpha($dst, true);
                     $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
@@ -113,22 +113,13 @@ class GalleryController extends Controller
                 }
                 imagecopyresampled($dst, $src, 0, 0, 0, 0, $targetW, $targetH, $w, $h);
 
-                // Encode main image
-                ob_start();
-                if ($type === IMAGETYPE_JPEG) {
-                    imagejpeg($dst, null, max(0, min(100, $quality)));
-                    $ext = ($origExt ?: 'jpg');
-                } elseif ($type === IMAGETYPE_PNG) {
-                    $level = (int)max(0, min(9, round((100 - $quality) / 10)));
-                    imagepng($dst, null, $level);
-                    $ext = ($origExt ?: 'png');
-                } elseif (defined('IMAGETYPE_WEBP') && $type === IMAGETYPE_WEBP && function_exists('imagewebp')) {
-                    imagewebp($dst, null, max(0, min(100, $quality)));
-                    $ext = 'webp';
-                } else { // GIF
-                    imagegif($dst);
-                    $ext = ($origExt ?: 'gif');
+                // Always write raster uploads as WebP.
+                if (!function_exists('imagewebp')) {
+                    throw new \RuntimeException('Для загрузки изображений необходима поддержка GD с WebP.');
                 }
+                ob_start();
+                imagewebp($dst, null, max(0, min(100, $quality)));
+                $ext = 'webp';
                 $data = ob_get_clean();
                 imagedestroy($dst);
                 imagedestroy($src);
@@ -142,13 +133,10 @@ class GalleryController extends Controller
                     $ratio = $w > 0 ? $h / $w : 1;
                     $thumbH = max(1, (int)round($thumbW * $ratio));
 
-                    $src2 = null;
-                    if ($type === IMAGETYPE_JPEG) $src2 = @imagecreatefromstring($data);
-                    elseif ($type === IMAGETYPE_PNG) $src2 = @imagecreatefromstring($data);
-                    elseif ($type === IMAGETYPE_GIF) $src2 = @imagecreatefromstring($data);
+                    $src2 = @imagecreatefromstring($data);
                     if ($src2) {
                         $dst2 = imagecreatetruecolor($thumbW, $thumbH);
-                        if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_GIF) {
+                        if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_GIF || (defined('IMAGETYPE_WEBP') && $type === IMAGETYPE_WEBP)) {
                             imagealphablending($dst2, false);
                             imagesavealpha($dst2, true);
                             $transparent = imagecolorallocatealpha($dst2, 0, 0, 0, 127);
@@ -156,16 +144,8 @@ class GalleryController extends Controller
                         }
                         imagecopyresampled($dst2, $src2, 0, 0, 0, 0, $thumbW, $thumbH, imagesx($src2), imagesy($src2));
                         ob_start();
-                        if ($type === IMAGETYPE_JPEG) {
-                            imagejpeg($dst2, null, 80);
-                            $thumbExt = 'jpg';
-                        } elseif ($type === IMAGETYPE_PNG) {
-                            imagepng($dst2, null, 4);
-                            $thumbExt = 'png';
-                        } else {
-                            imagegif($dst2);
-                            $thumbExt = 'gif';
-                        }
+                        imagewebp($dst2, null, 80);
+                        $thumbExt = 'webp';
                         $thumbData = ob_get_clean();
                         imagedestroy($dst2);
                         imagedestroy($src2);
@@ -189,7 +169,7 @@ class GalleryController extends Controller
     public function destroy(Gallery $gallery)
     {
         if ($gallery->image && Storage::disk('public')->exists($gallery->image)) {
-            Storage::disk('public')->delete($gallery->image);
+            \App\Support\AuditedStorage::deletePublic($gallery->image);
         }
         $gallery->delete();
         return redirect()->route('admin.galleries.index')->with('success', 'Фото удалено');
